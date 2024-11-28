@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserDAO extends CrudRepository<User, Long> {
     User findByUsername(String username);
+
+    boolean existsByEmail(String email);
 }

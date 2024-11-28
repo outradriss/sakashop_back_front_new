@@ -65,6 +65,9 @@ public class UserServiceImpl implements UserDetailsService, userService {
     @Override
     public User save(UserDTO user) {
 
+      if (userDao.existsByEmail(user.getEmail())) {
+        throw new IllegalArgumentException("Email existe déjà");
+      }
         User nUser = user.getUserFromDto();
         nUser.setPassword(bcryptEncoder.encode(user.getPassword()));
 

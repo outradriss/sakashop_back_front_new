@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { UserServiceService } from '../user-service.service';
 import Keyboard from "simple-keyboard";
+import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { SignupServiceService } from '../signup-service.service';
 
 @Component({
   selector: 'app-register',
@@ -10,19 +12,55 @@ import Keyboard from "simple-keyboard";
   styleUrl: './register.component.css'
 })
 export class RegisterComponent {
+  signupForm: FormGroup | any ;
   userData:any;
   keyboard:Keyboard | undefined = undefined; ;
   value = "";
-  constructor(private user: UserServiceService) { }
+  errorMessage: string | null = null;
+  constructor(private user: UserServiceService , private fb: FormBuilder, private signupService: SignupServiceService) { }
 
   ngOnInit() {
-    this.user.currentUserData.subscribe(userData => this.userData = userData)
+    this.signupForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      phone: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      c_password: ['', [Validators.required]]
+    },
+    { validators: this.passwordsMatchValidator } );
   }
-  signUp(data : any){
-    
-    this.user.changeData(data);
+  passwordsMatchValidator(control: AbstractControl): { [key: string]: boolean } | null {
+    const password = control.get('password');
+    const c_password = control.get('c_password');
+    if (password && c_password && password.value !== c_password.value) {
+      return { passwordsMismatch: true };
+    }
+    return null;
   }
+  signUp(): void {
+    if (this.signupForm.invalid) {
+      return;
+    }
 
+    const formData = this.signupForm.value;
+    this.errorMessage = null; // Réinitialise le message d'erreur
+
+    this.signupService.registerUser(formData).subscribe(
+      (response) => {
+        alert('User registered successfully!');
+      },
+      (error) => {
+        this.errorMessage = error.message; // Récupère le message d'erreur
+      }
+    );
+  }
+  get passwordMismatch(): boolean {
+    return (
+      this.signupForm.hasError('passwordsMismatch') &&
+      this.signupForm.get('password')?.touched &&
+      this.signupForm.get('c_password')?.touched
+    );
+  }
   ngAfterViewInit() {
     this.keyboard = new Keyboard({
       onChange: input => this.onChange(input),

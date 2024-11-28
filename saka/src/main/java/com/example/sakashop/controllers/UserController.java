@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -59,8 +60,14 @@ public class UserController {
      * @return The saved user.
      */
     @RequestMapping(value="/register", method = RequestMethod.POST)
-    public User saveUser(@RequestBody UserDTO user){
-        return userService.save(user);
+    public ResponseEntity <?> saveUser(@RequestBody UserDTO user){
+      try {
+        User savedUser = userService.save(user);
+        return ResponseEntity.ok(savedUser);
+      } catch (IllegalArgumentException ex) {
+        // Retourner un message d'erreur formaté
+        return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+      }
     }
 
     /**

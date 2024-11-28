@@ -1,7 +1,6 @@
-package com.example.demo;
+package com.example.sakashop;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
 @ContextConfiguration

@@ -3,6 +3,7 @@ import { UserServiceService } from '../user-service.service';
 import Keyboard from "simple-keyboard";
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SignupServiceService } from '../signup-service.service';
+import { Route, Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -17,7 +18,9 @@ export class RegisterComponent {
   keyboard:Keyboard | undefined = undefined; ;
   value = "";
   errorMessage: string | null = null;
-  constructor(private user: UserServiceService , private fb: FormBuilder, private signupService: SignupServiceService) { }
+  successMessage: string | null = null;
+  
+  constructor(private router : Router,private user: UserServiceService , private fb: FormBuilder, private signupService: SignupServiceService) { }
 
   ngOnInit() {
     this.signupForm = this.fb.group({
@@ -47,7 +50,8 @@ export class RegisterComponent {
 
     this.signupService.registerUser(formData).subscribe(
       (response) => {
-        alert('User registered successfully!');
+        this.successMessage = 'User registered successfully! Redirecting...';
+    this.router.navigate(['/login']); // Rediriger immédiatement
       },
       (error) => {
         this.errorMessage = error.message; // Récupère le message d'erreur

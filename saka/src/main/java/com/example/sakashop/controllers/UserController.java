@@ -44,7 +44,7 @@ public class UserController {
     public ResponseEntity<?> generateToken(@RequestBody LoginUser loginUser) throws AuthenticationException {
         final Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginUser.getUsername(),
+                        loginUser.getEmail(),
                         loginUser.getPassword()
                 )
         );

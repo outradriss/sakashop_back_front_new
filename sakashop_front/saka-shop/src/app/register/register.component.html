@@ -4,10 +4,10 @@
       <div class="card-body auth-card">
         <div class="auth-avatar">
           <img
-            src="https://pluspng.com/img-png/user-png-icon-account-avatar-human-male-man-men-people-person-download-svg-download-png-edit-icon-512.png"
-            alt="user"
-            class="user-image"
-          />
+          src="/logos/logo.png"
+          alt="user"
+          class="user-image"
+        /> 
         </div>
         <form [formGroup]="signupForm" (ngSubmit)="signUp()">
           <div class="form-group">
@@ -59,6 +59,9 @@
               formControlName="c_password"
               placeholder="********"
             />
+          </div>
+          <div *ngIf="successMessage" class="alert alert-success">
+            {{ successMessage }}
           </div>
           <div *ngIf="errorMessage" class="alert alert-danger">
             {{ errorMessage }}

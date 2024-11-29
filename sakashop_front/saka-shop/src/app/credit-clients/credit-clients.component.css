@@ -1,0 +1,272 @@
+/* Conteneur principal */
+.credit-container {
+    width: 100%; /* Largeur adaptative */
+    max-width: 1800px; /* Largeur maximale pour éviter trop d'expansion */
+    margin: 0 auto;
+    padding: 120px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3);
+    text-align: center;
+  
+    /* Centre verticalement et horizontalement */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  /* Bouton Ajouter Client */
+  .btn-add-client {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 15px 25px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-add-client:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Tableaux */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  table th,
+  table td {
+    padding: 15px;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+  
+  table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+    font-size: 1.1rem;
+  }
+  
+  table td {
+    font-size: 1rem;
+  }
+  .search-bar {
+    margin: 20px 0; /* Espace entre la barre et le reste */
+    text-align: left; /* Aligne à gauche */
+  }
+  
+  .search-bar input {
+    padding: 10px 15px; /* Taille de la barre */
+    width: 100%; /* Occupe tout l'espace disponible */
+    font-size: 16px; /* Taille du texte */
+    border: 1px solid #ccc; /* Bordure */
+    border-radius: 5px; /* Coins arrondis */
+    outline: none; /* Retire le contour au focus */
+  }
+  
+  .search-bar input:focus {
+    border-color: #007bff; /* Couleur de la bordure au focus */
+  }
+  
+  
+  /* Titres */
+  h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+  }
+  
+  h3 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  /* Boutons d'action dans les tableaux */
+  .btn-view,
+  .btn-edit,
+  .btn-delete {
+    padding: 10px 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-view {
+    background-color: #28a745;
+    color: #fff;
+  }
+  
+  .btn-edit {
+    background-color: #ffc107;
+    color: #000;
+  }
+  
+  .btn-delete {
+    background-color: #dc3545;
+    color: #fff;
+  }
+  
+  .btn-view:hover {
+    background-color: #218838;
+  }
+  
+  .btn-edit:hover {
+    background-color: #e0a800;
+  }
+  
+  .btn-delete:hover {
+    background-color: #c82333;
+  }
+  
+  /* Popup Overlay */
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  /* Popup */
+  .popup {
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3);
+    width: 500px;
+    max-width: 90%;
+    text-align: center;
+  }
+  
+  .popup h3 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .popup .form-group {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  
+  .popup .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+  }
+  
+  .popup .form-group input,
+  .popup .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .popup-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .btn-submit {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-submit:hover {
+    background-color: #0056b3;
+  }
+  
+  .btn-cancel {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-cancel:hover {
+    background-color: #c82333;
+  }
+  /* Style pour les boutons */
+  .navigation-buttons {
+    position: fixed;
+    bottom: 20px; /* Espace par rapport au bas de la page */
+    left: 40%; /* Centre horizontalement */
+    transform: translateX(-50%); /* Ajustement pour centrer */
+    display: flex;
+    gap: 15px; /* Espace entre les boutons */
+  }
+  .navigation-buttons button {
+    padding: 20px 30px;
+    font-size: rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .navigation-buttons button:hover {
+    background-color: #0056b3;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(1) {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(2) {
+    background-color: #17a2b8;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(3) {
+    background-color: #ffc107;
+    color: #000;
+  }
+  .navigation-buttons .btn-logout {
+    background-color: #dc3545;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .navigation-buttons button:nth-child(4) {
+    background-color: #ff0707;
+    color: #000;
+  }
+  
+  
+  
+  

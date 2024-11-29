@@ -1,0 +1,72 @@
+<div class="pos-container">
+    <!-- Liste des Produits -->
+    <div class="product-list">
+      <h3>Produits Disponibles</h3>
+      <!-- Barre de Recherche -->
+      <div class="search-bar">
+        <input 
+          type="text" 
+          placeholder="Rechercher un produit..." 
+          [(ngModel)]="searchQuery" 
+          (input)="filterProducts()" 
+        />
+      </div>
+      <div class="products">
+        <div 
+          class="product-card" 
+          *ngFor="let product of filteredProducts" 
+          (click)="addToCart(product)"
+        >
+    
+          <div class="product-details">
+            <h4>{{ product.name }}</h4>
+            <p>{{ product.price | currency }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="navigation-buttons">
+        <button (click)="navigateTo('gestion-produit')">Gestion de Produit</button>
+        <button (click)="navigateTo('credit-client')">Crédit Client</button>
+        <button (click)="navigateTo('meilleur-vente')">Meilleur Vente</button>
+        <button class="btn-logout" (click)="logout()">Quitter</button>
+      </div>
+    </div>
+  
+    <!-- Panier -->
+    <div class="cart">
+      <h3>Panier</h3>
+      <div class="cart-items">
+        <div class="cart-item" *ngFor="let item of cart">
+          <span>{{ item.name }}</span>
+          <span>{{ item.quantity }}</span>
+          <input 
+            type="number" 
+            [(ngModel)]="item.price" 
+            (input)="updateTotal()" 
+            min="0" 
+          />
+          <button (click)="removeFromCart(item)">❌</button>
+        </div>
+      </div>
+      <div class="totals">
+        <h4>Total : {{ calculateTotal() | currency }}</h4>
+      </div>
+      <div class="actions">
+        <button class="btn-pay" (click)="openModal()">Payer</button>
+        <button class="btn-cancel" (click)="cancel()">Annuler</button>
+      </div>
+    </div>
+  
+    <!-- Modal de Confirmation -->
+    <div class="modal" *ngIf="isModalOpen">
+      <div class="modal-content">
+        <h3>Confirmer le Paiement</h3>
+        <p>Voulez-vous confirmer et imprimer le bon ?</p>
+        <div class="modal-actions">
+          <button class="btn-confirm" (click)="confirmPayment()">Oui</button>
+          <button class="btn-cancel" (click)="closeModal()">Non</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  

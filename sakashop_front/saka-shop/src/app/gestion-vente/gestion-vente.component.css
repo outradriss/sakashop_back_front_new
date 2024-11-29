@@ -1,0 +1,96 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+  }
+  
+  .sales-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  h2, h3 {
+    text-align: center;
+    color: #333;
+  }
+  
+  .date-picker {
+    margin: 20px auto;
+    text-align: center;
+  }
+  
+  .date-picker input {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .sales-summary table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+  }
+  
+  .sales-summary th, .sales-summary td {
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .sales-summary th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+  }
+  
+  .sales-summary tr:hover {
+    background-color: #f9f9f9;
+  }
+  
+  .sales-summary .totals {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    text-align: right;
+  }
+  
+  .chart-container {
+    margin-top: 30px;
+    text-align: center;
+  }
+  /* Style pour les boutons */
+  .navigation-buttons button {
+    padding: 20px 30px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .navigation-buttons button:hover {
+    background-color: #0056b3;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(1) {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(2) {
+    background-color: #17a2b8;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(3) {
+    background-color: #ffc107;
+    color: #000;
+  }
+  .navigation-buttons button:nth-child(4) {
+    background-color: #ff0707;
+    color: #000;
+  }
+  
+  
+  

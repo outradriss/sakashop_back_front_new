@@ -1,0 +1,67 @@
+<div class="sales-container">
+    <h2>Gestion des Meilleures Ventes</h2>
+  
+    <!-- Sélection de la date -->
+    <div class="date-picker">
+      <label for="salesDate">Choisissez une date :</label>
+      <input 
+        type="date" 
+        id="salesDate" 
+        [(ngModel)]="selectedDate" 
+        (change)="fetchSalesData()"
+      />
+    </div>
+  
+    <!-- Résumé des ventes -->
+    <div *ngIf="salesData" class="sales-summary">
+      <h3>Pour le jour {{ selectedDate | date: 'dd/MM/yyyy' }}</h3>
+      <p>
+        Liste des produits les plus vendus :
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Quantité Vendue</th>
+            <th>Total des Ventes (DH)</th>
+            <th>Marge (DH)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of salesData.products">
+            <td>{{ product.name }}</td>
+            <td>{{ product.quantitySold }}</td>
+            <td>{{ product.totalSales | currency: 'DH ' }}</td>
+            <td>{{ product.margin | currency: 'DH ' }}</td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <div class="totals">
+        <h4>Total des Ventes : {{ salesData.totalSales | currency: 'MAD ' }}</h4>
+        <h4>Marge Totale : {{ salesData.totalMargin | currency: ' MAD ' }}</h4>
+      </div>
+    </div>
+  
+    <!-- Graphique -->
+    <div *ngIf="salesData" class="chart-container">
+      <h3>Graphique des Produits Vendus</h3>
+      <ngx-charts-bar-vertical
+        [view]="[700, 400]"
+        [scheme]="colorScheme"
+        [results]="chartData"
+        [xAxis]="true"
+        [yAxis]="true"
+        [legend]="false"
+        [showDataLabel]="true"
+      >
+      </ngx-charts-bar-vertical>
+    </div>
+    <div class="navigation-buttons">
+        <button (click)="navigateTo('gestion-produit')">Gestion de Produit</button>
+        <button (click)="navigateTo('credit-client')">Crédit Client</button>
+        <button (click)="navigateTo('meilleur-vente')">Caisse</button>
+        <button class="btn-logout" (click)="logout()">Quitter</button>
+      </div>
+  </div>
+  

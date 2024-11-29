@@ -1,0 +1,153 @@
+<div class="credit-container">
+    <h2>Gestion des Crédits Clients</h2>
+  
+    <!-- Bouton Ajouter un Client -->
+    <div class="add-client-button">
+      <button (click)="showAddClientPopup()" class="btn-add-client">+ Ajouter Client</button>
+    </div>
+  
+    <!-- Barre de Recherche pour les Clients -->
+    <div class="search-bar">
+      <input 
+        type="text" 
+        placeholder="Rechercher un client..." 
+        [(ngModel)]="searchQuery" 
+        (input)="filterClients()" 
+      />
+    </div>
+  
+    <!-- Liste des Clients -->
+    <div class="client-list">
+      <h3>Clients avec des Crédits</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Nom du Client</th>
+            <th>Total des Crédits (€)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let client of filteredClients">
+            <td>{{ client.name }}</td>
+            <td>{{ calculateTotalCredits(client.credits) | currency }}</td>
+            <td>
+              <button (click)="viewCredits(client)" class="btn-view">Voir Crédits</button>
+              <button (click)="deleteClient(client)" class="btn-delete">Supprimer</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  
+    <!-- Liste des Crédits du Client Sélectionné -->
+    <div *ngIf="selectedClient" class="credit-list">
+      <h3>Crédits pour {{ selectedClient.name }}</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Montant</th>
+            <th>Date Prévue pour payé</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let credit of selectedClient.credits">
+            <td>{{ credit.product }}</td>
+            <td>{{ credit.creditDate | date }}</td>
+            <td>{{ credit.description }}</td>
+            <td>{{ credit.amount | currency }}</td>
+            <td>{{ credit.dueDate | date }}</td>
+            <td>
+              <button (click)="editCredit(credit)" class="btn-edit">Modifier</button>
+              <button (click)="deleteCredit(credit)" class="btn-delete">Supprimer</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  
+    <!-- Popup d'Ajout de Client -->
+    <div class="popup-overlay" *ngIf="showPopup">
+      <div class="popup">
+        <h3>Ajouter un Client</h3>
+        <form (ngSubmit)="addClient()">
+          <div class="form-group">
+            <label for="clientName">Nom du Client :</label>
+            <input
+              type="text"
+              id="clientName"
+              [(ngModel)]="clientForm.name"
+              name="clientName"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="product">Produit :</label>
+            <input
+              type="text"
+              id="product"
+              [(ngModel)]="clientForm.credit.product"
+              name="product"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="creditDate">Date :</label>
+            <input
+              type="date"
+              id="creditDate"
+              [(ngModel)]="clientForm.credit.creditDate"
+              name="creditDate"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="description">Description du Crédit :</label>
+            <textarea
+              id="description"
+              [(ngModel)]="clientForm.credit.description"
+              name="description"
+              rows="3"
+              required
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="amount">Montant :</label>
+            <input
+              type="number"
+              id="amount"
+              [(ngModel)]="clientForm.credit.amount"
+              name="amount"
+              required
+              min="0"
+            />
+          </div>
+          <div class="form-group">
+            <label for="dueDate">Date Prévue pour Payer :</label>
+            <input
+              type="date"
+              id="dueDate"
+              [(ngModel)]="clientForm.credit.dueDate"
+              name="dueDate"
+              required
+            />
+          </div>
+          <div class="popup-actions">
+            <button type="submit" class="btn-submit">Ajouter</button>
+            <button type="button" class="btn-cancel" (click)="hidePopup()">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="navigation-buttons">
+        <button (click)="navigateTo('gestion-produit')">Gestion de Produit</button>
+        <button (click)="navigateTo('caisse')">Caisse</button>
+        <button (click)="navigateTo('meilleur-vente')">Meilleur Vente</button>
+        <button class="btn-logout" (click)="logout()">Quitter</button>
+      </div>
+  </div>
+  

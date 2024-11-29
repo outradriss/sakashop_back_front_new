@@ -7,6 +7,7 @@ import { CaisseComponent } from './caisse/caisse.component';
 import { CreditClientsComponent } from './credit-clients/credit-clients.component';
 import { GestionVenteComponent } from './gestion-vente/gestion-vente.component';
 import { AuthGuard } from './auth.guard';
+import { GestionProduitsComponent } from './gestion-produits/gestion-produits.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent  },
@@ -15,6 +16,7 @@ const routes: Routes = [
   { path: 'caisse', component: CaisseComponent ,canActivate: [AuthGuard] },
   { path: 'credit-client', component: CreditClientsComponent ,canActivate: [AuthGuard] },
   { path: 'meilleur-vente', component: GestionVenteComponent ,canActivate: [AuthGuard] },
+  { path: 'gestion-produit', component: GestionProduitsComponent ,canActivate: [AuthGuard] },
   { path: '**', component: LoginComponent  },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 ];

@@ -1,0 +1,95 @@
+<div class="gestion-produit-container">
+    <h2>Gestion des Produits</h2>
+  
+    <!-- Barre de Recherche -->
+    <div class="search-bar">
+      <input
+        type="text"
+        placeholder="Rechercher un produit..."
+        [(ngModel)]="searchQuery"
+        (input)="filterProducts()"
+      />
+      <button (click)="showAddProductPopup()" class="btn-add-product">+ Ajouter Produit</button>
+    </div>
+  
+    <!-- Tableau des Produits -->
+    <div class="product-list">
+      <table>
+        <thead>
+          <tr>
+            <th>Item Code</th>
+            <th>Nom du Produit</th>
+            <th>Quantité</th>
+            <th>Prix d'Achat</th>
+            <th>Prix de Vente</th>
+            <th>Catégorie</th>
+            <th>Fournisseur</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of filteredProducts">
+            <td>{{ product.itemCode }}</td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.quantity }}</td>
+            <td>{{ product.buyPrice | currency }}</td>
+            <td>{{ product.salesPrice | currency }}</td>
+            <td>{{ product.category }}</td>
+            <td>{{ product.supplier }}</td>
+            <td>
+              <button (click)="editProduct(product)" class="btn-edit">Modifier</button>
+              <button (click)="deleteProduct(product)" class="btn-delete">Supprimer</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  
+    <!-- Popup d'Ajout/Modification de Produit -->
+    <div class="popup-overlay" *ngIf="showPopup">
+      <div class="popup">
+        <h3>{{ editingProduct ? 'Modifier Produit' : 'Ajouter Produit' }}</h3>
+        <form (ngSubmit)="saveProduct()">
+          <div class="form-group">
+            <label for="itemCode">Item Code :</label>
+            <input type="text" id="itemCode" [(ngModel)]="productForm.itemCode" name="itemCode" required />
+          </div>
+          <div class="form-group">
+            <label for="name">Nom du Produit :</label>
+            <input type="text" id="name" [(ngModel)]="productForm.name" name="name" required />
+          </div>
+          <div class="form-group">
+            <label for="quantity">Quantité :</label>
+            <input type="number" id="quantity" [(ngModel)]="productForm.quantity" name="quantity" min="0" required />
+          </div>
+          <div class="form-group">
+            <label for="buyPrice">Prix d'Achat :</label>
+            <input type="number" id="buyPrice" [(ngModel)]="productForm.buyPrice" name="buyPrice" min="0" required />
+          </div>
+          <div class="form-group">
+            <label for="salesPrice">Prix de Vente :</label>
+            <input type="number" id="salesPrice" [(ngModel)]="productForm.salesPrice" name="salesPrice" min="0" required />
+          </div>
+          <div class="form-group">
+            <label for="category">Catégorie :</label>
+            <input type="text" id="category" [(ngModel)]="productForm.category" name="category" required />
+          </div>
+          <div class="form-group">
+            <label for="supplier">Fournisseur :</label>
+            <input type="text" id="supplier" [(ngModel)]="productForm.supplier" name="supplier" required />
+          </div>
+          <div class="popup-actions">
+            <button type="submit" class="btn-submit">Enregistrer</button>
+            <button type="button" class="btn-cancel" (click)="hidePopup()">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="navigation-buttons">
+        <button (click)="navigateTo('gestion-produit')">Gestion de Produit</button>
+        <button (click)="navigateTo('credit-client')">Crédit Client</button>
+        <button (click)="navigateTo('meilleur-vente')">Meilleur Vente</button>
+        <button class="btn-logout" (click)="logout()">Quitter</button>
+      </div>
+  </div>
+  

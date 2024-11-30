@@ -53,6 +53,42 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s, box-shadow 0.2s;
 }
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 1em;
+}
+
+.pagination button {
+  margin: 0 5px;
+  padding: 0.5em 1em;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.pagination button.active {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+}
+
+.pagination button:hover {
+  background-color: #0056b3;
+  color: white;
+}
+.action-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-disable-promo.disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+
 
 .btn-add-discount i {
     margin-right: 8px; /* Espacement entre l'icône et le texte */
@@ -102,19 +138,72 @@
     color: white;
     background-color: #28a745;
     border: none;
-    padding: 5px 10px;
+    padding: 10px 30px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 20px;
+    gap: 10px;
   }
   
   .product-list .btn-delete {
     color: white;
     background-color: #dc3545;
     border: none;
-    padding: 5px 10px;
+    padding: 10px 30px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 20px;
+    gap: 10px;
   }
+  
+  .action-buttons {
+    display: flex;
+    gap: 5px;
+  }
+  .btn-disable-promo.disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+
+  }
+  /* Styles généraux des boutons */
+button {
+  font-size: 14px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  gap: 10px;
+}
+
+/* Bouton Désactiver Promo actif */
+.btn-active {
+  background-color: #ffcc00; /* Jaune pour attirer l'attention */
+  color: #000; /* Texte noir pour un contraste clair */
+  padding: 10px 30px;
+  cursor: pointer;
+  border-radius: 20px;
+}
+
+.btn-active:hover {
+  background-color: #e6b800; /* Couleur légèrement plus foncée au survol */
+}
+
+/* Bouton Désactiver Promo désactivé */
+.btn-disable {
+  background-color: #e0e0e0; /* Gris clair */
+  color: #888; /* Gris foncé pour le texte */
+  cursor: not-allowed; /* Curseur non cliquable */
+  box-shadow: none; /* Supprimer les ombres */
+  padding: 10px 30px;
+    cursor: pointer;
+  border-radius: 20px;
+}
+
+/* Transitions douces */
+button:hover {
+  opacity: 0.9;
+}
+
   
   .popup-overlay {
     position: fixed;

@@ -3,6 +3,7 @@ package com.example.sakashop.controllers;
 import com.example.sakashop.Entities.Item;
 import com.example.sakashop.services.implServices.ProductServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,6 @@ public class ProductController {
   public List<Item> getAllProducts() {
     return productService.getAllProducts();
   }
-
   @PostMapping("/save")
   public Item saveProduct(@RequestBody Item item) {
     return productService.addProduct(item);

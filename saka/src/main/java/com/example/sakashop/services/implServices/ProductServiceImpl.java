@@ -9,10 +9,16 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl {
@@ -26,12 +32,10 @@ public class ProductServiceImpl {
   @Autowired
   private CacheManager cacheManager;
 
-  @Cacheable(value = "products", key = "'allProducts'")
-  public List<Item> getAllProducts() {
-    return productRepository.findAllWithCategory();
+  @Cacheable(value = "products", key = "'allProducts'")  public List<Item> getAllProducts() {
+
+    return productRepository.findAllWithCategory() ;
   }
-
-
 
   @CacheEvict(value = "products", allEntries = true)
   public Item addProduct(Item item) {
@@ -60,7 +64,7 @@ public class ProductServiceImpl {
     existingProduct.setSupplier(updatedProduct.getSupplier());
     existingProduct.setPricePromo(updatedProduct.getPricePromo());
     existingProduct.setIsPromo(updatedProduct.getIsPromo());
-    Item savedProduct = productRepository.save(updatedProduct);
+    Item savedProduct = productRepository.save(existingProduct);
 
     return savedProduct;
   }

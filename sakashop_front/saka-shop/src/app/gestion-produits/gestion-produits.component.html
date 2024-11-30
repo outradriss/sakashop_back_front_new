@@ -9,12 +9,12 @@
   
     <!-- Barre de Recherche -->
     <div class="search-bar">
-      <input
+        <input
         type="text"
         placeholder="Rechercher un produit..."
         [(ngModel)]="searchQuery"
-        (input)="filterProducts()"
-      />
+        (input)="onSearch()"
+    />
       <button (click)="showAddProductPopup()" class="btn-add-product">+ Ajouter Produit</button>
       <button (click)="showAddDiscountPopup()" class="btn-add-discount">
         <i class="fa fa-tags"></i> Ajouter une Remise
@@ -57,10 +57,35 @@
             <td>
               <button (click)="editProduct(product)" class="btn-edit">Modifier</button>
               <button (click)="openConfirmDeletePopup(product)" class="btn-delete">Supprimer</button>
+              <button
+              (click)="disablePromo(product)"
+              [disabled]="!product.isPromo"
+              [ngClass]="{'btn-disable': !product.isPromo, 'btn-active': product.isPromo}"
+              class="btn-disable-promo"
+            >
+              Désactiver Promo
+            </button>
             </td>
           </tr>
         </tbody>
       </table>
+      <!-- Pagination -->
+<div class="pagination">
+    <button
+    *ngFor="let page of visiblePages"
+    [class.active]="page === currentPage"
+    (click)="onPageChange(page)"
+  >
+    {{ page + 1 }}
+  </button>
+     <!-- Menu déroulant pour les pages restantes -->
+     <select (change)="onPageChangeDropdown($event)">
+        <option value="" disabled selected>Autres pages</option>
+        <option *ngFor="let page of remainingPages" [value]="page">
+          Page {{ page + 1 }}
+        </option>
+      </select>
+      
     </div>
     <!-- Popup de confirmation -->
 <div class="popup-overlay" *ngIf="showConfirmDeletePopup">

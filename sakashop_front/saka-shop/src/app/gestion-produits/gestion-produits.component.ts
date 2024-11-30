@@ -33,7 +33,13 @@ export class GestionProduitsComponent {
   newCategory: Categories= { id: 0, name: '', createdDate: '' };
   showCategoryPopup = false;
   categories: Categories[]=[]; // Liste des noms de catégories
-  
+  currentPage: number = 0; // La page actuelle
+  totalPages: number = 84; // Nombre total de pages (à mettre à jour dynamiquement)
+  pageSize: number = 10;
+  pagesToShow: number[] = []; // Pages affichées en tant que boutons
+remainingPages: number[] = []; // Pages affichées dans le menu déroulant
+  visiblePages: number[] = [];
+  cachedProducts: Product[] = [];
   constructor(private productService: ProductService, private router: Router) {}
 
 
@@ -53,20 +59,145 @@ loadCategoriesFromProducts(): void {
     this.categories = [];
   }
 }
+updatePagination(): void {
+  this.pagesToShow = [];
+  this.remainingPages = [];
 
-  // Charger les produits depuis le backend
-  loadProducts(): void {
-    this.productService.getProducts().subscribe(
+  // Afficher les 3 premières pages ou moins si le total est inférieur
+  const totalPagesToShow = Math.min(3, this.totalPages);
+  for (let i = 0; i < totalPagesToShow; i++) {
+    this.pagesToShow.push(i);
+  }
+
+  // Ajouter les pages restantes au menu déroulant
+  for (let i = 3; i < this.totalPages; i++) {
+    this.remainingPages.push(i);
+  }
+}
+
+// Appeler cette méthode après chaque chargement des produits
+loadProducts(): void {
+  if (this.cachedProducts.length > 0) {
+    // Si les données sont déjà en cache, appliquez simplement la pagination et le filtrage
+    this.applyPaginationAndFilter();
+  } else {
+    // Sinon, récupérer les données depuis le backend
+    this.productService.getAllProducts().subscribe(
       (data) => {
-        this.products = data;
-        this.filteredProducts = data;
-        this.loadCategoriesFromProducts(); // Extraire les catégories
+        this.cachedProducts = data; // Met toutes les données en cache
+        this.products = [...this.cachedProducts]; // Initialise les produits
+        this.filteredProducts = [...this.products]; // Initialise les produits filtrés
+        this.totalPages = Math.ceil(this.cachedProducts.length / this.pageSize); // Calcule le nombre total de pages
+        this.updatePagination(); // Met à jour les boutons de pagination
+        this.loadCategoriesFromProducts(); // Extrait les catégories
+        this.applyPaginationAndFilter(); // Applique la pagination et le filtrage
       },
       (error) => {
         console.error('Erreur lors du chargement des produits', error);
       }
     );
   }
+}
+disablePromo(product: Product): void {
+  if (!product.isPromo) return;
+
+  // Afficher une boîte de dialogue de confirmation avant de désactiver la promo
+  Swal.fire({
+    title: 'Confirmation',
+    text: `Voulez-vous vraiment désactiver la promotion pour le produit : "${product.name}" ?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Oui, désactiver',
+    cancelButtonText: 'Annuler',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Si l'utilisateur confirme, désactiver la promo
+      product.pricePromo = 0;
+      product.isPromo = false;
+
+      // Sauvegarder les modifications via le backend
+      this.productService.updateProduct(product.id, product).subscribe(
+        () => {
+          Swal.fire({
+            title: 'Succès',
+            text: `La promotion pour le produit "${product.name}" a été désactivée avec succès.`,
+            icon: 'success',
+            confirmButtonText: 'OK',
+          });
+          this.loadProducts(); // Rafraîchit la liste des produits
+        },
+        (error) => {
+          Swal.fire({
+            title: 'Erreur',
+            text: 'Une erreur s\'est produite lors de la désactivation de la promotion. Veuillez réessayer.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+          });
+          console.error('Erreur lors de la désactivation de la promo :', error);
+        }
+      );
+    } else {
+      // L'utilisateur a annulé l'action
+      Swal.fire({
+        title: 'Action annulée',
+        text: 'La promotion n\'a pas été désactivée.',
+        icon: 'info',
+        confirmButtonText: 'OK',
+      });
+    }
+  });
+}
+
+
+
+applyPaginationAndFilter(): void {
+  const startIndex = this.currentPage * this.pageSize;
+  const endIndex = startIndex + this.pageSize;
+
+  // Appliquer le filtre de recherche
+  if (this.searchQuery.trim()) {
+    const query = this.searchQuery.trim().toLowerCase();
+    const filtered = this.cachedProducts.filter(
+      (product) =>
+        product.name.toLowerCase().includes(query) || // Filtrer par nom
+        product.itemCode.toLowerCase().includes(query) // Optionnel : filtrer par code produit
+    );
+    this.filteredProducts = filtered.slice(startIndex, endIndex); // Appliquer la pagination sur les données filtrées
+    this.totalPages = Math.ceil(filtered.length / this.pageSize); // Mettre à jour le nombre total de pages basé sur les données filtrées
+  } else {
+    // Pas de recherche : appliquer uniquement la pagination sur toutes les données
+    this.filteredProducts = this.cachedProducts.slice(startIndex, endIndex);
+    this.totalPages = Math.ceil(this.cachedProducts.length / this.pageSize);
+  }
+
+  this.updatePagination(); // Mettre à jour les boutons de pagination
+}
+
+// Gérer le changement de page via le menu déroulant
+onPageChangeDropdown(event: Event): void {
+  const target = event.target as HTMLSelectElement;
+  const selectedValue = target?.value;
+  if (selectedValue) {
+    const page = parseInt(selectedValue, 10); // Convertir en entier
+    if (!isNaN(page)) {
+      this.currentPage = page;
+      this.loadProducts(); // Recharger les produits pour la page sélectionnée
+    }
+  } else {
+    console.error('Valeur sélectionnée invalide ou non définie');
+  }
+}
+
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadProducts();
+}
+
+onSearch(): void {
+    this.currentPage = 0; // Réinitialise à la première page pour une nouvelle recherche
+    this.loadProducts();
+}
   
 // Filtrer les produits
 filterProducts(): void {
@@ -76,6 +207,22 @@ filterProducts(): void {
     (product.itemCode?.toLowerCase().includes(query) || false) // Vérifie si product.itemCode existe
   );
 }
+calculatePagination(): void {
+  this.visiblePages = [];
+  this.remainingPages = [];
+  // Ajouter la page précédente, actuelle et suivante comme boutons visibles
+  for (let i = Math.max(0, this.currentPage - 1); i <= Math.min(this.currentPage + 1, this.totalPages - 1); i++) {
+    this.visiblePages.push(i);
+  }
+
+  // Ajouter les autres pages au menu déroulant
+  for (let i = 0; i < this.totalPages; i++) {
+    if (!this.visiblePages.includes(i)) {
+      this.remainingPages.push(i);
+    }
+  }
+}
+
 
 
   // Ajouter, Modifier, Supprimer, Réinitialiser les champs, etc.
@@ -112,7 +259,7 @@ filterProducts(): void {
   
   
   refreshData(): void {
-    this.productService.getProducts().subscribe(
+    this.productService.getAllProducts().subscribe(
       (products) => {
         this.products = products;
         this.filteredProducts = [...this.products];
@@ -147,20 +294,32 @@ selectDiscountProduct(product: Product): void {
   this.selectedProduct = product;
 
   if (this.selectedProduct.isPromo) {
-    // Si le produit est déjà en promo, afficher un message d'avertissement
+    // Si le produit est déjà en promo, afficher un message d'avertissement avec une option pour continuer
     Swal.fire({
       title: 'Produit déjà en promotion',
-      text: `Ce produit est déjà en promotion avec un prix promo de ${this.selectedProduct.pricePromo} DH.`,
-      icon: 'info',
-      confirmButtonText: 'OK',
+      text: `Ce produit est déjà en promotion avec un prix promo de ${this.selectedProduct.pricePromo} DH. Voulez-vous appliquer une nouvelle remise ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, appliquer une nouvelle remise',
+      cancelButtonText: 'Non, annuler',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Si l'utilisateur confirme, ouvrir le popup pour appliquer une nouvelle remise
+        this.discountPercentage = 0; // Réinitialiser le pourcentage de remise
+        this.promoPrice = this.selectedProduct?.pricePromo || this.selectedProduct?.salesPrice || 0; 
+        this.showDiscountPopup = false;
+        this.showApplyDiscountPopup = true; // Afficher le popup pour la nouvelle remise
+      } else {
+        // Si l'utilisateur annule, ne rien faire
+        this.selectedProduct = null;
+      }
     });
-    this.selectedProduct = null; // Réinitialiser le produit sélectionné
   } else {
-    // Si le produit n'est pas en promo, ouvrir le popup pour une nouvelle remise
+    // Si le produit n'est pas déjà en promotion, ouvrir directement le popup pour appliquer une remise
     this.discountPercentage = 0; // Réinitialiser le pourcentage de remise
     this.promoPrice = this.selectedProduct.salesPrice || 0;
-    this.showDiscountPopup = false; // Fermer le popup de sélection
-    this.showApplyDiscountPopup = true; // Ouvrir le popup de remise
+    this.showDiscountPopup = false;
+    this.showApplyDiscountPopup = true;
   }
 }
 
@@ -215,13 +374,6 @@ hideApplyDiscountPopup(): void {
   this.promoPrice = 0;
 }
 
-  
-  
-  
-  
-
-  
-  
   resetForm(): void {
     this.productForms= {
       id:0,
@@ -238,12 +390,6 @@ hideApplyDiscountPopup(): void {
       expiredDate:new Date()
     };
   }
-  logout() {
-    localStorage.removeItem('token');
-    // Redirige l'utilisateur vers la page de login
-    this.router.navigate(['/login']);
-  }
-  
 
     editProduct(product: Product): void {
       this.showPopup = true; // Affiche le popup
@@ -392,5 +538,13 @@ addCategory(): void {
   hideAddCategoryPopup(): void {
     this.showCategoryPopup = false;
   }
+
+
+  logout() {
+    localStorage.removeItem('token');
+    // Redirige l'utilisateur vers la page de login
+    this.router.navigate(['/login']);
+  }
+  
 
 }

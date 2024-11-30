@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { LOCALE_ID, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -35,7 +35,9 @@ import { GestionProduitsComponent } from './gestion-produits/gestion-produits.co
     NgxChartsModule,
     BrowserAnimationsModule
   ],
-  providers: [],
+  providers: [
+    { provide: LOCALE_ID, useValue: 'ar-MA' } // Définit la locale marocaine
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

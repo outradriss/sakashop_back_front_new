@@ -51,7 +51,7 @@ class UserControllerTest {
   @Test
   void testGenerateToken() throws Exception {
     LoginUser loginUser = new LoginUser();
-    loginUser.setUsername("testUser");
+    loginUser.setEmail("testUser@test.com");
     loginUser.setPassword("testPassword");
 
     Authentication authentication = new UsernamePasswordAuthenticationToken("testUser", "testPassword");

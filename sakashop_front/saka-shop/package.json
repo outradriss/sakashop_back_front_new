@@ -23,6 +23,7 @@
     "@swimlane/ngx-charts": "^21.0.0",
     "rxjs": "~7.8.0",
     "simple-keyboard": "^3.8.18",
+    "sweetalert2": "^11.14.5",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },

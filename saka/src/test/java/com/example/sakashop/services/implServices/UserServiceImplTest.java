@@ -43,40 +43,40 @@ class UserServiceImplTest {
   @Test
   void testLoadUserByUsername_UserExists() {
     // Arrange
-    String username = "testUser";
+    String email = "testUser@test.com";
     User mockUser = new User();
-    mockUser.setUsername(username);
+    mockUser.setUsername(email);
     mockUser.setPassword("password");
     Role role = new Role();
     role.setName("USER");
     mockUser.setRoles(Set.of(role));
 
-    when(userDao.findByUsername(username)).thenReturn(mockUser);
+    when(userDao.findByEmail(email)).thenReturn(mockUser);
 
     // Act
-    UserDetails userDetails = userService.loadUserByUsername(username);
+    UserDetails userDetails = userService.loadUserByUsername(email);
 
     // Assert
     assertNotNull(userDetails, "UserDetails should not be null");
-    assertEquals(username, userDetails.getUsername(), "Username should match");
+    assertEquals(email, userDetails.getUsername(), "Username should match");
     assertEquals("password", userDetails.getPassword(), "Password should match");
     assertTrue(userDetails.getAuthorities().stream()
       .anyMatch(auth -> auth.getAuthority().equals("ROLE_USER")), "Authorities should contain ROLE_USER");
 
-    verify(userDao, times(1)).findByUsername(username);
+    verify(userDao, times(1)).findByEmail(email);
   }
 
   @Test
   void testLoadUserByUsername_UserNotFound() {
     // Arrange
-    String username = "nonExistentUser";
-    when(userDao.findByUsername(username)).thenReturn(null);
+    String email = "nonExistentUser";
+    when(userDao.existsByEmail(email)).thenReturn(null);
 
     // Act & Assert
-    assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername(username),
+    assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername(email),
       "Should throw UsernameNotFoundException for non-existent user");
 
-    verify(userDao, times(1)).findByUsername(username);
+    verify(userDao, times(1)).findByEmail(email);
   }
 
   @Test
@@ -104,35 +104,35 @@ class UserServiceImplTest {
   @Test
   void testFindOne_UserExists() {
     // Arrange
-    String username = "testUser";
+    String email = "testUser@test.com";
     User mockUser = new User();
-    mockUser.setUsername(username);
+    mockUser.setUsername(email);
 
-    when(userDao.findByUsername(username)).thenReturn(mockUser);
+    when(userDao.findByEmail(email)).thenReturn(mockUser);
 
     // Act
-    User user = userService.findOne(username);
+    User user = userService.findOne(email);
 
     // Assert
     assertNotNull(user, "User should not be null");
-    assertEquals(username, user.getUsername(), "Username should match");
+    assertEquals(email, user.getUsername(), "Username should match");
 
-    verify(userDao, times(1)).findByUsername(username);
+    verify(userDao, times(1)).findByEmail(email);
   }
 
   @Test
   void testFindOne_UserNotFound() {
     // Arrange
-    String username = "nonExistentUser";
-    when(userDao.findByUsername(username)).thenReturn(null);
+    String email = "nonExistentUser";
+    when(userDao.findByEmail(email)).thenReturn(null);
 
     // Act
-    User user = userService.findOne(username);
+    User user = userService.findOne(email);
 
     // Assert
     assertNull(user, "User should be null for non-existent username");
 
-    verify(userDao, times(1)).findByUsername(username);
+    verify(userDao, times(1)).findByEmail(email);
   }
 
   @Test

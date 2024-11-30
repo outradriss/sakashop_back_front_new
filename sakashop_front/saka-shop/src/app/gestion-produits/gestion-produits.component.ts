@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Product } from '../models/product.model';
+import { Categories, Product } from '../models/product.model';
 import { Route, Router } from '@angular/router';
 import { ProductService } from '../product.service';
 import Swal from 'sweetalert2';
@@ -18,7 +18,7 @@ export class GestionProduitsComponent {
   showPopup: boolean = false;
   editingProduct: Product | null = null;
   applyDiscounting:  Product | null = null;  // Assurez-vous que c'est bien initialisé
-
+  newCategoryName: string = '';
   deletingProduct: Product | null = null;
   productForms: Product = this.resetProductForm();
   // Gestion des remises
@@ -30,29 +30,44 @@ export class GestionProduitsComponent {
   discountPercentage: number = 0;
   promoPrice: number = 0;
   showConfirmDeletePopup: boolean = false;
-
+  newCategory: Categories= { id: 0, name: '', createdDate: '' };
+  showCategoryPopup = false;
+  categories: Categories[]=[]; // Liste des noms de catégories
+  
   constructor(private productService: ProductService, private router: Router) {}
 
-  ngOnInit(): void {
-    this.loadProducts();
+
+loadCategoriesFromProducts(): void {
+  if (this.products && this.products.length > 0) {
+    // Extraire les catégories uniques
+    const uniqueCategories = new Map<number, Categories>();
+    this.products.forEach((product) => {
+      if (product.categories) {
+        uniqueCategories.set(product.categories.id, product.categories);
+      }
+    });
+    this.categories = Array.from(uniqueCategories.values()); // Convertir en tableau
+    console.log('Catégories extraites des produits :', this.categories);
+  } else {
+    console.warn('Aucun produit trouvé pour extraire les catégories.');
+    this.categories = [];
   }
+}
 
   // Charger les produits depuis le backend
   loadProducts(): void {
     this.productService.getProducts().subscribe(
       (data) => {
-        console.log(data)
-        console.log(this.products)
         this.products = data;
         this.filteredProducts = data;
+        this.loadCategoriesFromProducts(); // Extraire les catégories
       },
       (error) => {
         console.error('Erreur lors du chargement des produits', error);
       }
     );
   }
-
-
+  
 // Filtrer les produits
 filterProducts(): void {
   const query = this.searchQuery?.trim().toLowerCase() || ''; // Gère les cas où searchQuery est null ou undefined
@@ -71,17 +86,16 @@ filterProducts(): void {
   }
 
   saveProduct(): void {
-    // Vérifie et formate la date avant l'envoi
-    if (this.productForms.productAddedDate) {
-      this.productForms.productAddedDate = new Date(this.productForms.productAddedDate);
+    if (!this.productForms.categories || !this.productForms.categories.id) {
+      alert('Veuillez sélectionner une catégorie.');
+      return;
     }
   
-    // Détermine le mode (ajout ou modification)
+    // Continuer avec la sauvegarde
     const saveOperation = this.editingProduct
       ? this.productService.updateProduct(this.productForms.id, this.productForms)
       : this.productService.saveProduct(this.productForms);
   
-    // Exécute l'opération correspondante
     saveOperation.subscribe(
       () => {
         const action = this.editingProduct ? 'modifié' : 'ajouté';
@@ -90,9 +104,8 @@ filterProducts(): void {
         this.loadProducts(); // Rafraîchit la liste des produits
       },
       (error) => {
-        const action = this.editingProduct ? 'modification' : 'ajout';
-        console.error(`Erreur lors de la ${action} du produit :`, error);
-        alert(`Erreur lors de la ${action} du produit.`);
+        console.error(`Erreur lors de la sauvegarde du produit :`, error);
+        alert(`Erreur lors de la sauvegarde du produit.`);
       }
     );
   }
@@ -111,137 +124,101 @@ filterProducts(): void {
     );
   }
    // Gestion des remises
-   showAddDiscountPopup(): void {
-    this.showDiscountPopup = true;
+// Afficher le popup pour sélectionner un produit
+showAddDiscountPopup(): void {
+  this.showDiscountPopup = true;
+}
+
+// Cacher le popup de sélection de produit
+hideDiscountPopup(): void {
+  this.showDiscountPopup = false;
+}
+
+// Filtrer les produits pour le popup de sélection
+filterDiscountProducts(): void {
+  const query = this.discountSearchQuery.trim().toLowerCase();
+  this.discountFilteredProducts = this.products.filter((product) =>
+    product.name.toLowerCase().includes(query)
+  );
+}
+
+// Vérifier et sélectionner un produit pour une remise
+selectDiscountProduct(product: Product): void {
+  this.selectedProduct = product;
+
+  if (this.selectedProduct.isPromo) {
+    // Si le produit est déjà en promo, afficher un message d'avertissement
+    Swal.fire({
+      title: 'Produit déjà en promotion',
+      text: `Ce produit est déjà en promotion avec un prix promo de ${this.selectedProduct.pricePromo} DH.`,
+      icon: 'info',
+      confirmButtonText: 'OK',
+    });
+    this.selectedProduct = null; // Réinitialiser le produit sélectionné
+  } else {
+    // Si le produit n'est pas en promo, ouvrir le popup pour une nouvelle remise
+    this.discountPercentage = 0; // Réinitialiser le pourcentage de remise
+    this.promoPrice = this.selectedProduct.salesPrice || 0;
+    this.showDiscountPopup = false; // Fermer le popup de sélection
+    this.showApplyDiscountPopup = true; // Ouvrir le popup de remise
+  }
+}
+
+// Calculer le prix promo en fonction du pourcentage de remise
+calculatePromoPrice(): void {
+  if (this.selectedProduct && this.discountPercentage !== undefined) {
+    const basePrice = this.selectedProduct.salesPrice;
+    const discountAmount = (basePrice * this.discountPercentage) / 100;
+    this.promoPrice = +(basePrice - discountAmount).toFixed(2); // Calculer le nouveau prix promo
+  } else {
+    this.promoPrice = this.selectedProduct?.salesPrice || 0;
+  }
+}
+
+// Appliquer la remise
+applyDiscount(): void {
+  if (!this.selectedProduct) {
+    alert('Aucun produit sélectionné pour appliquer la remise.');
+    return;
   }
 
-  hideDiscountPopup(): void {
-    this.showDiscountPopup = false;
+  // Vérification et application du prix promo
+  if (this.promoPrice > 0) {
+    this.selectedProduct.pricePromo = this.promoPrice; // Définir le nouveau prix promo
+    this.selectedProduct.isPromo = true; // Activer isPromo après application
+  } else {
+    alert('Erreur dans les données de remise.');
+    return;
   }
 
-  filterDiscountProducts(): void {
-    const query = this.discountSearchQuery.trim().toLowerCase();
-    this.discountFilteredProducts = this.products.filter((product) =>
-      product.name.toLowerCase().includes(query)
-    );
-  }
-
-  selectDiscountProduct(product: Product): void {
-    this.selectedProduct = product;
-  
-    if (this.selectedProduct.isPromo) {
-      // Si le produit est déjà en promo, afficher une boîte de dialogue de confirmation
-      Swal.fire({
-        title: 'Produit déjà en promotion',
-        text: `Ce produit est déjà en promotion avec un prix promo de ${this.selectedProduct.pricePromo} DH. Voulez-vous appliquer une nouvelle remise ?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Oui, appliquer une nouvelle remise',
-        cancelButtonText: 'Non, annuler',
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Si l'utilisateur confirme, préparer le popup pour une nouvelle remise
-          this.discountPercentage = 0; // Réinitialiser le pourcentage de remise
-          this.promoPrice = this.selectedProduct?.pricePromo || this.selectedProduct?.salesPrice || 0; 
-          this.showDiscountPopup = false;
-          this.showApplyDiscountPopup = true; // Afficher le popup de remise
-        } else {
-          // Réinitialiser le produit sélectionné si l'utilisateur annule
-          this.selectedProduct = null;
-        }
-      });
-    } else {
-      // Si le produit n'est pas en promo, ouvrir directement le popup de remise
-      this.discountPercentage = 0; // Réinitialiser le pourcentage de remise
-      this.promoPrice = this.selectedProduct.salesPrice || 0;
-      this.showDiscountPopup = false;
-      this.showApplyDiscountPopup = true;
+  // Enregistrer la mise à jour via le backend
+  this.productService.updateProduct(this.selectedProduct.id, this.selectedProduct).subscribe(
+    () => {
+      alert(
+        `Remise appliquée :\nProduit : ${this.selectedProduct?.name ?? 'N/A'}\nPrix promo : ${this.selectedProduct?.pricePromo ?? 'N/A'} DH`
+      );
+      this.loadProducts(); // Rafraîchir les produits
+      this.hideApplyDiscountPopup(); // Fermer le popup
+    },
+    (error) => {
+      console.error('Erreur lors de l\'application de la remise :', error);
+      alert('Erreur lors de l\'application de la remise.');
     }
-  }
-  
-  
+  );
+}
 
-  calculatePromoPrice(): void {
-    if (this.selectedProduct && this.selectedProduct.salesPrice && this.discountPercentage !== undefined) {
-      const basePrice = this.selectedProduct.isPromo
-        ? this.selectedProduct.pricePromo // Use the existing promo price if already in promotion
-        : this.selectedProduct.salesPrice;
-  
-      const discountAmount = (basePrice * this.discountPercentage) / 100;
-      this.promoPrice = +(basePrice - discountAmount).toFixed(2); // Calculate the new promo price
-    } else {
-      this.promoPrice = this.selectedProduct?.salesPrice || 0;
-    }
-  }
-  
+// Cacher le popup de remise
+hideApplyDiscountPopup(): void {
+  this.showApplyDiscountPopup = false;
+  this.selectedProduct = null;
+  this.discountPercentage = 0;
+  this.promoPrice = 0;
+}
 
-  checkPriceBeforeSave(): void {
-    if (this.productForms.salesPrice < this.productForms.buyPrice) {
-      Swal.fire({
-        title: 'Prix de Vente inférieur au Prix d\'Achat',
-        text: `Le prix de vente (${this.productForms.salesPrice} DH) est inférieur au prix d'achat (${this.productForms.buyPrice} DH). Voulez-vous continuer ?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Oui, continuer',
-        cancelButtonText: 'Annuler',
-      }).then((result) => {
-        if (result.isConfirmed) {
-          this.saveProduct();
-        }
-      });
-    } else {
-      this.saveProduct();
-    }
-  }
   
   
   
   
-  applyDiscount(): void {
-    if (!this.selectedProduct) {
-      alert('Aucun produit sélectionné pour appliquer la remise.');
-      return;
-    }
-  
-    // Calcul du prix en promo
-    if (this.selectedProduct.salesPrice && this.discountPercentage !== undefined) {
-      const discountAmount = (this.selectedProduct.salesPrice * this.discountPercentage) / 100;
-      this.selectedProduct.pricePromo = +(
-        this.selectedProduct.salesPrice - discountAmount
-      ).toFixed(2); // Calcul du prix promo
-      this.selectedProduct.isPromo = true; // Indique que le produit est en promotion
-    } else {
-      alert('Erreur dans les données de remise.');
-      return;
-    }
-  
-    // Appel au backend pour mettre à jour le produit
-    this.productService.updateProduct(this.selectedProduct.id, this.selectedProduct).subscribe(
-      (response) => {
-        if (this.selectedProduct) {
-          alert(
-            `Remise appliquée :\nProduit : ${this.selectedProduct.name}\nPrix promo : ${this.selectedProduct.pricePromo} DH`
-          );
-        } else {
-          alert('Aucun produit sélectionné pour appliquer la remise.');
-        }
-        
-        this.loadProducts(); // Rafraîchir les produits
-        this.hideApplyDiscountPopup(); // Fermer le popup
-      },
-      (error) => {
-        console.error('Erreur lors de l\'application de la remise :', error);
-        alert('Erreur lors de l\'application de la remise.');
-      }
-    );
-  }
-
-  hideApplyDiscountPopup(): void {
-    this.showApplyDiscountPopup = false;
-    this.selectedProduct = null;
-    this.discountPercentage = 0;
-    this.promoPrice = 0;
-  }
 
   
   
@@ -253,11 +230,12 @@ filterProducts(): void {
       quantity: 0,
       buyPrice: 0,
       salesPrice: 0,
-      category: '',
+      categories: { id: 0, name: '', createdDate: '' },
       supplier: '',
       pricePromo:0,
       isPromo:false,
-      productAddedDate:new Date()
+      productAddedDate:new Date(),
+      expiredDate:new Date()
     };
   }
   logout() {
@@ -329,11 +307,12 @@ filterProducts(): void {
       quantity: 0,
       buyPrice: 0,
       salesPrice: 0,
-      category: '',
+      categories: { id: 0, name: '', createdDate: '' },
       supplier: '',
       pricePromo:0,
       isPromo:false,
-      productAddedDate:new Date()
+      productAddedDate:new Date(),
+      expiredDate:new Date()
     };
   }
 
@@ -380,13 +359,38 @@ filterProducts(): void {
       product.quantity,
       product.buyPrice,
       product.salesPrice,
-      product.category,
+      product.categories,
       product.supplier,
       product.isPromo ? 'Oui' : 'Non',
       product.pricePromo,
-      product.productAddedDate
+      product.productAddedDate,
+      product.expiredDate
     ].join(','));
 
     return [headers, ...rows].join('\n');
   }
+  ngOnInit(): void {
+    this.loadProducts();
+  }
+
+  loadingCategories: boolean = false; // Indique si les catégories sont en cours de chargement
+categoriesLoaded: boolean = false; // Indique si les catégories ont été chargées avec succès
+
+
+addCategory(): void {
+  if (!this.newCategory.name.trim()) {
+    alert('Veuillez entrer un nom de catégorie valide.');
+    return;
+  }
+}
+
+  showAddCategoryPopup(): void {
+    this.newCategoryName = ''; // Réinitialiser le champ
+    this.showCategoryPopup = true;
+  }
+
+  hideAddCategoryPopup(): void {
+    this.showCategoryPopup = false;
+  }
+
 }

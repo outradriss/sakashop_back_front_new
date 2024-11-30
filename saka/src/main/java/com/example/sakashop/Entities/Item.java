@@ -1,10 +1,13 @@
 package com.example.sakashop.Entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 
 @Entity
@@ -25,17 +28,52 @@ public class Item {
   private double buyPrice;
   @Column(name = "Sales_Price")
   private double salesPrice;
-  @Column(name = "Category")
-  private String category;
   @Column(name = "Supplier")
   private String supplier;
+
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "category_id", nullable = false)
+  @JsonIgnore
+  @JsonManagedReference
+  private Categories categories;
+
   @UpdateTimestamp
   @Column(name="lastUpdated")
   private LocalDateTime lastUpdated;
   @Column(name = "isPromo")
   private boolean isPromo;
+  @Column(name = "expiredDate")
+  private Date expiredDate;
 
-  public Item(Long id, String pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String category, String supplier, LocalDateTime lastUpdated, boolean isPromo, Date productAddedDate) {
+
+  public Categories getCategories() {
+    return categories;
+  }
+
+  public void setCategories(Categories categories) {
+    this.categories = categories;
+  }
+
+  public boolean isPromo() {
+    return isPromo;
+  }
+
+  public void setPromo(boolean promo) {
+    isPromo = promo;
+  }
+
+  public Date getExpiredDate() {
+    return expiredDate;
+  }
+
+  public void setExpiredDate(Date expiredDate) {
+    this.expiredDate = expiredDate;
+  }
+
+  public void setProductAddedDate(Date productAddedDate) {
+    this.productAddedDate = productAddedDate;
+  }
+  public Item(Long id, String pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, LocalDateTime lastUpdated, boolean isPromo, Date productAddedDate , Date expiredDate, Categories categories) {
     this.id = id;
     this.pricePromo = pricePromo;
     this.itemCode = itemCode;
@@ -43,20 +81,18 @@ public class Item {
     this.quantity = quantity;
     this.buyPrice = buyPrice;
     this.salesPrice = salesPrice;
-    this.category = category;
     this.supplier = supplier;
+    this.categories= categories;
     this.lastUpdated = lastUpdated;
     this.isPromo = isPromo;
     this.productAddedDate = productAddedDate;
+    this.expiredDate=expiredDate;
   }
 
   public Date getproductAddedDate() {
     return productAddedDate;
   }
 
-  public void setproductAddedDate(Date productAddedDate) {
-    this.productAddedDate = productAddedDate;
-  }
 
   @Column(name = "product_added_date")
   private Date productAddedDate;
@@ -148,14 +184,6 @@ public class Item {
 
   public void setSalesPrice(double salesPrice) {
     this.salesPrice = salesPrice;
-  }
-
-  public String getCategory() {
-    return category;
-  }
-
-  public void setCategory(String category) {
-    this.category = category;
   }
 
   public String getSupplier() {

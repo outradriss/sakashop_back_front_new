@@ -37,6 +37,7 @@
             <th>produit en promo</th>
              <th>prix promo</th>
              <th>Date d'Ajout</th> 
+             <th>Date d'expiration</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -47,11 +48,12 @@
             <td>{{ product.quantity }}</td>
             <td>{{ product.buyPrice | currency: 'MAD ':'symbol':'1.2-2'  }}</td>
             <td>{{ product.salesPrice | currency: 'MAD ':'symbol':'1.2-2'  }}</td>
-            <td>{{ product.category }}</td>
+            <td>{{ product.categories?.name }}</td>
             <td>{{ product.supplier }}</td>
             <td>{{ product.isPromo  ? 'Oui' : 'Non'  }}</td>
             <td>{{ product.pricePromo }}</td>
             <td>{{ product.productAddedDate}}</td>
+            <td>{{ product.expiredDate}}</td>
             <td>
               <button (click)="editProduct(product)" class="btn-edit">Modifier</button>
               <button (click)="openConfirmDeletePopup(product)" class="btn-delete">Supprimer</button>
@@ -184,14 +186,59 @@
       
             <!-- Catégorie -->
             <div class="form-group">
-              <label for="category">Catégorie :</label>
-              <input
-                type="text"
-                id="category"
-                [(ngModel)]="productForms.category"
-                name="category"
-              />
-            </div>
+                    <label for="category">Catégorie :</label>
+                    <div class="category-container">
+                      <!-- Menu déroulant -->
+                      <select
+                        id="categories"
+                        [(ngModel)]="productForms.categories.id"
+                        name="categories"
+                        required
+                        #category="ngModel"
+                      >
+                        <option value="" disabled>-- Sélectionner une catégorie --</option>
+                        <option *ngFor="let category of categories" [value]="category.id">
+                          {{ category.name }}
+                        </option>
+                      </select>
+                      <!-- Message d'erreur si la catégorie n'est pas sélectionnée -->
+                      <div *ngIf="(productForm.submitted || category.touched) && category.invalid" class="error">
+                        La catégorie est requise.
+                      </div>
+                    </div>
+              
+                  <!-- Bouton pour ajouter une nouvelle catégorie -->
+                  <button type="button" class="btn-add-category" (click)="showAddCategoryPopup()">
+                    <i class="fa fa-plus"></i>
+                  </button>
+                </div>
+              
+              
+              <!-- Popup pour ajouter une nouvelle catégorie -->
+              <div class="popup-overlay" *ngIf="showCategoryPopup">
+                <div class="popup">
+                  <h3>Ajouter une Catégorie</h3>
+                  <form (ngSubmit)="addCategory()" #categoryForm="ngForm">
+                    <div class="form-group">
+                      <label for="newCategoryName">Nom de la Catégorie :</label>
+                      <input
+                        type="text"
+                        id="newCategoryName"
+                        [(ngModel)]="newCategoryName"
+                        name="newCategoryName"
+                        required
+                      />
+                    </div>
+                    <div class="popup-actions">
+                      <button type="submit" class="btn-submit" [disabled]="!newCategoryName">Ajouter</button>
+                      <button type="button" class="btn-cancel" (click)="hideAddCategoryPopup()">Annuler</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              
+              
+              
       
             <!-- Fournisseur -->
             <div class="form-group">
@@ -203,6 +250,20 @@
                 name="supplier"
               />
             </div>
+            <div class="form-group">
+                <label for="productAddedDate">Date d'expiration :</label>
+                <input
+                  type="datetime-local"
+                  id="productAddedDate"
+                  [(ngModel)]="productForms.productAddedDate"
+                  name="productAddedDate"
+                  required
+                  #productAddedDate="ngModel"
+                />
+                <div *ngIf="(productForm.submitted || productAddedDate.touched) && productAddedDate.invalid" class="error">
+                  La date d'expiration sont requises.
+                </div>
+              </div>
       
             <!-- Actions -->
             <div class="popup-actions">
@@ -210,7 +271,7 @@
                 type="button"
                 class="btn-submit"
                 [disabled]="productForm.invalid"
-                (click)="checkPriceBeforeSave()"
+                (click)="applyDiscount()"
               >
                 Enregistrer
               </button>
@@ -243,20 +304,23 @@
 
   <!-- Popup d'Application de Remise -->
  <!-- Popup d'Application de Remise -->
-<div class="popup-overlay" *ngIf="showApplyDiscountPopup">
+ <div class="popup-overlay" *ngIf="showApplyDiscountPopup">
     <div class="popup">
-         <div class="popup-header">
-             <!-- Icône ajoutée ici -->
-      <h3>Ajouter une Remise</h3>
+      <div class="popup-header">
+        <h3>Ajouter une Remise</h3>
+      </div>
       <form>
+        <!-- Champ Prix Actuel -->
         <div class="form-group">
           <label for="currentPrice">Prix Actuel :</label>
           <input type="number" id="currentPrice" [value]="selectedProduct?.salesPrice" readonly />
         </div>
+        <!-- Champ Prix Promo Actuel (si en promo) -->
         <div class="form-group" *ngIf="selectedProduct?.isPromo">
           <label for="currentPromoPrice">Prix Promo Actuel :</label>
           <input type="number" id="currentPromoPrice" [value]="selectedProduct?.pricePromo" readonly />
         </div>
+        <!-- Champ Remise (%) -->
         <div class="form-group">
           <label for="discount">Remise (%) :</label>
           <input
@@ -269,10 +333,12 @@
             max="100"
           />
         </div>
+        <!-- Champ Nouveau Prix Promo -->
         <div class="form-group">
           <label for="promoPrice">Nouveau Prix Promo :</label>
           <input type="number" id="promoPrice" [value]="promoPrice" readonly />
         </div>
+        <!-- Actions -->
         <div class="popup-actions">
           <button type="button" (click)="applyDiscount()">Appliquer</button>
           <button type="button" (click)="hideApplyDiscountPopup()">Annuler</button>
@@ -281,5 +347,4 @@
     </div>
   </div>
   
-  </div>
   

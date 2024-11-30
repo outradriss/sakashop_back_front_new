@@ -6,10 +6,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Item, Long> {
   @Query("SELECT MAX(i.lastUpdated) FROM Item i")
   LocalDateTime findLastUpdateTimestamp();
+
+  @Query("SELECT i FROM Item i JOIN FETCH i.categories")
+  List<Item> findAllWithCategory();
 
 }

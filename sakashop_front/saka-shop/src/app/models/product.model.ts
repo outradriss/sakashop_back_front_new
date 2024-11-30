@@ -1,3 +1,9 @@
+export interface Categories {
+    id: number;
+    name: string;
+    createdDate: string;
+  }
+
 export class Product {
     id: number;
     itemCode: string;    // Code unique du produit
@@ -5,36 +11,39 @@ export class Product {
     quantity: number;    // Quantité disponible
     buyPrice: number;    // Prix d'achat
     salesPrice: number;  // Prix de vente
-    category: string;    // Catégorie du produit
+    categories: Categories;    // Catégorie du produit
     supplier: string;    // Fournisseur du produit
     isPromo: boolean;
     pricePromo:number;
     productAddedDate:Date;
+    expiredDate : Date;
   
     constructor(
-        id: number= 0,
+      id: number= 0,
       itemCode: string = '',
       name: string = '',
       quantity: number = 0,
       buyPrice: number = 0,
       salesPrice: number = 0,
-      category: string = '',
+      categories: Categories = { id: 0, name: '', createdDate: '' },
       supplier: string = '',
       pricePromo:number=0,
       isPromo:boolean=false,
-      productAddedDate:Date=new Date()
+      productAddedDate:Date=new Date(),
+      expiredDate : Date = new Date()
     ) {
       this.id=id;
       this.itemCode = itemCode;
       this.name = name;
       this.quantity = quantity;
+      this.categories = categories;
       this.buyPrice = buyPrice;
       this.salesPrice = salesPrice;
-      this.category = category;
       this.supplier = supplier;
       this.pricePromo=pricePromo;
       this.isPromo=isPromo;
       this.productAddedDate=productAddedDate;
+      this.expiredDate=expiredDate;
     }
   
     /**

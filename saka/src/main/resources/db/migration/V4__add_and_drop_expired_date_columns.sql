@@ -1,0 +1,6 @@
+ALTER TABLE items DROP COLUMN expiredDate;
+
+ALTER TABLE items
+ADD COLUMN expired_date DATE DEFAULT CURRENT_DATE;
+
+

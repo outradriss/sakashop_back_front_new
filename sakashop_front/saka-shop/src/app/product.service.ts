@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Product } from './models/product.model';
+import { Categories, Product } from './models/product.model';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +26,10 @@ export class ProductService {
   }
   deleteProduct(id: number): Observable<string> {
     return this.http.delete(`${this.apiUrl}/delete/${id}`, { responseType: 'text' });
+  }
+
+  addCategory(category: String): Observable<Categories> {
+    return this.http.post<Categories>(this.apiUrl, category);
   }
   
 

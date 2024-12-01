@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Product } from '../models/product.model';
 import { CaisseService } from '../service/product-service/caisse-service/caisse.service';
+import Swal from 'sweetalert2';
 import { DisplayProduct } from '../models/DisplayProductInCaisse.model.service';
 
 @Component({
@@ -12,52 +13,105 @@ import { DisplayProduct } from '../models/DisplayProductInCaisse.model.service';
   styleUrl: './caisse.component.css'
 })
 export class CaisseComponent {
-  cachedProducts: Product[] = [];
-  constructor(private router: Router , private caisseService : CaisseService) {}
-  searchQuery: string = '';
-  filteredProducts: DisplayProduct[] = []; 
-  products: Product[] = [];
 
-  cart: { name: string; salesPrice: number; quantity: number }[] = [];
+  cachedProducts: Product[] = []; // Tous les produits en cache
+  filteredProducts: Product[] = []; // Produits affichés
+  products: Product[] = []; // Tous les produits (limités à 32 pour affichage initial)
+  cart: Product[] = []; // Panier
+  searchQuery: string = '';
+
+  constructor(private router: Router , private caisseService : CaisseService) {}
+
+  ngOnInit(): void {
+    this.loadProducts();
+  }
 
   // Ajouter au panier
-  addToCart(product: { name: string; salesPrice: number }): void {
-    const existingProduct = this.cart.find((item) => item.name === product.name);
-  
-    if (existingProduct) {
-      existingProduct.quantity += 1; // Augmente la quantité si le produit existe déjà
+  addToCart(product: Product): void {
+    const foundInCart = this.cart.find((item) => item.id === product.id);
+
+    if (foundInCart) {
+      // Vérifie le stock
+      if ((foundInCart.quantityInCart ?? 0) + 1 > product.quantity) {
+        Swal.fire({
+          title: 'Stock insuffisant',
+          text: `Vous n'avez que ${product.quantity} en stock. Voulez-vous ajouter ce produit en tant que commande urgente ?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Oui, ajouter',
+          cancelButtonText: 'Non',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            foundInCart.quantityInCart! += 1; // Ajoute même si stock insuffisant
+            this.updateTotal();
+            Swal.fire({
+              title: 'Produit ajouté',
+              text: 'Le produit a été ajouté en tant que commande urgente.',
+              icon: 'success',
+            });
+          }
+        });
+      } else {
+        foundInCart.quantityInCart! += 1; // Ajout normal
+        this.updateTotal();
+      }
     } else {
-      this.cart.push({ ...product, quantity: 1 }); // Ajoute un nouveau produit avec une quantité initiale de 1
+      // Ajoute un nouveau produit au panier
+      this.cart.push({ ...product, quantityInCart: 1 });
+      this.updateTotal();
     }
+  }
   
-    this.updateTotal(); // Met à jour le total
-  }
-  increaseQuantity(item: any): void {
-    item.quantity += 1; // Augmente la quantité
-    this.updateTotal(); // Met à jour le total
-  }
-  decreaseQuantity(item: any): void {
-    if (item.quantity > 1) {
-      item.quantity -= 1; // Réduit la quantité si elle est supérieure à 1
+  
+  increaseQuantity(item: Product): void {
+    if ((item.quantityInCart ?? 0) + 1 > item.quantity) {
+      Swal.fire({
+        title: 'Stock insuffisant',
+        text: `Vous n'avez que ${item.quantity} en stock. Voulez-vous ajouter quand même ce produit comme commande urgente ?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Oui, ajouter',
+        cancelButtonText: 'Non',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          item.quantityInCart = (item.quantityInCart ?? 0) + 1;
+          this.updateTotal();
+          Swal.fire({
+            title: 'Produit ajouté',
+            text: 'Le produit a été ajouté en tant que commande urgente.',
+            icon: 'success',
+          });
+        }
+      });
     } else {
-      this.removeFromCart(item); // Supprime le produit si la quantité atteint 0
+      item.quantityInCart = (item.quantityInCart ?? 0) + 1;
+      this.updateTotal();
     }
-    this.updateTotal(); // Met à jour le total
+  }
+  
+  
+  
+  decreaseQuantity(item: Product): void {
+    if (item.quantityInCart! > 1) {
+      item.quantityInCart!--;
+    } else {
+      this.removeFromCart(item);
+    }
+    this.updateTotal();
   }
 
-  // Retirer du panier
-  removeFromCart(item: any): void {
-    this.cart = this.cart.filter((cartItem) => cartItem.name !== item.name); 
-    this.updateTotal(); 
+  removeFromCart(item: Product): void {
+    this.cart = this.cart.filter((cartItem) => cartItem.id !== item.id);
+    this.updateTotal();
   }
   loadProducts(): void {
     this.caisseService.getAllInCaisse().subscribe(
       (data) => {
         this.cachedProducts = data; // Stocke toutes les données des produits
-        this.products = this.cachedProducts.slice(0, 32); // Affiche uniquement les 12 premiers produits
+        this.products = this.cachedProducts.slice(0, 32); // Limite à 32 produits
         this.filteredProducts = this.products.map((product) => ({
-          name: product.name,
-          salesPrice: product.salesPrice,
+          ...product, // Conserve toutes les propriétés
+          isPromo: product.isPromo, // Assure la copie de la propriété isPromo
         })); // Prépare les données pour l'affichage limité
       },
       (error) => {
@@ -65,40 +119,25 @@ export class CaisseComponent {
       }
     );
   }
-  ngOnInit(): void {
-    this.loadProducts();
-  }
   
+
 
   // Filtrer les produits
   filterProducts(): void {
     const query = this.searchQuery.toLowerCase().trim();
-  
-    // Si une recherche est effectuée
     if (query) {
-      this.filteredProducts = this.cachedProducts
-        .filter((product) => product.name.toLowerCase().includes(query))
-        .map((product) => ({
-          name: product.name,
-          salesPrice: product.salesPrice,
-        }));
+      this.filteredProducts = this.cachedProducts.filter((product) =>
+        product.name.toLowerCase().includes(query)
+      );
     } else {
-      // Si aucune recherche, afficher les 12 premiers produits
-      this.filteredProducts = this.cachedProducts.slice(0, 32).map((product) => ({
-        name: product.name,
-        salesPrice: product.salesPrice,
-      }));
+      this.filteredProducts = this.cachedProducts.slice(0, 32);
     }
   }
-  
   
 
   // Calculer le total
   calculateTotal(): number {
-    return this.cart.reduce(
-      (total, item) => total + item.salesPrice * item.quantity,
-      0
-    );
+    return this.cart.reduce((total, item) => total + item.salesPrice * (item.quantityInCart ?? 0), 0);
   }
 
   // Mettre à jour le total lorsque le prix change
@@ -108,20 +147,43 @@ export class CaisseComponent {
 
   // Paiement
   pay(): void {
-    if (confirm('Voulez-vous imprimer le ticket ?')) {
-      alert('Paiement effectué avec succès et impression en cours...');
-      this.cart = [];
-    } else {
-      alert('Paiement effectué sans impression.');
-      this.cart = [];
-    }
+    const orders = this.cart.map((product) => ({
+      nameProduct: product.name,
+      quantity: product.quantityInCart ?? 0,
+      quantityAddedUrgent: (product.quantityInCart ?? 0) > product.quantity ? (product.quantityInCart ?? 0) - product.quantity : 0,
+      isPromo: product.isPromo,
+      salesPrice: product.salesPrice,
+      pricePromo: product.pricePromo,
+      dateOrder: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+    }));
+  
+    this.caisseService.saveOrders(orders).subscribe(
+      (response) => {
+        // Vérifiez si la réponse contient une erreur
+        if (response?.status === 'error') {
+          Swal.fire('Erreur', response.message || 'Une erreur est survenue.', 'error');
+        } else {
+          Swal.fire('Succès', 'Votre commande a été enregistrée avec succès.', 'success');
+          this.cart = []; // Réinitialisez le panier après la commande
+        }
+      },
+      (error) => {
+        // Gestion des erreurs HTTP
+        console.error('Erreur lors de l\'enregistrement de la commande :', error);
+        Swal.fire('Erreur', 'Une erreur est survenue lors de l\'enregistrement de votre commande.', 'error');
+      }
+    );
   }
+  
+  
 
   // Annuler la commande
   cancel(): void {
     if (confirm('Voulez-vous annuler cette commande ?')) {
+      this.cart.forEach((item) => (item.quantityInCart = 0)); // Réinitialiser les quantités dans le panier
       this.cart = [];
-      this.updateTotal(); // Met à jour le total
+      this.updateTotal(); 
     }
   }
   navigateTo(route: string) {

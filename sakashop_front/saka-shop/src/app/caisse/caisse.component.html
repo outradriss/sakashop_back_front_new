@@ -18,13 +18,27 @@
           (click)="addToCart(product)"
         >
           <div class="product-details">
-            <h4>{{ product.name }}</h4>
-            <p>{{ product.salesPrice| currency : 'MAD ':'symbol':'1.2-2' }}</p>
+            <h4>
+              {{ product.name }}
+              <span *ngIf="product.isPromo" class="promo-star">⭐</span>
+            </h4>
+            <div *ngIf="product.isPromo; else regularPrice">
+              <!-- Prix avec promotion -->
+              <h6>Prix sans promo</h6>
+              <p>{{ product.salesPrice | currency : 'MAD ':'symbol':'1.2-2' }}</p>
+              <h5>Prix avec promo</h5>
+              <p class="promo-price">{{ product.pricePromo | currency : 'MAD ':'symbol':'1.2-2' }}</p>
+            </div>
+            <!-- Prix sans promotion -->
+            <ng-template #regularPrice>
+              <p>{{ product.salesPrice | currency : 'MAD ':'symbol':'1.2-2' }}</p>
+            </ng-template>
           </div>
         </div>
-      </div>
+      </div>      
       <div class="navigation-buttons">
         <button (click)="navigateTo('gestion-product/list')">Gestion de Produit</button>
+        <button (click)="navigateTo('gestion-product/list')">Gestion de vente / chiffre d'affaire</button>
         <button (click)="navigateTo('credit-client')">Crédit Client</button>
         <button (click)="navigateTo('meilleur-vente')">Meilleur Vente</button>
         <button class="btn-logout" (click)="logout()">Quitter</button>
@@ -35,26 +49,34 @@
     <div class="cart">
         <h3>Panier</h3>
         <div class="cart-items">
-          <div class="cart-item" *ngFor="let item of cart">
-            <span>{{ item.name }}</span>
-            <input 
-              type="number" 
-              [(ngModel)]="item.salesPrice" 
-              (input)="updateTotal()" 
-              min="0" 
-            />
-            <span>{{ item.quantity }}</span>
-            <button (click)="increaseQuantity(item)">➕</button>
-            <button (click)="decreaseQuantity(item)">➖</button>
-            <button (click)="removeFromCart(item)">❌</button>
-          </div>
-        </div>
+            <div class="cart-item" *ngFor="let product of cart">
+              <div class="cart-details">
+                <p class="product-name">{{ product.name }}</p>
+                <p *ngIf="product.isPromo; else normalPrice">
+                  Prix avec promo : <strong>{{ product.pricePromo | currency : 'MAD ':'symbol':'1.2-2' }}</strong>
+                </p>
+                <ng-template #normalPrice>
+                  Prix : <strong>{{ product.salesPrice | currency : 'MAD ':'symbol':'1.2-2' }}</strong>
+                </ng-template>
+                <p class="stock-info">Stock disponible : {{ product.quantity }}</p>
+                <p>Quantité : <strong>{{ product.quantityInCart }}</strong></p>
+              </div>
+              <div class="cart-actions">
+                <button (click)="increaseQuantity(product)" class="btn-action">➕</button>
+                <button (click)="decreaseQuantity(product)" class="btn-action">➖</button>
+                <button (click)="removeFromCart(product)" class="btn-action btn-remove">❌</button>
+              </div>
+            </div>
+          </div>          
         <div class="totals">
           <h4>Total : {{ calculateTotal() | currency: 'MAD ':'symbol':'1.2-2' }}</h4>
         </div>
        
           <div class="actions">
-            <button class="btn-pay" (click)="openModal()">Payer</button>
+            <button 
+    class="btn-pay" 
+    (click)="pay()" 
+    [disabled]="cart.length === 0"> Payer</button>
             <button class="btn-cancel" (click)="cancel()">Annuler</button>
           </div>
         </div>

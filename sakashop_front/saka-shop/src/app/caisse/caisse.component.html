@@ -17,15 +17,14 @@
           *ngFor="let product of filteredProducts" 
           (click)="addToCart(product)"
         >
-    
           <div class="product-details">
             <h4>{{ product.name }}</h4>
-            <p>{{ product.price | currency }}</p>
+            <p>{{ product.salesPrice| currency : 'MAD ':'symbol':'1.2-2' }}</p>
           </div>
         </div>
       </div>
       <div class="navigation-buttons">
-        <button (click)="navigateTo('gestion-produit')">Gestion de Produit</button>
+        <button (click)="navigateTo('gestion-product/list')">Gestion de Produit</button>
         <button (click)="navigateTo('credit-client')">Crédit Client</button>
         <button (click)="navigateTo('meilleur-vente')">Meilleur Vente</button>
         <button class="btn-logout" (click)="logout()">Quitter</button>
@@ -34,28 +33,32 @@
   
     <!-- Panier -->
     <div class="cart">
-      <h3>Panier</h3>
-      <div class="cart-items">
-        <div class="cart-item" *ngFor="let item of cart">
-          <span>{{ item.name }}</span>
-          <span>{{ item.quantity }}</span>
-          <input 
-            type="number" 
-            [(ngModel)]="item.price" 
-            (input)="updateTotal()" 
-            min="0" 
-          />
-          <button (click)="removeFromCart(item)">❌</button>
+        <h3>Panier</h3>
+        <div class="cart-items">
+          <div class="cart-item" *ngFor="let item of cart">
+            <span>{{ item.name }}</span>
+            <input 
+              type="number" 
+              [(ngModel)]="item.salesPrice" 
+              (input)="updateTotal()" 
+              min="0" 
+            />
+            <span>{{ item.quantity }}</span>
+            <button (click)="increaseQuantity(item)">➕</button>
+            <button (click)="decreaseQuantity(item)">➖</button>
+            <button (click)="removeFromCart(item)">❌</button>
+          </div>
         </div>
-      </div>
-      <div class="totals">
-        <h4>Total : {{ calculateTotal() | currency }}</h4>
-      </div>
-      <div class="actions">
-        <button class="btn-pay" (click)="openModal()">Payer</button>
-        <button class="btn-cancel" (click)="cancel()">Annuler</button>
-      </div>
-    </div>
+        <div class="totals">
+          <h4>Total : {{ calculateTotal() | currency: 'MAD ':'symbol':'1.2-2' }}</h4>
+        </div>
+       
+          <div class="actions">
+            <button class="btn-pay" (click)="openModal()">Payer</button>
+            <button class="btn-cancel" (click)="cancel()">Annuler</button>
+          </div>
+        </div>
+      
   
     <!-- Modal de Confirmation -->
     <div class="modal" *ngIf="isModalOpen">

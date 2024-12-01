@@ -13,10 +13,10 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent  },
   { path: 'register', component: RegisterComponent },
   { path: 'home', component: HomeComponent,canActivate: [AuthGuard]  },
-  { path: 'caisse', component: CaisseComponent ,canActivate: [AuthGuard] },
+  { path: 'caisse/list', component: CaisseComponent ,canActivate: [AuthGuard] },
   { path: 'credit-client', component: CreditClientsComponent ,canActivate: [AuthGuard] },
   { path: 'meilleur-vente', component: GestionVenteComponent ,canActivate: [AuthGuard] },
-  { path: 'gestion-produit/list', component: GestionProduitsComponent ,canActivate: [AuthGuard] },
+  { path: 'gestion-product/list', component: GestionProduitsComponent ,canActivate: [AuthGuard] },
   { path: '**', component: LoginComponent  },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 ];

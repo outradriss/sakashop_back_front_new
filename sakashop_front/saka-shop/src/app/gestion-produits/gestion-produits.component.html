@@ -57,6 +57,7 @@
             <td>
               <button (click)="editProduct(product)" class="btn-edit">Modifier</button>
               <button (click)="openConfirmDeletePopup(product)" class="btn-delete">Supprimer</button>
+              <button class="btn-history">historique</button>
               <button
               (click)="disablePromo(product)"
               [disabled]="!product.isPromo"
@@ -88,7 +89,7 @@
       
     </div>
     <!-- Popup de confirmation -->
-<div class="popup-overlay" *ngIf="showConfirmDeletePopup">
+<div class="overlay-delete-popup" *ngIf="showConfirmDeletePopup">
     <div class="popup delete-confirm-popup">
       <h3><i class="fa fa-exclamation-triangle warning-icon"></i> Attention</h3>
       <p>
@@ -108,7 +109,7 @@
   
     <!-- Popup d'Ajout/Modification de Produit -->
     <div class="popup-overlay" *ngIf="showPopup">
-        <div class="popup">
+        <div class="popup product-popup">
           <h3>{{ editingProduct ? 'Modifier Produit' : 'Ajouter Produit' }}</h3>
           <form #productForm="ngForm" (ngSubmit)="saveProduct()" novalidate>
             <!-- Item Code -->
@@ -194,20 +195,26 @@
       
             <!-- Prix de Vente -->
             <div class="form-group">
-              <label for="salesPrice">Prix de Vente :</label>
-              <input
-                type="number"
-                id="salesPrice"
-                [(ngModel)]="productForms.salesPrice"
-                name="salesPrice"
-                min="0.01"
-                required
-                #salesPrice="ngModel"
-              />
-              <div *ngIf="(productForm.submitted || salesPrice.touched) && salesPrice.invalid" class="error">
-                Prix de Vente est requis et doit être supérieur à 0.
+                <label for="salesPrice">Prix de Vente :</label>
+                <input
+                  type="number"
+                  id="salesPrice"
+                  [(ngModel)]="productForms.salesPrice"
+                  name="salesPrice"
+                  min="0.01"
+                  required
+                  [disabled]="productForms.isPromo"  #salesPrice="ngModel"/>
+                <div *ngIf="(productForm.submitted || salesPrice.touched) && salesPrice.invalid" class="error">
+                  Prix de Vente est requis et doit être supérieur à 0.
+                </div>
+              
+                <!-- Message sophistiqué si le produit est en promo -->
+                <div *ngIf="productForms.isPromo" class="promo-warning">
+                  <strong>Attention :</strong> Le produit est en promotion. Désactivez la promotion pour modifier le prix de vente.
+                  <button type="button" class="btn-disable-promo btn-active" (click)="disablePromoineditPopup()">Désactiver Promo</button>
+                </div>
               </div>
-            </div>
+              
       
             <!-- Catégorie -->
             <div class="form-group">
@@ -278,14 +285,14 @@
             <div class="form-group">
                 <label for="productAddedDate">Date d'expiration :</label>
                 <input
-                  type="datetime-local"
-                  id="productAddedDate"
-                  [(ngModel)]="productForms.productAddedDate"
-                  name="productAddedDate"
-                  required
-                  #productAddedDate="ngModel"
-                />
-                <div *ngIf="(productForm.submitted || productAddedDate.touched) && productAddedDate.invalid" class="error">
+    type="datetime-local"
+    id="expiredDate"
+    [(ngModel)]="productForms.expiredDate"
+    name="expiredDate"
+    required
+    #expiredDate="ngModel"
+  />
+  <div *ngIf="(productForm.submitted || expiredDate.touched) && expiredDate.invalid" class="error">
                   La date d'expiration sont requises.
                 </div>
               </div>
@@ -296,7 +303,7 @@
                 type="button"
                 class="btn-submit"
                 [disabled]="productForm.invalid"
-                (click)="applyDiscount()"
+                (click)="saveProduct()"
               >
                 Enregistrer
               </button>
@@ -310,7 +317,7 @@
    
       <!-- Popup d'Ajout de Remise -->
   <div class="popup-overlay" *ngIf="showDiscountPopup">
-    <div class="popup">
+    <div class="popup discount-popup">
       <h3>Rechercher un Produit</h3>
       <input
         type="text"
@@ -327,7 +334,7 @@
     </div>
   </div>
 
-  <!-- Popup d'Application de Remise -->
+
  <!-- Popup d'Application de Remise -->
  <div class="popup-overlay" *ngIf="showApplyDiscountPopup">
     <div class="popup">

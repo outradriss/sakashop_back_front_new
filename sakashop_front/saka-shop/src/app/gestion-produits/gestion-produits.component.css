@@ -151,12 +151,21 @@
     padding: 10px 30px;
     cursor: pointer;
     border-radius: 20px;
-    gap: 10px;
+    margin-right: 10px;
   }
-  
+  .product-list .btn-history {
+    color: white;
+    background-color: #220dc8;
+    border: none;
+    padding: 10px 30px;
+    cursor: pointer;
+    border-radius: 20px;
+    gap: 10px;
+    margin-right: 30px;
+  }
   .action-buttons {
     display: flex;
-    gap: 5px;
+    gap: 50px;
   }
   .btn-disable-promo.disabled {
     background-color: #ccc;
@@ -181,7 +190,7 @@ button {
   color: #000; /* Texte noir pour un contraste clair */
   padding: 10px 30px;
   cursor: pointer;
-  border-radius: 20px;
+  border-radius: 50px;
 }
 
 .btn-active:hover {
@@ -205,17 +214,7 @@ button:hover {
 }
 
   
-  .popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+
   
   .popup {
     background: white;
@@ -404,18 +403,6 @@ button:hover {
 .popup-discount-search button:hover {
   background-color: #218838;
 }
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
 
 .popup {
   background-color: white;
@@ -477,7 +464,7 @@ button:hover {
 .popup button:hover {
   background-color: #c82333;
 }
-.popup-overlay {
+.overlay-delete-popup {
   position: fixed;
   top: 0;
   left: 0;
@@ -489,6 +476,40 @@ button:hover {
   align-items: center;
   z-index: 1000;
 }
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+
+.popup form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Espacement entre les champs */
+}
+
+.popup-actions {
+  display: flex;
+  justify-content: flex-end; /* Alignement des boutons à droite */
+  gap: 10px; /* Espacement entre les boutons */
+}
+
+@media screen and (max-width: 768px) {
+  .popup {
+    width: 95%; /* Ajustement pour les écrans plus petits */
+    height: auto; /* Hauteur dynamique */
+    max-height: 90%;
+  }
+}
+
 
 .popup.delete-confirm-popup {
   background: #fff;
@@ -500,6 +521,7 @@ button:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   position: relative;
   animation: scaleUp 0.3s ease-in-out;
+  margin: 0 auto; /* Supprime les marges blanches autour */
 }
 
 @keyframes scaleUp {
@@ -540,7 +562,8 @@ button:hover {
 .popup .popup-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-top: 10px;
+  gap: 15px;
 }
 
 .btn-confirm {
@@ -585,3 +608,46 @@ button:hover {
 }
 
   
+
+
+
+
+
+
+
+
+/* Style générique pour tous les popups */
+.popup {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Style spécifique pour le popup d'Ajout/Modification de Produit */
+.popup.product-popup {
+  width: 80%; /* Largeur à 80% */
+  max-width: 1200px; /* Limite de largeur */
+  height: 80%; /* Hauteur à 80% */
+  max-height: 90%;
+  overflow-y: auto; /* Ajout du défilement vertical si le contenu dépasse */
+}
+
+/* Style spécifique pour le popup de Confirmation */
+.popup.delete-confirm-popup {
+  width: 400px; /* Largeur spécifique pour le popup de confirmation */
+  max-width: 90%;
+  padding: 20px;
+  text-align: center; /* Centrer le texte */
+  animation: scaleUp 0.3s ease-in-out;
+}
+
+/* Style spécifique pour le popup d'Ajout de Remise */
+.popup.discount-popup {
+  width: 60%; /* Largeur spécifique */
+  max-width: 800px;
+  height: auto;
+  max-height: 70%;
+  overflow-y: auto;
+}

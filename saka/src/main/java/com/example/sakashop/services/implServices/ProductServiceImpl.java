@@ -4,24 +4,21 @@ import com.example.sakashop.DAO.CategoryRepo;
 import com.example.sakashop.DAO.ProductRepository;
 import com.example.sakashop.Entities.Categories;
 import com.example.sakashop.Entities.Item;
+import com.example.sakashop.services.productService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.Cache;
+
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+
 
 @Service
-public class ProductServiceImpl {
+public class ProductServiceImpl implements productService {
 
   @Autowired
   private ProductRepository productRepository;
@@ -32,7 +29,8 @@ public class ProductServiceImpl {
   @Autowired
   private CacheManager cacheManager;
 
-  @Cacheable(value = "products", key = "'allProducts'")  public List<Item> getAllProducts() {
+  @Cacheable(value = "products", key = "'allProducts'")
+  public List<Item> getAllProducts() {
 
     return productRepository.findAllWithCategory() ;
   }
@@ -45,6 +43,12 @@ public class ProductServiceImpl {
     item.setCategories(category); // Associer l'entité persistante
     return productRepository.save(item);
   }
+  @CacheEvict(value = "categories", allEntries = true)
+  public Categories addCategory(Categories categories) {
+   return categoryRepo.save(categories);
+  }
+
+
 
   @CacheEvict(value = "products", allEntries = true)
   public void deleteProduct(Long id) {

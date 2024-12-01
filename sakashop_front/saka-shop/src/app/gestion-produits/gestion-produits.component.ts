@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Categories, Product } from '../models/product.model';
 import { Route, Router } from '@angular/router';
-import { ProductService } from '../product.service';
+import { ProductService } from '../service/product-service/product.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -148,6 +148,34 @@ disablePromo(product: Product): void {
   });
 }
 
+disablePromoineditPopup(): void {
+  if (this.productForms) {
+    // Désactiver la promo localement
+    this.productForms.isPromo = false;
+    this.productForms.pricePromo = 0;
+
+    // Envoyer la mise à jour au backend
+    this.productService.updateProduct(this.productForms.id, this.productForms).subscribe(
+      () => {
+        Swal.fire({
+          title: 'Promotion désactivée',
+          text: 'La promotion a été désactivée pour ce produit. Vous pouvez maintenant modifier le prix de vente.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
+      },
+      (error) => {
+        console.error('Erreur lors de la désactivation de la promotion :', error);
+        Swal.fire({
+          title: 'Erreur',
+          text: 'Une erreur s\'est produite lors de la désactivation de la promotion. Veuillez réessayer.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    );
+  }
+}
 
 
 applyPaginationAndFilter(): void {
@@ -222,9 +250,6 @@ calculatePagination(): void {
     }
   }
 }
-
-
-
   // Ajouter, Modifier, Supprimer, Réinitialiser les champs, etc.
   showAddProductPopup(): void {
     this.showPopup = true;
@@ -365,6 +390,7 @@ applyDiscount(): void {
     }
   );
 }
+
 
 // Cacher le popup de remise
 hideApplyDiscountPopup(): void {
@@ -524,11 +550,34 @@ categoriesLoaded: boolean = false; // Indique si les catégories ont été charg
 
 
 addCategory(): void {
-  if (!this.newCategory.name.trim()) {
+  // Vérifier si le nom de la catégorie est valide
+  if (!this.newCategoryName.trim()) {
     alert('Veuillez entrer un nom de catégorie valide.');
     return;
   }
+
+  // Créer un objet catégorie
+  const newCategory: Categories = {
+    id: 0, // Par défaut, on envoie 0 pour permettre au backend de générer un ID
+    name: this.newCategoryName,
+    createdDate: new Date().toISOString(), // Générer une date actuelle
+  };
+
+  // Appeler le service pour sauvegarder la catégorie
+  this.productService.saveCategory(newCategory).subscribe(
+    (savedCategory) => {
+      alert(`Catégorie "${savedCategory.name}" ajoutée avec succès.`);
+      this.categories.push(savedCategory); // Ajouter la nouvelle catégorie à la liste locale
+      this.showCategoryPopup = false; // Fermer le popup d'ajout de catégorie
+      this.newCategoryName = ''; // Réinitialiser le champ
+    },
+    (error) => {
+      console.error('Erreur lors de l\'ajout de la catégorie :', error);
+      alert('Erreur lors de l\'ajout de la catégorie.');
+    }
+  );
 }
+
 
   showAddCategoryPopup(): void {
     this.newCategoryName = ''; // Réinitialiser le champ

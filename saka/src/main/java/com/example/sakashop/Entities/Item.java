@@ -6,6 +6,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -36,7 +37,6 @@ public class Item {
   @JsonIgnore
   @JsonManagedReference
   private Categories categories;
-
   @UpdateTimestamp
   @Column(name="lastUpdated")
   private LocalDateTime lastUpdated;
@@ -44,9 +44,26 @@ public class Item {
   private boolean isPromo;
   @Column(name = "expiredDate")
   private Date expiredDate;
+  @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ItemsOrders> itemsOrders = new ArrayList<>();
 
 
 
+  public Item(Long id, String pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, Categories categories, LocalDateTime lastUpdated, boolean isPromo, Date expiredDate, Date productAddedDate) {
+    this.id = id;
+    this.pricePromo = pricePromo;
+    this.itemCode = itemCode;
+    this.name = name;
+    this.quantity = quantity;
+    this.buyPrice = buyPrice;
+    this.salesPrice = salesPrice;
+    this.supplier = supplier;
+    this.categories = categories;
+    this.lastUpdated = lastUpdated;
+    this.isPromo = isPromo;
+    this.expiredDate = expiredDate;
+    this.productAddedDate = productAddedDate;
+  }
 
   public Categories getCategories() {
     return categories;
@@ -74,21 +91,6 @@ public class Item {
 
   public void setProductAddedDate(Date productAddedDate) {
     this.productAddedDate = productAddedDate;
-  }
-  public Item(Long id, String pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, LocalDateTime lastUpdated, boolean isPromo, Date productAddedDate , Date expiredDate, Categories categories) {
-    this.id = id;
-    this.pricePromo = pricePromo;
-    this.itemCode = itemCode;
-    this.name = name;
-    this.quantity = quantity;
-    this.buyPrice = buyPrice;
-    this.salesPrice = salesPrice;
-    this.supplier = supplier;
-    this.categories= categories;
-    this.lastUpdated = lastUpdated;
-    this.isPromo = isPromo;
-    this.productAddedDate = productAddedDate;
-    this.expiredDate=expiredDate;
   }
 
   public Date getproductAddedDate() {

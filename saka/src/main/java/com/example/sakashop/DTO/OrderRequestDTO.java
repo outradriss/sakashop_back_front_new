@@ -1,9 +1,12 @@
 package com.example.sakashop.DTO;
 
+import com.example.sakashop.Entities.Item;
+
+import javax.persistence.OneToOne;
 import java.time.LocalDateTime;
 
 public class OrderRequestDTO {
-  private Long idOrder; // Géré automatiquement dans la base
+  private Long idOrder;
   private String nameProduct;
   private int quantity;
   private int quantityAddedUrgent;
@@ -12,23 +15,40 @@ public class OrderRequestDTO {
   private  double salesPrice;
   private LocalDateTime dateOrder;
   private LocalDateTime lastUpdated;
-  // Getters et Setters
+  private Long itemId;
+  private Long itemsOrders;
 
-  public OrderRequestDTO() {
-  }
-
-  public OrderRequestDTO(Long idOrder, String nameProduct, int quantity, int quantityAddedUrgent, boolean isPromo, double salesPrice,double pricePromo, LocalDateTime dateOrder, LocalDateTime lastUpdated) {
+  public OrderRequestDTO(Long idOrder, String nameProduct, int quantity, int quantityAddedUrgent, boolean isPromo, double pricePromo, double salesPrice, Long itemsOrders,LocalDateTime dateOrder, LocalDateTime lastUpdated, Long itemId) {
     this.idOrder = idOrder;
     this.nameProduct = nameProduct;
     this.quantity = quantity;
     this.quantityAddedUrgent = quantityAddedUrgent;
     this.isPromo = isPromo;
     this.pricePromo = pricePromo;
-    this.salesPrice=salesPrice;
+    this.salesPrice = salesPrice;
     this.dateOrder = dateOrder;
     this.lastUpdated = lastUpdated;
+    this.itemId = itemId;
+    this.itemsOrders=itemsOrders;
+  }
+  public OrderRequestDTO() {
   }
 
+  public Long getItemsOrders() {
+    return itemsOrders;
+  }
+
+  public void setItemsOrders(Long itemsOrders) {
+    this.itemsOrders = itemsOrders;
+  }
+
+  public Long getItemId() {
+    return itemId;
+  }
+
+  public void setItemId(Long itemId) {
+    this.itemId = itemId;
+  }
   public double getSalesPrice() {
     return salesPrice;
   }

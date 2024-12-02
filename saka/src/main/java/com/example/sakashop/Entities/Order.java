@@ -2,6 +2,8 @@ package com.example.sakashop.Entities;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -9,86 +11,32 @@ import java.time.LocalDateTime;
 public class Order {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id_order")
   private Long idOrder;
-
-  private String nameProduct;
-  private int quantity;
-  private int quantityAddedUrgent;
-  private double salesPrice;
-  private boolean isPromo;
-  private double pricePromo;
   private LocalDateTime dateOrder;
   private LocalDateTime lastUpdated;
 
-  public Order() {}
+  // Une commande peut avoir plusieurs ItemsOrders
+  @Column(name = "id_orders_items")
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ItemsOrders> itemsOrders = new ArrayList<>();
 
-  public Order(Long idOrder, String nameProduct, int quantity, int quantityAddedUrgent, boolean isPromo, double pricePromo, double salesPrice,LocalDateTime dateOrder, LocalDateTime lastUpdated) {
+  public List<ItemsOrders> getItemsOrders() {
+    return itemsOrders;
+  }
+
+  public void setItemsOrders(List<ItemsOrders> itemsOrders) {
+    this.itemsOrders = itemsOrders;
+  }
+
+  public Order(Long idOrder, LocalDateTime dateOrder, LocalDateTime lastUpdated, List<ItemsOrders> itemsOrders) {
     this.idOrder = idOrder;
-    this.nameProduct = nameProduct;
-    this.quantity = quantity;
-    this.quantityAddedUrgent = quantityAddedUrgent;
-    this.isPromo = isPromo;
-    this.salesPrice=salesPrice;
-    this.pricePromo = pricePromo;
     this.dateOrder = dateOrder;
     this.lastUpdated = lastUpdated;
+    this.itemsOrders = itemsOrders;
   }
 
-  public double getSalesPrice() {
-    return salesPrice;
-  }
-
-  public void setSalesPrice(double salesPrice) {
-    this.salesPrice = salesPrice;
-  }
-
-  public Long getIdOrder() {
-    return idOrder;
-  }
-
-  public void setIdOrder(Long idOrder) {
-    this.idOrder = idOrder;
-  }
-
-  public String getNameProduct() {
-    return nameProduct;
-  }
-
-  public void setNameProduct(String nameProduct) {
-    this.nameProduct = nameProduct;
-  }
-
-  public int getQuantity() {
-    return quantity;
-  }
-
-  public void setQuantity(int quantity) {
-    this.quantity = quantity;
-  }
-
-  public int getQuantityAddedUrgent() {
-    return quantityAddedUrgent;
-  }
-
-  public void setQuantityAddedUrgent(int quantityAddedUrgent) {
-    this.quantityAddedUrgent = quantityAddedUrgent;
-  }
-
-  public boolean isPromo() {
-    return isPromo;
-  }
-
-  public void setIsPromo(boolean isPromo) {
-    this.isPromo = isPromo;
-  }
-
-  public double getPricePromo() {
-    return pricePromo;
-  }
-
-  public void setPricePromo(double pricePromo) {
-    this.pricePromo = pricePromo;
-  }
+  public Order() {}
 
   public LocalDateTime getDateOrder() {
     return dateOrder;

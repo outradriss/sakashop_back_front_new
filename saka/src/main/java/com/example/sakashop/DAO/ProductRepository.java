@@ -23,4 +23,6 @@ public interface ProductRepository extends JpaRepository<Item, Long> {
   @Query("SELECT i FROM Item i JOIN FETCH i.categories")
   List<Item> findAllWithCategory();
 
+
+
 }

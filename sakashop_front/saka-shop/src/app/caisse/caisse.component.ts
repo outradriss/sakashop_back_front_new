@@ -156,6 +156,7 @@ export class CaisseComponent {
       pricePromo: product.pricePromo,
       dateOrder: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
+      itemId: product.id
     }));
   
     this.caisseService.saveOrders(orders).subscribe(

@@ -60,6 +60,8 @@ public class ProductServiceImpl implements productService {
   public Item updateProduct(Long id, Item updatedProduct) {
     Item existingProduct = productRepository.findById(id)
       .orElseThrow(() -> new RuntimeException("Produit introuvable"));
+
+    // Mise à jour des champs
     existingProduct.setName(updatedProduct.getName());
     existingProduct.setBuyPrice(updatedProduct.getBuyPrice());
     existingProduct.setQuantity(updatedProduct.getQuantity());
@@ -68,10 +70,13 @@ public class ProductServiceImpl implements productService {
     existingProduct.setSupplier(updatedProduct.getSupplier());
     existingProduct.setPricePromo(updatedProduct.getPricePromo());
     existingProduct.setIsPromo(updatedProduct.getIsPromo());
+
+    // Sauvegarde du produit mis à jour
     Item savedProduct = productRepository.save(existingProduct);
 
     return savedProduct;
   }
+
 }
 
 

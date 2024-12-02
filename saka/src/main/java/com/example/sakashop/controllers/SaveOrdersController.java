@@ -1,14 +1,17 @@
 package com.example.sakashop.controllers;
 
+
 import com.example.sakashop.DTO.OrderRequestDTO;
 import com.example.sakashop.services.implServices.CaisseServiceImpl;
+import com.example.sakashop.services.implServices.ProductServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/caisse")
@@ -17,19 +20,23 @@ public class SaveOrdersController {
   @Autowired
   CaisseServiceImpl caisseService;
 
+  @Autowired
+  ProductServiceImpl productService;
+
   @PostMapping("/saveOrder")
-  public ResponseEntity<?> saveOrders(@RequestBody List<OrderRequestDTO> orders) {
+  @Transactional
+  public ResponseEntity<?> saveOrder(@RequestBody List<OrderRequestDTO> orders) {
     try {
       caisseService.saveOrders(orders);
-      return ResponseEntity.ok(Map.of(
-        "status", "success",
-        "message", "Commandes enregistrées avec succès."
-      ));
+      return ResponseEntity.ok().body("Commandes enregistrées et stock mis à jour.");
+    } catch (RuntimeException e) {
+      // Gérer les erreurs spécifiques
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de l'enregistrement : " + e.getMessage());
     } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-        "status", "error",
-        "message", "Une erreur est survenue lors de l'enregistrement des commandes."
-      ));
+      // Gérer les erreurs inattendues
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur inattendue lors de l'enregistrement.");
     }
   }
+
+
 }

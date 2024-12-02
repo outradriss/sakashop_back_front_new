@@ -15,24 +15,32 @@ public class Order {
   private Long idOrder;
   private LocalDateTime dateOrder;
   private LocalDateTime lastUpdated;
+  private Long nego_price;
 
-  // Une commande peut avoir plusieurs ItemsOrders
-  @Column(name = "id_orders_items")
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ItemsOrders> itemsOrders = new ArrayList<>();
+
+  public Long getNego_price() {
+    return nego_price;
+  }
+
+  public void setNego_price(Long nego_price) {
+    this.nego_price = nego_price;
+  }
+
+  public Order(Long idOrder, LocalDateTime dateOrder, LocalDateTime lastUpdated, Long nego_price, List<ItemsOrders> itemsOrders) {
+    this.idOrder = idOrder;
+    this.dateOrder = dateOrder;
+    this.lastUpdated = lastUpdated;
+    this.nego_price = nego_price;
+    this.itemsOrders = itemsOrders;
+  }
 
   public List<ItemsOrders> getItemsOrders() {
     return itemsOrders;
   }
 
   public void setItemsOrders(List<ItemsOrders> itemsOrders) {
-    this.itemsOrders = itemsOrders;
-  }
-
-  public Order(Long idOrder, LocalDateTime dateOrder, LocalDateTime lastUpdated, List<ItemsOrders> itemsOrders) {
-    this.idOrder = idOrder;
-    this.dateOrder = dateOrder;
-    this.lastUpdated = lastUpdated;
     this.itemsOrders = itemsOrders;
   }
 

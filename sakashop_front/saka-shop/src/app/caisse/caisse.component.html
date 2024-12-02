@@ -53,10 +53,29 @@
               <div class="cart-details">
                 <p class="product-name">{{ product.name }}</p>
                 <p *ngIf="product.isPromo; else normalPrice">
-                  Prix avec promo : <strong>{{ product.pricePromo | currency : 'MAD ':'symbol':'1.2-2' }}</strong>
+                  Prix avec promo : <input
+                  type="number"
+                  [(ngModel)]="product.negoPrice"
+                  [ngModel]="product.negoPrice || product.pricePromo" 
+                  (input)="validateCartPrice(product)"
+                  [class.invalid]="product.negoPrice < product.pricePromo"
+                  min="0.01"
+                />
                 </p>
                 <ng-template #normalPrice>
-                  Prix : <strong>{{ product.salesPrice | currency : 'MAD ':'symbol':'1.2-2' }}</strong>
+                    Prix :
+                    <input
+                      type="number"
+                      [(ngModel)]="product.negoPrice"
+                      [ngModel]="product.negoPrice || product.salesPrice || product.pricePromo" 
+                      (input)="validateCartPrice(product)"
+                      [class.invalid]="product.negoPrice <= product.buyPrice"
+                      min="0.01"
+                    />
+                    <span *ngIf="product.negoPrice <= product.buyPrice" class="error">
+                        <br>
+                      <strong >Erreur :</strong> Le prix ne peut pas être inférieur au prix d'achat
+                    </span>
                 </ng-template>
                 <p class="stock-info">Stock disponible : {{ product.quantity }}</p>
                 <p>Quantité : <strong>{{ product.quantityInCart }}</strong></p>
@@ -76,7 +95,7 @@
             <button 
     class="btn-pay" 
     (click)="pay()" 
-    [disabled]="cart.length === 0"> Payer</button>
+    [disabled]="cart.length === 0 || isPayButtonDisabled()" > Payer</button>
             <button class="btn-cancel" (click)="cancel()">Annuler</button>
           </div>
         </div>

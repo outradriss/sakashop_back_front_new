@@ -48,7 +48,6 @@ public class Item {
   private List<ItemsOrders> itemsOrders = new ArrayList<>();
 
 
-
   public Item(Long id, String pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, Categories categories, LocalDateTime lastUpdated, boolean isPromo, Date expiredDate, Date productAddedDate) {
     this.id = id;
     this.pricePromo = pricePromo;

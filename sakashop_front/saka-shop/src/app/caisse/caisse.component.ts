@@ -119,7 +119,6 @@ export class CaisseComponent {
       }
     );
   }
-  
 
 
   // Filtrer les produits
@@ -134,11 +133,37 @@ export class CaisseComponent {
     }
   }
   
-
+  validateCartPrice(product: any): void {
+    // Vérifie si le prix dans le panier est valide selon la promo ou le prix de vente
+    if (product.isPromo) {
+      if (product.negoPrice <= product.buyPrice) {
+        console.error(`Erreur : Le prix pour ${product.name} est inférieur au prix promo.`);
+      }
+    } else {
+      if (product.negoPrice <= product.buyPrice) {
+        console.error(`Erreur : Le prix pour ${product.name} est inférieur au prix de vente.`);
+      }
+    }
+  }
+  
+  isPayButtonDisabled(): boolean {
+    // Désactive le bouton si un produit a un prix invalide
+    return this.cart.some(product =>
+      product.isPromo
+        ? product.negoPrice < product.buyPrice
+        : product.negoPrice < product.buyPrice
+    );
+  }
+  
+  
   // Calculer le total
   calculateTotal(): number {
-    return this.cart.reduce((total, item) => total + item.salesPrice * (item.quantityInCart ?? 0), 0);
+    return this.cart.reduce((total, item) => {
+      const priceToUse = item.negoPrice ?? (item.isPromo ? item.pricePromo : item.salesPrice);
+      return total + priceToUse * (item.quantityInCart ?? 0);
+    }, 0);
   }
+  
 
   // Mettre à jour le total lorsque le prix change
   updateTotal(): void {
@@ -167,6 +192,9 @@ export class CaisseComponent {
         } else {
           Swal.fire('Succès', 'Votre commande a été enregistrée avec succès.', 'success');
           this.cart = []; // Réinitialisez le panier après la commande
+          this.cachedProducts = [];
+          this.printReceipt();
+          this.loadProducts();
         }
       },
       (error) => {

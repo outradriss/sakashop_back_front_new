@@ -1,5 +1,3 @@
-import { EnabledBlockingInitialNavigationFeature } from "@angular/router";
-
 export interface Categories {
     id: number;
     name: string;
@@ -19,7 +17,8 @@ export class Product {
     pricePromo:number;
     productAddedDate:Date;
     expiredDate : Date;
-    quantityInCart?: number; // Quantité ajoutée au panier (optionnelle)
+    quantityInCart?: number;
+    negoPrice:number;
   
     constructor(
       id: number= 0,
@@ -34,7 +33,8 @@ export class Product {
       isPromo:boolean=false,
       productAddedDate:Date=new Date(),
       expiredDate : Date = new Date(),
-      quantityInCart:number=0
+      quantityInCart:number=0,
+      negoPrice:number=0
     ) {
       this.id=id;
       this.itemCode = itemCode;
@@ -49,6 +49,7 @@ export class Product {
       this.productAddedDate=productAddedDate;
       this.expiredDate=expiredDate;
       this.quantityInCart=quantityInCart;
+      this.negoPrice=negoPrice;
     }
   
     /**

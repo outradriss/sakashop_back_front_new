@@ -177,44 +177,51 @@
               </div>
             </div>
       
-            <!-- Prix d'Achat -->
-            <div class="form-group">
-              <label for="buyPrice">Prix d'Achat :</label>
-              <input
-                type="number"
-                id="buyPrice"
-                [(ngModel)]="productForms.buyPrice"
-                name="buyPrice"
-                min="0.01"
-                required
-                #buyPrice="ngModel"
-              />
-              <div *ngIf="(productForm.submitted || buyPrice.touched) && buyPrice.invalid" class="error">
-                Prix d'Achat est requis et doit être supérieur à 0.
-              </div>
-            </div>
-      
-            <!-- Prix de Vente -->
-            <div class="form-group">
-                <label for="salesPrice">Prix de Vente :</label>
-                <input
-                  type="number"
-                  id="salesPrice"
-                  [(ngModel)]="productForms.salesPrice"
-                  name="salesPrice"
-                  min="0.01"
-                  required
-                  [disabled]="productForms.isPromo"  #salesPrice="ngModel"/>
-                <div *ngIf="(productForm.submitted || salesPrice.touched) && salesPrice.invalid" class="error">
-                  Prix de Vente est requis et doit être supérieur à 0.
-                </div>
-              
-                <!-- Message sophistiqué si le produit est en promo -->
-                <div *ngIf="productForms.isPromo" class="promo-warning">
-                  <strong>Attention :</strong> Le produit est en promotion. Désactivez la promotion pour modifier le prix de vente.
-                  <button type="button" class="btn-disable-promo btn-active" (click)="disablePromoineditPopup()">Désactiver Promo</button>
-                </div>
-              </div>
+           <!-- Prix d'Achat -->
+<div class="form-group">
+    <label for="buyPrice">Prix d'Achat :</label>
+    <input
+      type="number"
+      id="buyPrice"
+      [(ngModel)]="productForms.buyPrice"
+      name="buyPrice"
+      min="0.01"
+      required
+      #buyPrice="ngModel"
+    />
+    <div *ngIf="(productForm.submitted || buyPrice.touched) && buyPrice.invalid" class="error">
+      Prix d'Achat est requis et doit être supérieur à 0.
+    </div>
+  </div>
+  
+  <!-- Prix de Vente -->
+  <div class="form-group">
+    <label for="salesPrice">Prix de Vente :</label>
+    <input
+      type="number"
+      id="salesPrice"
+      [(ngModel)]="productForms.salesPrice"
+      name="salesPrice"
+      min="0.01"
+      required
+      [disabled]="productForms.isPromo"
+      #salesPrice="ngModel"
+    />
+    <div *ngIf="(productForm.submitted || salesPrice.touched) && salesPrice.invalid" class="error">
+      Prix de Vente est requis et doit être supérieur à 0.
+    </div>
+  
+    <div *ngIf="productForms.isPromo" class="promo-warning">
+      <strong>Attention :</strong> Le produit est en promotion. Désactivez la promotion pour modifier le prix de vente.
+      <button type="button" class="btn-disable-promo btn-active" (click)="disablePromoineditPopup()">Désactiver Promo</button>
+    </div>
+  
+    <!-- Vérification si le prix de vente est inférieur au prix d'achat -->
+    <div *ngIf="productForms.salesPrice < productForms.buyPrice && salesPrice.touched" class="error">
+      <strong>Erreur :</strong> Le Prix de Vente ne peut pas être inférieur au Prix d'Achat.
+    </div>
+  </div>
+  
               
       
             <!-- Catégorie -->
@@ -303,7 +310,7 @@
                 <button
                 type="button"
                 class="btn-submit"
-                [disabled]="productForm.invalid"
+                [disabled]="productForms.salesPrice < productForms.buyPrice || productForm.invalid"
                 (click)="saveProduct()"
               >
                 Enregistrer

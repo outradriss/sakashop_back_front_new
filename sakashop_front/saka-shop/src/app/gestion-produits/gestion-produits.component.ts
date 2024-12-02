@@ -201,6 +201,7 @@ applyPaginationAndFilter(): void {
   this.updatePagination(); // Mettre à jour les boutons de pagination
 }
 
+
 // Gérer le changement de page via le menu déroulant
 onPageChangeDropdown(event: Event): void {
   const target = event.target as HTMLSelectElement;
@@ -271,7 +272,12 @@ calculatePagination(): void {
     saveOperation.subscribe(
       () => {
         const action = this.editingProduct ? 'modifié' : 'ajouté';
-        alert(`Produit ${action} avec succès.`);
+        Swal.fire({
+          title: 'Succès',
+          text: `Le produit "${action}" a été ajouté avec succès.`,
+          icon: 'success',
+          confirmButtonText: 'OK',
+        });
         this.showPopup = false; // Ferme le popup
         this.loadProducts(); // Rafraîchit la liste des produits
       },
@@ -378,9 +384,12 @@ applyDiscount(): void {
   // Enregistrer la mise à jour via le backend
   this.productService.updateProduct(this.selectedProduct.id, this.selectedProduct).subscribe(
     () => {
-      alert(
-        `Remise appliquée :\nProduit : ${this.selectedProduct?.name ?? 'N/A'}\nPrix promo : ${this.selectedProduct?.pricePromo ?? 'N/A'} DH`
-      );
+      Swal.fire({
+        title: 'Succès',
+        text: `Remise appliquée :\nProduit : ${this.selectedProduct?.name ?? 'N/A'}\nPrix promo : ${this.selectedProduct?.pricePromo ?? 'N/A'} DH`,
+        icon: 'success',
+        confirmButtonText: 'OK',
+      });
       this.loadProducts(); // Rafraîchir les produits
       this.hideApplyDiscountPopup(); // Fermer le popup
     },
@@ -399,24 +408,6 @@ hideApplyDiscountPopup(): void {
   this.discountPercentage = 0;
   this.promoPrice = 0;
 }
-
-  resetForm(): void {
-    this.productForms= {
-      id:0,
-      itemCode: '',
-      name: '',
-      quantity: 0,
-      buyPrice: 0,
-      salesPrice: 0,
-      categories: { id: 0, name: '', createdDate: '' },
-      supplier: '',
-      pricePromo:0,
-      isPromo:false,
-      productAddedDate:new Date(),
-      expiredDate:new Date()
-    };
-  }
-
     editProduct(product: Product): void {
       this.showPopup = true; // Affiche le popup
       this.editingProduct = product; // Définit le produit en cours de modification
@@ -484,7 +475,8 @@ hideApplyDiscountPopup(): void {
       pricePromo:0,
       isPromo:false,
       productAddedDate:new Date(),
-      expiredDate:new Date()
+      expiredDate:new Date(),
+      negoPrice:0
     };
   }
 

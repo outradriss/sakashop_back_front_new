@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -28,15 +30,25 @@ public class SaveOrdersController {
   public ResponseEntity<?> saveOrder(@RequestBody List<OrderRequestDTO> orders) {
     try {
       caisseService.saveOrders(orders);
-      return ResponseEntity.ok().body("Commandes enregistrées et stock mis à jour.");
+
+      // Retournez une réponse structurée
+      Map<String, Object> response = new HashMap<>();
+      response.put("status", "success");
+      response.put("message", "Commandes enregistrées et stock mis à jour.");
+      return ResponseEntity.ok().body(response);
     } catch (RuntimeException e) {
-      // Gérer les erreurs spécifiques
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de l'enregistrement : " + e.getMessage());
+      Map<String, Object> response = new HashMap<>();
+      response.put("status", "error");
+      response.put("message", "Erreur lors de l'enregistrement : " + e.getMessage());
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     } catch (Exception e) {
-      // Gérer les erreurs inattendues
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur inattendue lors de l'enregistrement.");
+      Map<String, Object> response = new HashMap<>();
+      response.put("status", "error");
+      response.put("message", "Erreur inattendue lors de l'enregistrement.");
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
   }
+
 
 
 }

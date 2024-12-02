@@ -15,8 +15,10 @@ export class CaisseService {
     return this.http.get<Product[]>(`${this.apiUrl}/list`);
   }
   saveOrders(orders: any[]): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/saveOrder`, orders);
+    // Ajoutez { responseType: 'text' } pour traiter les réponses textuelles
+    return this.http.post(`${this.apiUrl}/saveOrder`, orders, { responseType: 'text' });
   }
+  
   
   
 }

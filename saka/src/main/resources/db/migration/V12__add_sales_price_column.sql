@@ -1,0 +1,2 @@
+ALTER TABLE items_orders ADD COLUMN sales_price DOUBLE NOT NULL DEFAULT 0;
+

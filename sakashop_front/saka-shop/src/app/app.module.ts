@@ -14,6 +14,7 @@ import { GestionVenteComponent } from './gestion-vente/gestion-vente.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { GestionProduitsComponent } from './gestion-produits/gestion-produits.component';
+import { HistoryComponent } from './history/history.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import { GestionProduitsComponent } from './gestion-produits/gestion-produits.co
     CaisseComponent,
     CreditClientsComponent,
     GestionVenteComponent,
-    GestionProduitsComponent
+    GestionProduitsComponent,
+   HistoryComponent
   ],
   imports: [
     BrowserModule,

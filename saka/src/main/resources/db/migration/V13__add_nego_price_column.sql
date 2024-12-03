@@ -1,0 +1,2 @@
+ALTER TABLE items_orders ADD COLUMN nego_price DOUBLE NOT NULL DEFAULT 0;
+

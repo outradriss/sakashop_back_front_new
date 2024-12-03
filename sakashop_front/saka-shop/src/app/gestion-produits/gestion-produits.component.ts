@@ -476,7 +476,8 @@ hideApplyDiscountPopup(): void {
       isPromo:false,
       productAddedDate:new Date(),
       expiredDate:new Date(),
-      negoPrice:0
+      negoPrice:0,
+      totalePrice:0
     };
   }
 
@@ -587,5 +588,8 @@ addCategory(): void {
     this.router.navigate(['/login']);
   }
   
+  viewHistory(productId: number): void {
+    this.router.navigate(['/history'], { queryParams: { id: productId } });
+  }
 
 }

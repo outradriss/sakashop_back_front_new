@@ -46,6 +46,10 @@ public class Item {
   private Date expiredDate;
   @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ItemsOrders> itemsOrders = new ArrayList<>();
+  @Column(name = "product_added_date")
+  private Date productAddedDate;
+
+
 
 
   public Item(Long id, String pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, Categories categories, LocalDateTime lastUpdated, boolean isPromo, Date expiredDate, Date productAddedDate) {
@@ -62,6 +66,10 @@ public class Item {
     this.isPromo = isPromo;
     this.expiredDate = expiredDate;
     this.productAddedDate = productAddedDate;
+  }
+
+  public Date getProductAddedDate() {
+    return productAddedDate;
   }
 
   public Categories getCategories() {
@@ -91,15 +99,6 @@ public class Item {
   public void setProductAddedDate(Date productAddedDate) {
     this.productAddedDate = productAddedDate;
   }
-
-  public Date getproductAddedDate() {
-    return productAddedDate;
-  }
-
-
-  @Column(name = "product_added_date")
-  private Date productAddedDate;
-
 
 
   public void setIsPromo(boolean isPromo) {

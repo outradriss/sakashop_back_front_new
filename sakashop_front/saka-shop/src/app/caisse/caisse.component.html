@@ -96,7 +96,10 @@
     class="btn-pay" 
     (click)="pay()" 
     [disabled]="cart.length === 0 || isPayButtonDisabled()" > Payer</button>
-            <button class="btn-cancel" (click)="cancel()">Annuler</button>
+            <button 
+            class="btn-cancel" 
+            (click)="cancel()"
+            [disabled]="cart.length===0">Annuler</button>
           </div>
         </div>
       

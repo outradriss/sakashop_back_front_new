@@ -8,6 +8,7 @@ import { CreditClientsComponent } from './credit-clients/credit-clients.componen
 import { GestionVenteComponent } from './gestion-vente/gestion-vente.component';
 import { AuthGuard } from './auth.guard';
 import { GestionProduitsComponent } from './gestion-produits/gestion-produits.component';
+import { HistoryComponent } from './history/history.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent  },
@@ -17,6 +18,7 @@ const routes: Routes = [
   { path: 'credit-client', component: CreditClientsComponent ,canActivate: [AuthGuard] },
   { path: 'meilleur-vente', component: GestionVenteComponent ,canActivate: [AuthGuard] },
   { path: 'gestion-product/list', component: GestionProduitsComponent ,canActivate: [AuthGuard] },
+  { path: 'history', component: HistoryComponent ,canActivate: [AuthGuard] },
   { path: '**', component: LoginComponent  },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 ];

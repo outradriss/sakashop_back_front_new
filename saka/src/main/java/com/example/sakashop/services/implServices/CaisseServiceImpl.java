@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -45,39 +44,63 @@ public class CaisseServiceImpl implements caisseService {
   @Transactional
   public void saveOrders(List<OrderRequestDTO> orders) {
     try {
+      if (orders.isEmpty()) {
+        throw new IllegalArgumentException("La liste des commandes est vide.");
+      }
+
+      // Calcul du total de la commande
+      double totaleCommande = orders.stream()
+        .mapToDouble(orderDTO -> {
+          // Calculer le prix total basé sur les règles
+          double priceToUse = orderDTO.getNegoPrice() > 0
+            ? orderDTO.getNegoPrice()
+            : (orderDTO.getIsPromo() ? orderDTO.getPricePromo() : orderDTO.getSalesPrice());
+          return priceToUse * orderDTO.getQuantity();
+        })
+        .sum();
+
+      // Création de la commande unique
+      Order order = new Order();
+      order.setDateOrder(orders.get(0).getDateOrder());
+      order.setLastUpdated(orders.get(0).getLastUpdated());
+      order.setTotalePrice(totaleCommande);
+      Order savedOrder = caisseOrderRepo.save(order);
+
+      // Liste pour les items associés à la commande
+      List<ItemsOrders> itemsOrdersToSave = new ArrayList<>();
+
       for (OrderRequestDTO orderDTO : orders) {
         // Recherche de l'Item
         Item item = productRepository.findById(orderDTO.getItemId())
           .orElseThrow(() -> new EntityNotFoundException("Item introuvable avec l'ID : " + orderDTO.getItemId()));
 
-        // Création de la commande
-        Order order = new Order();
-        order.setDateOrder(orderDTO.getDateOrder());
-        order.setLastUpdated(orderDTO.getLastUpdated());
-        Order savedOrder = caisseOrderRepo.save(order);
-
         // Création de l'entité ItemsOrders
         ItemsOrders itemsOrders = new ItemsOrders();
-        itemsOrders.setOrder(savedOrder);
-        itemsOrders.setItem(item);
+        itemsOrders.setOrder(savedOrder); // Associe à la commande unique
+        itemsOrders.setItem(item); // Associe l'item
         itemsOrders.setName(item.getName());
         itemsOrders.setDateIntegration(orderDTO.getDateOrder());
         itemsOrders.setDateUpdate(orderDTO.getLastUpdated());
         itemsOrders.setStockQuantity(item.getQuantity());
         itemsOrders.setCartQuantity(orderDTO.getQuantity());
-
-        // Sauvegarde de l'entité ItemsOrders
-        itemsOrdersREpo.save(itemsOrders);
+        itemsOrders.setSalesPrice(orderDTO.getSalesPrice());
+        itemsOrders.setNegoPrice(orderDTO.getNegoPrice());
+        itemsOrdersToSave.add(itemsOrders);
 
         // Mise à jour du stock
         updateProductStock(item, orderDTO.getQuantity());
-
       }
+
+      // Sauvegarde de tous les items associés à la commande
+      itemsOrdersREpo.saveAll(itemsOrdersToSave);
+
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("Erreur critique lors de l'enregistrement des commandes.", e);
     }
   }
+
+
 
 
   private void updateProductStock(Item item, int quantityOrdered) {
@@ -96,7 +119,6 @@ public class CaisseServiceImpl implements caisseService {
       throw new RuntimeException("Erreur lors de la mise à jour du stock.", e);
     }
   }
-
 
 }
 

@@ -25,6 +25,9 @@ public class ItemsOrders {
   @Column(name = "date_integration", nullable = false)
   private LocalDateTime dateIntegration;
 
+  @Column(name = "sales_price", nullable = false)
+  private double salesPrice;
+
   @Column(name = "date_update")
   private LocalDateTime dateUpdate;
 
@@ -34,25 +37,43 @@ public class ItemsOrders {
   @Column(name = "cart_quantity", nullable = false)
   private int cartQuantity;
 
+  @Column(name = "nego_price", nullable = false)
+  private double negoPrice;
 
-  public ItemsOrders(Long id, Order order, Item item, String name, LocalDateTime dateIntegration, LocalDateTime dateUpdate, int stockQuantity, int cartQuantity) {
+
+  public ItemsOrders(Long id, Order order, Item item, String name, LocalDateTime dateIntegration, double salesPrice, LocalDateTime dateUpdate, int stockQuantity, int cartQuantity, double negoPrice) {
     this.id = id;
     this.order = order;
     this.item = item;
     this.name = name;
     this.dateIntegration = dateIntegration;
+    this.salesPrice = salesPrice;
     this.dateUpdate = dateUpdate;
     this.stockQuantity = stockQuantity;
     this.cartQuantity = cartQuantity;
+    this.negoPrice = negoPrice;
   }
-
 
   public ItemsOrders() {
   }
 
 
+  public double getSalesPrice() {
+    return salesPrice;
+  }
 
-  // Getters and Setters
+  public void setSalesPrice(double salesPrice) {
+    this.salesPrice = salesPrice;
+  }
+
+  public double getNegoPrice() {
+    return negoPrice;
+  }
+
+  public void setNegoPrice(double negoPrice) {
+    this.negoPrice = negoPrice;
+  }
+
   public Long getId() {
     return id;
   }

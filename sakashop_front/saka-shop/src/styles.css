@@ -3,7 +3,7 @@
 @import url('../node_modules/simple-keyboard/build/css/index.css');
 body{
   
-  background-color: brown;
+  background-color: rgb(255, 255, 255);
 }
 .auth-card{
   background: #c31432;  /* fallback for old browsers */

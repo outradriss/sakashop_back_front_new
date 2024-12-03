@@ -1,8 +1,5 @@
 package com.example.sakashop.DTO;
 
-import com.example.sakashop.Entities.Item;
-
-import javax.persistence.OneToOne;
 import java.time.LocalDateTime;
 
 public class OrderRequestDTO {
@@ -17,8 +14,13 @@ public class OrderRequestDTO {
   private LocalDateTime lastUpdated;
   private Long itemId;
   private Long itemsOrders;
+  private double totalePrice;
+  private double negoPrice;
 
-  public OrderRequestDTO(Long idOrder, String nameProduct, int quantity, int quantityAddedUrgent, boolean isPromo, double pricePromo, double salesPrice, Long itemsOrders,LocalDateTime dateOrder, LocalDateTime lastUpdated, Long itemId) {
+  public OrderRequestDTO() {
+  }
+
+  public OrderRequestDTO(Long idOrder, String nameProduct, int quantity, int quantityAddedUrgent, boolean isPromo, double pricePromo, double salesPrice, LocalDateTime dateOrder, LocalDateTime lastUpdated, Long itemId, Long itemsOrders, double totalePrice, double negoPrice) {
     this.idOrder = idOrder;
     this.nameProduct = nameProduct;
     this.quantity = quantity;
@@ -29,9 +31,25 @@ public class OrderRequestDTO {
     this.dateOrder = dateOrder;
     this.lastUpdated = lastUpdated;
     this.itemId = itemId;
-    this.itemsOrders=itemsOrders;
+    this.itemsOrders = itemsOrders;
+    this.totalePrice = totalePrice;
+    this.negoPrice = negoPrice;
   }
-  public OrderRequestDTO() {
+
+  public double getTotalePrice() {
+    return totalePrice;
+  }
+
+  public void setTotalePrice(double totalePrice) {
+    this.totalePrice = totalePrice;
+  }
+
+  public double getNegoPrice() {
+    return negoPrice;
+  }
+
+  public void setNegoPrice(double negoPrice) {
+    this.negoPrice = negoPrice;
   }
 
   public Long getItemsOrders() {

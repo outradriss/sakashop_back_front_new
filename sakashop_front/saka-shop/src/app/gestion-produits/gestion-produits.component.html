@@ -58,7 +58,7 @@
             <td>
               <button (click)="editProduct(product)" class="btn-edit">Modifier</button>
               <button (click)="openConfirmDeletePopup(product)" class="btn-delete">Supprimer</button>
-              <button class="btn-history">historique</button>
+                <button (click)="viewHistory(product.id)" class="btn-history">Historique</button>
               <button
               (click)="disablePromo(product)"
               [disabled]="!product.isPromo"

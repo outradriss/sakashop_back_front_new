@@ -155,38 +155,67 @@ export class CaisseComponent {
     );
   }
   
-  
-  // Calculer le total
   calculateTotal(): number {
-    return this.cart.reduce((total, item) => {
-      const priceToUse = item.negoPrice ?? (item.isPromo ? item.pricePromo : item.salesPrice);
-      return total + priceToUse * (item.quantityInCart ?? 0);
+    return this.cart.reduce((total, product) => {
+      // Priorité : isPromo > negoPrice > salesPrice
+      const priceToUse = product.negoPrice > 0
+        ? product.negoPrice
+        : (product.isPromo ? product.pricePromo : product.salesPrice);
+  
+      // Calculer le total en fonction du prix et de la quantité
+      return total + (priceToUse * (product.quantityInCart ?? 0));
     }, 0);
   }
   
-
-  // Mettre à jour le total lorsque le prix change
-  updateTotal(): void {
-    this.calculateTotal();
+  
+  calculateProductTotal(product: any): number {
+    // Utilisation de la méthode calculatePrice pour éviter les doublons
+    const priceToUse = this.calculatePrice(product);
+    return priceToUse * (product.quantityInCart ?? 0);
   }
+  
+  calculatePrice(product: any): number {
+    // Priorité : negoPrice > pricePromo (si isPromo) > salesPrice
+    if (product.negoPrice && product.negoPrice > 0) {
+      return product.negoPrice;
+    }
+    if (product.isPromo && product.pricePromo > 0) {
+      return product.pricePromo;
+    }
+    return product.salesPrice;
+  }
+  
+  // Mise à jour des totaux et des prix négociés dans le panier
+  updateCartTotals(): void {
+    this.cart.forEach((product) => {
+      product.totalePrice = this.calculateProductTotal(product); // Total pour chaque produit
+    });
+  }
+  
 
-  // Paiement
   pay(): void {
+    // Mise à jour des totaux dans le panier
+    this.updateCartTotals();
+  
+    // Création des commandes pour chaque produit dans le panier
     const orders = this.cart.map((product) => ({
       nameProduct: product.name,
       quantity: product.quantityInCart ?? 0,
-      quantityAddedUrgent: (product.quantityInCart ?? 0) > product.quantity ? (product.quantityInCart ?? 0) - product.quantity : 0,
+      quantityAddedUrgent:
+        (product.quantityInCart ?? 0) > product.quantity ? (product.quantityInCart ?? 0) - product.quantity : 0,
       isPromo: product.isPromo,
       salesPrice: product.salesPrice,
       pricePromo: product.pricePromo,
+      negoPrice: product.negoPrice,
+      totalePrice: product.totalePrice, // Utilise le total calculé
       dateOrder: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
       itemId: product.id
     }));
   
+    // Envoi des commandes au backend
     this.caisseService.saveOrders(orders).subscribe(
       (response) => {
-        // Vérifiez si la réponse contient une erreur
         if (response?.status === 'error') {
           Swal.fire('Erreur', response.message || 'Une erreur est survenue.', 'error');
         } else {
@@ -198,23 +227,37 @@ export class CaisseComponent {
         }
       },
       (error) => {
-        // Gestion des erreurs HTTP
         console.error('Erreur lors de l\'enregistrement de la commande :', error);
         Swal.fire('Erreur', 'Une erreur est survenue lors de l\'enregistrement de votre commande.', 'error');
       }
     );
   }
+    // Mettre à jour le total lorsque le prix change
+    updateTotal(): void {
+      this.calculateTotal();
+    }
   
   
 
   // Annuler la commande
   cancel(): void {
-    if (confirm('Voulez-vous annuler cette commande ?')) {
-      this.cart.forEach((item) => (item.quantityInCart = 0)); // Réinitialiser les quantités dans le panier
-      this.cart = [];
-      this.updateTotal(); 
-    }
+    Swal.fire({
+      title: 'Annuler la commande',
+      text: 'Êtes-vous sûr de vouloir annuler la commande ?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, annuler',
+      cancelButtonText: 'Non, continuer',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire('Commande annulée', 'Votre commande a été annulée avec succès.', 'success');
+        this.cart.forEach((item) => (item.quantityInCart = 0)); // Réinitialiser les quantités dans le panier
+        this.cart = [];
+        this.updateTotal(); 
+      }
+    });
   }
+  
   navigateTo(route: string) {
     this.router.navigate([`/${route}`]);
   }

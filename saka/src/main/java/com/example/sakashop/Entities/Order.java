@@ -15,25 +15,34 @@ public class Order {
   private Long idOrder;
   private LocalDateTime dateOrder;
   private LocalDateTime lastUpdated;
-  private Long nego_price;
+  private double totalePrice ;
 
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ItemsOrders> itemsOrders = new ArrayList<>();
 
-  public Long getNego_price() {
-    return nego_price;
+  public double getTotalePrice() {
+    return totalePrice;
   }
 
-  public void setNego_price(Long nego_price) {
-    this.nego_price = nego_price;
+  public void setTotalePrice(double totalePrice) {
+    this.totalePrice = totalePrice;
   }
 
-  public Order(Long idOrder, LocalDateTime dateOrder, LocalDateTime lastUpdated, Long nego_price, List<ItemsOrders> itemsOrders) {
+
+  public Order(Long idOrder, LocalDateTime dateOrder, LocalDateTime lastUpdated,  double totalePrice, List<ItemsOrders> itemsOrders) {
     this.idOrder = idOrder;
     this.dateOrder = dateOrder;
     this.lastUpdated = lastUpdated;
-    this.nego_price = nego_price;
+    this.totalePrice = totalePrice;
     this.itemsOrders = itemsOrders;
+  }
+
+  public Long getIdOrder() {
+    return idOrder;
+  }
+
+  public void setIdOrder(Long idOrder) {
+    this.idOrder = idOrder;
   }
 
   public List<ItemsOrders> getItemsOrders() {

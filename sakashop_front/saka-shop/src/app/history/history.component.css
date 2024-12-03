@@ -1,0 +1,129 @@
+.history-container {
+    margin: 20px auto;
+    max-width: 90%;
+    font-family: Arial, sans-serif;
+  }
+  
+  .table-wrapper {
+    overflow-x: auto;
+  }
+  
+  .styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    text-align: left;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .styled-table thead tr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: center;
+  }
+  
+  .styled-table th,
+  .styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #dddddd;
+  }
+  
+  .styled-table tbody tr {
+    background-color: #f9f9f9;
+  }
+  
+  .styled-table tbody tr:nth-child(even) {
+    background-color: #f3f3f3;
+  }
+  
+  .styled-table tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .styled-table tbody tr td {
+    text-align: center;
+  }
+  
+  .totals-table {
+    margin-top: 20px;
+    width: 40%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+  
+  .totals-styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .totals-styled-table thead tr {
+    background-color: #f39c12;
+    color: #ffffff;
+  }
+  
+  .totals-styled-table th,
+  .totals-styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #dddddd;
+  }
+  
+  .totals-styled-table tbody tr {
+    background-color: #fdfdfd;
+  }
+  
+  .totals-styled-table tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+    /* Conteneur pour les boutons de navigation */
+.navigation-buttons {
+    position: fixed;
+    bottom: 30px; /* Espace par rapport au bas de la page */
+    left: 40%; /* Centre horizontalement */
+    transform: translateX(-30%); /* Ajustement pour centrer */
+    display: flex;
+    gap: 15px; /* Espace entre les boutons */
+  }
+  
+  /* Style pour les boutons */
+  .navigation-buttons button {
+    padding: 20px 30px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .navigation-buttons button:hover {
+    background-color: #0056b3;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(1) {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(2) {
+    background-color: #17a2b8;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(3) {
+    background-color: #ffc107;
+    color: #000;
+  }
+  .navigation-buttons button:nth-child(4) {
+    background-color: #07f7ff;
+    color: #000;
+
+  }
+  .navigation-buttons button:nth-child(5) {
+    background-color: #ff0000;
+    color: #000;
+    transform: translateX(100%);
+  }
+  

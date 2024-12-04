@@ -31,7 +31,6 @@ public class ProductServiceImpl implements productService {
 
   @Cacheable(value = "products", key = "'allProducts'")
   public List<Item> getAllProducts() {
-
     return productRepository.findAllWithCategory() ;
   }
 

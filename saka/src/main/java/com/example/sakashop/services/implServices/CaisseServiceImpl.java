@@ -101,8 +101,6 @@ public class CaisseServiceImpl implements caisseService {
   }
 
 
-
-
   private void updateProductStock(Item item, int quantityOrdered) {
     try {
       int updatedStock = item.getQuantity() - quantityOrdered;

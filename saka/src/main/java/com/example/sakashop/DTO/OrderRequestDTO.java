@@ -2,6 +2,7 @@ package com.example.sakashop.DTO;
 
 import java.time.LocalDateTime;
 
+
 public class OrderRequestDTO {
   private Long idOrder;
   private String nameProduct;
@@ -9,7 +10,7 @@ public class OrderRequestDTO {
   private int quantityAddedUrgent;
   private boolean isPromo;
   private double pricePromo;
-  private  double salesPrice;
+  private double salesPrice;
   private LocalDateTime dateOrder;
   private LocalDateTime lastUpdated;
   private Long itemId;
@@ -17,125 +18,123 @@ public class OrderRequestDTO {
   private double totalePrice;
   private double negoPrice;
 
-  public OrderRequestDTO() {
+  // Constructeur privé pour forcer l'utilisation du Builder
+  private OrderRequestDTO(Builder builder) {
+    this.idOrder = builder.idOrder;
+    this.nameProduct = builder.nameProduct;
+    this.quantity = builder.quantity;
+    this.quantityAddedUrgent = builder.quantityAddedUrgent;
+    this.isPromo = builder.isPromo;
+    this.pricePromo = builder.pricePromo;
+    this.salesPrice = builder.salesPrice;
+    this.dateOrder = builder.dateOrder;
+    this.lastUpdated = builder.lastUpdated;
+    this.itemId = builder.itemId;
+    this.itemsOrders = builder.itemsOrders;
+    this.totalePrice = builder.totalePrice;
+    this.negoPrice = builder.negoPrice;
   }
 
-  public OrderRequestDTO(Long idOrder, String nameProduct, int quantity, int quantityAddedUrgent, boolean isPromo, double pricePromo, double salesPrice, LocalDateTime dateOrder, LocalDateTime lastUpdated, Long itemId, Long itemsOrders, double totalePrice, double negoPrice) {
-    this.idOrder = idOrder;
-    this.nameProduct = nameProduct;
-    this.quantity = quantity;
-    this.quantityAddedUrgent = quantityAddedUrgent;
-    this.isPromo = isPromo;
-    this.pricePromo = pricePromo;
-    this.salesPrice = salesPrice;
-    this.dateOrder = dateOrder;
-    this.lastUpdated = lastUpdated;
-    this.itemId = itemId;
-    this.itemsOrders = itemsOrders;
-    this.totalePrice = totalePrice;
-    this.negoPrice = negoPrice;
-  }
+  // Getter uniquement (pas de setter pour rendre la classe immuable)
+  public Long getIdOrder() { return idOrder; }
+  public String getNameProduct() { return nameProduct; }
+  public int getQuantity() { return quantity; }
+  public int getQuantityAddedUrgent() { return quantityAddedUrgent; }
+  public boolean getIsPromo() { return isPromo; }
+  public double getPricePromo() { return pricePromo; }
+  public double getSalesPrice() { return salesPrice; }
+  public LocalDateTime getDateOrder() { return dateOrder; }
+  public LocalDateTime getLastUpdated() { return lastUpdated; }
+  public Long getItemId() { return itemId; }
+  public Long getItemsOrders() { return itemsOrders; }
+  public double getTotalePrice() { return totalePrice; }
+  public double getNegoPrice() { return negoPrice; }
 
-  public double getTotalePrice() {
-    return totalePrice;
-  }
+  // Classe Builder interne
+  public static class Builder {
+    private Long idOrder;
+    private String nameProduct;
+    private int quantity;
+    private int quantityAddedUrgent;
+    private boolean isPromo;
+    private double pricePromo;
+    private double salesPrice;
+    private LocalDateTime dateOrder;
+    private LocalDateTime lastUpdated;
+    private Long itemId;
+    private Long itemsOrders;
+    private double totalePrice;
+    private double negoPrice;
 
-  public void setTotalePrice(double totalePrice) {
-    this.totalePrice = totalePrice;
-  }
+    public Builder setIdOrder(Long idOrder) {
+      this.idOrder = idOrder;
+      return this;
+    }
 
-  public double getNegoPrice() {
-    return negoPrice;
-  }
+    public Builder setNameProduct(String nameProduct) {
+      this.nameProduct = nameProduct;
+      return this;
+    }
 
-  public void setNegoPrice(double negoPrice) {
-    this.negoPrice = negoPrice;
-  }
+    public Builder setQuantity(int quantity) {
+      this.quantity = quantity;
+      return this;
+    }
 
-  public Long getItemsOrders() {
-    return itemsOrders;
-  }
+    public Builder setQuantityAddedUrgent(int quantityAddedUrgent) {
+      this.quantityAddedUrgent = quantityAddedUrgent;
+      return this;
+    }
 
-  public void setItemsOrders(Long itemsOrders) {
-    this.itemsOrders = itemsOrders;
-  }
+    public Builder setIsPromo(boolean isPromo) {
+      this.isPromo = isPromo;
+      return this;
+    }
 
-  public Long getItemId() {
-    return itemId;
-  }
+    public Builder setPricePromo(double pricePromo) {
+      this.pricePromo = pricePromo;
+      return this;
+    }
 
-  public void setItemId(Long itemId) {
-    this.itemId = itemId;
-  }
-  public double getSalesPrice() {
-    return salesPrice;
-  }
+    public Builder setSalesPrice(double salesPrice) {
+      this.salesPrice = salesPrice;
+      return this;
+    }
 
-  public void setSalesPrice(double salesPrice) {
-    this.salesPrice = salesPrice;
-  }
+    public Builder setDateOrder(LocalDateTime dateOrder) {
+      this.dateOrder = dateOrder;
+      return this;
+    }
 
-  public Long getIdOrder() {
-    return idOrder;
-  }
+    public Builder setLastUpdated(LocalDateTime lastUpdated) {
+      this.lastUpdated = lastUpdated;
+      return this;
+    }
 
-  public void setIdOrder(Long idOrder) {
-    this.idOrder = idOrder;
-  }
+    public Builder setItemId(Long itemId) {
+      this.itemId = itemId;
+      return this;
+    }
 
-  public String getNameProduct() {
-    return nameProduct;
-  }
+    public Builder setItemsOrders(Long itemsOrders) {
+      this.itemsOrders = itemsOrders;
+      return this;
+    }
 
-  public void setNameProduct(String nameProduct) {
-    this.nameProduct = nameProduct;
-  }
+    public Builder setTotalePrice(double totalePrice) {
+      this.totalePrice = totalePrice;
+      return this;
+    }
 
-  public int getQuantity() {
-    return quantity;
-  }
+    public Builder setNegoPrice(double negoPrice) {
+      this.negoPrice = negoPrice;
+      return this;
+    }
 
-  public void setQuantity(int quantity) {
-    this.quantity = quantity;
-  }
-
-  public int getQuantityAddedUrgent() {
-    return quantityAddedUrgent;
-  }
-
-  public void setQuantityAddedUrgent(int quantityAddedUrgent) {
-    this.quantityAddedUrgent = quantityAddedUrgent;
-  }
-
-  public boolean getIsPromo() {
-    return isPromo;
-  }
-
-  public void setPromo(boolean promo) {
-    isPromo = promo;
-  }
-
-  public double getPricePromo() {
-    return pricePromo;
-  }
-
-  public void setPricePromo(double pricePromo) {
-    this.pricePromo = pricePromo;
-  }
-
-  public LocalDateTime getDateOrder() {
-    return dateOrder;
-  }
-
-  public void setDateOrder(LocalDateTime dateOrder) {
-    this.dateOrder = dateOrder;
-  }
-
-  public LocalDateTime getLastUpdated() {
-    return lastUpdated;
-  }
-
-  public void setLastUpdated(LocalDateTime lastUpdated) {
-    this.lastUpdated = lastUpdated;
+    // Méthode pour construire l'objet DTO
+    public OrderRequestDTO build() {
+      return new OrderRequestDTO(this);
+    }
   }
 }
+

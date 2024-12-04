@@ -5,6 +5,7 @@ import com.example.sakashop.DTO.UserDTO;
 import com.example.sakashop.Entities.AuthToken;
 import com.example.sakashop.Entities.LoginUser;
 import com.example.sakashop.Entities.User;
+import com.example.sakashop.Exceptions.ErrorResponse;
 import com.example.sakashop.services.implServices.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -59,14 +59,13 @@ public class UserController {
      * @param user The user to be saved.
      * @return The saved user.
      */
-    @RequestMapping(value="/register", method = RequestMethod.POST)
-    public ResponseEntity <?> saveUser(@RequestBody UserDTO user){
+    @PostMapping(value="/register")
+    public ResponseEntity <User> saveUser(@RequestBody UserDTO user){
       try {
         User savedUser = userService.save(user);
         return ResponseEntity.ok(savedUser);
       } catch (IllegalArgumentException ex) {
-        // Retourner un message d'erreur formaté
-        return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+        return ResponseEntity.badRequest().build();
       }
     }
 
@@ -76,37 +75,44 @@ public class UserController {
      * @return A message that can only be accessed by admins.
      */
     @PreAuthorize("hasRole('ADMIN')")
-    @RequestMapping(value="/adminping", method = RequestMethod.GET)
-    public String adminPing(){
-        return "Only Admins Can Read This";
+    @RequestMapping(value = "/adminping", method = RequestMethod.GET)
+    public ResponseEntity<String> adminPing() {
+      return ResponseEntity.ok("Only Admins Can Read This");
     }
 
-    /**
+
+  /**
      * Returns a message that can be accessed by any user.
      *
      * @return A message that can be accessed by any user.
      */
     @PreAuthorize("hasRole('USER')")
     @RequestMapping(value="/userping", method = RequestMethod.GET)
-    public String userPing(){
-        return "Any User Can Read This";
+    public ResponseEntity <String> userPing(){
+      return ResponseEntity.ok("Any Users Can Read This");
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value="/create/employee", method = RequestMethod.POST)
-    public User createEmployee(@RequestBody UserDTO user){
+    public ResponseEntity <User> createEmployee(@RequestBody UserDTO user){
         return userService.createEmployee(user);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value="/find/all", method = RequestMethod.GET)
-    public List<User> getAllList(){
+    public ResponseEntity<List<User>> getAllList(){
         return userService.findAll();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @RequestMapping(value="/find/by/username", method = RequestMethod.GET)
-    public User getAllList(@RequestParam String username){
-        return userService.findOne(username);
+    @GetMapping("/find/by/username")
+    public ResponseEntity <User> getAllList(@RequestParam String username){
+        User user= userService.findOne(username);
+      if (user != null) {
+        return ResponseEntity.ok(user);  // Retourne un code HTTP 200 avec l'utilisateur
+      } else {
+        return ResponseEntity.notFound().build();  // Si l'utilisateur n'est pas trouvé, retourne HTTP 404
+      }
     }
+
 }

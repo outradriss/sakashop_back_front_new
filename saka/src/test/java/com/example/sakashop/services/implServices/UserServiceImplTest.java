@@ -9,10 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,7 +53,7 @@ class UserServiceImplTest {
     role.setName("USER");
     mockUser.setRoles(Set.of(role));
 
-    when(userDao.findByEmail(email)).thenReturn(mockUser);
+    when(userDao.findByEmail(email));
 
     // Act
     UserDetails userDetails = userService.loadUserByUsername(email);
@@ -70,7 +72,7 @@ class UserServiceImplTest {
   void testLoadUserByUsername_UserNotFound() {
     // Arrange
     String email = "nonExistentUser";
-    when(userDao.existsByEmail(email)).thenReturn(null);
+    when(userDao.existsByEmail((email)));
 
     // Act & Assert
     assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername(email),
@@ -90,13 +92,14 @@ class UserServiceImplTest {
     when(userDao.findAll()).thenReturn(List.of(user1, user2));
 
     // Act
-    List<User> users = userService.findAll();
+    ResponseEntity<List<User>> users = userService.findAll();
 
+    List<User> userList = users.getBody();
     // Assert
     assertNotNull(users, "User list should not be null");
-    assertEquals(2, users.size(), "User list should contain 2 users");
-    assertEquals("user1", users.get(0).getUsername());
-    assertEquals("user2", users.get(1).getUsername());
+    assertEquals(2, userList.size(), "User list should contain 2 users");
+    assertEquals("user1", userList.get(0).getUsername());
+    assertEquals("user2", userList.get(1).getUsername());
 
     verify(userDao, times(1)).findAll();
   }
@@ -108,7 +111,7 @@ class UserServiceImplTest {
     User mockUser = new User();
     mockUser.setUsername(email);
 
-    when(userDao.findByEmail(email)).thenReturn(mockUser);
+    when(userDao.findByEmail(email)).thenReturn(Collections.singletonList(mockUser));
 
     // Act
     User user = userService.findOne(email);

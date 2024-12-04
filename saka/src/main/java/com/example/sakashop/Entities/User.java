@@ -1,11 +1,15 @@
 package com.example.sakashop.Entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
 
     @Id

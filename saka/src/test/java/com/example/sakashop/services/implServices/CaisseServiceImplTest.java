@@ -1,10 +1,13 @@
 package com.example.sakashop.services.implServices;
 
 import com.example.sakashop.DAO.CaisseOrderRepo;
+import com.example.sakashop.DAO.ItemsOrdersREpo;
 import com.example.sakashop.DAO.ProductRepository;
 import com.example.sakashop.DTO.OrderRequestDTO;
 import com.example.sakashop.Entities.Item;
 import com.example.sakashop.Entities.Order;
+import com.example.sakashop.Exceptions.EntityNotFoundException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +15,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,29 +33,82 @@ class CaisseServiceImplTest {
 
   @MockBean
   private CaisseOrderRepo caisseOrderRepo;
+  @Autowired
+  private com.example.sakashop.services.productService productService;
+  @Autowired
+  private ItemsOrdersREpo itemsOrdersREpo;
 
   @Test
   public void testSaveOrders() {
-    OrderRequestDTO orderRequest = new OrderRequestDTO(
-      null,
-      "Produit Test",
-      2,
-      0,
-      false,
-      0.0,
-      LocalDateTime.now(),
-      LocalDateTime.now()
+    // Arrange: Création d'une liste de commandes avec le Builder
+    List<OrderRequestDTO> orderRequestDTOS = List.of(
+      new OrderRequestDTO.Builder()
+        .setItemId(1L)
+        .setQuantity(2)
+        .setNegoPrice(85.0)
+        .setIsPromo(true)
+        .setPricePromo(90.0)
+        .setSalesPrice(100.0)
+        .setDateOrder(LocalDateTime.now())
+        .setLastUpdated(LocalDateTime.now())
+        .build()
     );
 
-    Item mockProduct = new Item();
-    mockProduct.setName("Produit Test");
-    mockProduct.setQuantity(5);
+    Item mockItem = new Item();
+    mockItem.setId(1L);
+    mockItem.setName("Produit 1");
+    mockItem.setQuantity(10);
+    Mockito.when(productRepository.findById(1L)).thenReturn(Optional.of(mockItem));
 
-    Mockito.when(productRepository.findByName("Produit Test")).thenReturn(mockProduct);
+    Order mockOrder = new Order();
+    mockOrder.setIdOrder(1L);
+    Mockito.when(caisseOrderRepo.save(Mockito.any(Order.class))).thenReturn(mockOrder);
 
-    caisseService.saveOrders(Collections.singletonList(orderRequest));
+    // Act
+    caisseService.saveOrders(orderRequestDTOS);
 
-    Mockito.verify(productRepository, Mockito.times(1)).save(mockProduct);
-    Mockito.verify(caisseOrderRepo, Mockito.times(1)).save(Mockito.any(Order.class));
+    // Assert
+    Mockito.verify(productRepository).findById(1L);
+    Mockito.verify(caisseOrderRepo).save(Mockito.any(Order.class));
+    Mockito.verify(itemsOrdersREpo).saveAll(Mockito.anyList());
+  }
+
+  @Test
+  void testSaveOrders_emptyOrderList() {
+    // Arrange
+    List<OrderRequestDTO> emptyOrders = new ArrayList<>();
+
+    // Act & Assert
+    IllegalArgumentException exception = Assertions.assertThrows(
+      IllegalArgumentException.class,
+      () -> caisseService.saveOrders(emptyOrders)
+    );
+
+    Assertions.assertEquals("La liste des commandes est vide.", exception.getMessage());
+  }
+
+  @Test
+  void testSaveOrders_itemNotFound() {
+    List<OrderRequestDTO> orderRequestDTOS = List.of(
+      new OrderRequestDTO.Builder()
+        .setItemId(1L)
+        .setQuantity(2)
+        .setNegoPrice(85.0)
+        .setIsPromo(true)
+        .setPricePromo(90.0)
+        .setSalesPrice(100.0)
+        .setDateOrder(LocalDateTime.now())
+        .setLastUpdated(LocalDateTime.now())
+        .build()
+    );
+    Mockito.when(productRepository.findById(1L)).thenReturn(Optional.empty());
+
+    // Act & Assert
+    EntityNotFoundException exception = Assertions.assertThrows(
+      EntityNotFoundException.class,
+      () -> caisseService.saveOrders(orderRequestDTOS)
+    );
+
+    Assertions.assertEquals("Item introuvable avec l'ID : 1", exception.getMessage());
   }
 }

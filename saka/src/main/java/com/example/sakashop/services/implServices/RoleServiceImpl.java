@@ -6,7 +6,7 @@ import com.example.sakashop.services.roleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service(value = "roleService")
+@Service
 public class RoleServiceImpl implements roleService {
 
     @Autowired

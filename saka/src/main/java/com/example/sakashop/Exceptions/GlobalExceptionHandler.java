@@ -22,4 +22,12 @@ public class GlobalExceptionHandler {
   public ResponseEntity<String> handleGenericException(Exception ex) {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Une erreur est survenue : " + ex.getMessage());
   }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ErrorResponse> handleBadRequest(IllegalArgumentException ex) {
+    ErrorResponse errorResponse = new ErrorResponse("Invalid data", ex.getMessage());
+    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+  }
+
 }
+

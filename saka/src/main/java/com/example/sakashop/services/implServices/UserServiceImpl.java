@@ -11,6 +11,7 @@ import com.example.sakashop.Entities.Role;
 import com.example.sakashop.Entities.User;
 import com.example.sakashop.services.userService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,7 +19,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@Service
+@Service(value = "userService")
 public class UserServiceImpl implements UserDetailsService, userService {
 
     @Autowired
@@ -30,49 +31,55 @@ public class UserServiceImpl implements UserDetailsService, userService {
     @Autowired
     private BCryptPasswordEncoder bcryptEncoder;
 
-  @Override
-  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-    User user = userDao.findByEmail(email); // Recherche par email
-    if (user == null) {
-      throw new UsernameNotFoundException("Invalid email or password.");
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    User response = userDao.findByUsername(username);
+
+    // Vérification que la réponse n'est pas null et contient un corps valide
+    if (response == null) {
+      throw new UsernameNotFoundException("Invalid username or password.");
     }
+
+    User user = response; // Récupération de l'objet User encapsulé dans ResponseEntity
     return new org.springframework.security.core.userdetails.User(
-      user.getEmail(),
+      user.getUsername(),
       user.getPassword(),
       getAuthority(user)
     );
   }
 
-
   // Get user authorities
-    private Set<SimpleGrantedAuthority> getAuthority(User user) {
-        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
-        user.getRoles().forEach(role -> {
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
-        });
-        return authorities;
+  private Set<SimpleGrantedAuthority> getAuthority(User user) {
+    Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+    user.getRoles().forEach(role -> {
+      authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+    });
+    return authorities;
+  }
+
+
+  // Find all users
+    public ResponseEntity<List<User>> findAll() {
+      List<User> list = new ArrayList<>();
+      userDao.findAll().forEach(list::add);
+
+      if (list.isEmpty()) {
+        return ResponseEntity.noContent().build(); // Retourne 204 si la liste est vide
+      }
+
+      return ResponseEntity.ok(list); // Retourne 200 avec la liste des utilisateurs
     }
 
-    // Find all users
-    public List<User> findAll() {
-        List<User> list = new ArrayList<>();
-        userDao.findAll().iterator().forEachRemaining(list::add);
-        return list;
-    }
 
-    // Find user by username
+  // Find user by username
     @Override
     public User findOne(String username) {
-        return userDao.findByEmail(username);
+        return userDao.findByUsername(username);
     }
 
     // Save user
     @Override
     public User save(UserDTO user) {
 
-      if (userDao.existsByEmail(user.getEmail())) {
-        throw new IllegalArgumentException("Email existe déjà");
-      }
         User nUser = user.getUserFromDto();
         nUser.setPassword(bcryptEncoder.encode(user.getPassword()));
 
@@ -92,22 +99,31 @@ public class UserServiceImpl implements UserDetailsService, userService {
     }
 
     @Override
-    public User createEmployee(UserDTO user) {
-        User nUser = user.getUserFromDto();
-        nUser.setPassword(bcryptEncoder.encode(user.getPassword()));
+    public ResponseEntity<User> createEmployee(UserDTO user) {
+      // Conversion du DTO en entité User
+      User nUser = user.getUserFromDto();
+      nUser.setPassword(bcryptEncoder.encode(user.getPassword()));
 
-        Role employeeRole = roleService.findByName("EMPLOYEE");
-        Role customerRole = roleService.findByName("USER");
+      // Récupération des rôles nécessaires
+      Role employeeRole = roleService.findByName("EMPLOYEE");
+      Role customerRole = roleService.findByName("USER");
 
-        Set<Role> roleSet = new HashSet<>();
-        if (employeeRole != null) {
-            roleSet.add(employeeRole);
-        }
-        if (customerRole != null) {
-            roleSet.add(customerRole);
-        }
+      // Ajout des rôles à l'utilisateur
+      Set<Role> roleSet = new HashSet<>();
+      if (employeeRole != null) {
+        roleSet.add(employeeRole);
+      }
+      if (customerRole != null) {
+        roleSet.add(customerRole);
+      }
 
-        nUser.setRoles(roleSet);
-        return userDao.save(nUser);
+      nUser.setRoles(roleSet);
+
+      // Sauvegarde de l'utilisateur
+      User savedUser = userDao.save(nUser);
+
+      // Retourne une réponse HTTP 201 Created avec l'utilisateur créé
+      return ResponseEntity.status(201).body(savedUser);
     }
+
 }

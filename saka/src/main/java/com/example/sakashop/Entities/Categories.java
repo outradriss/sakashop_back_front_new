@@ -1,6 +1,7 @@
 package com.example.sakashop.Entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "categories")
+@NoArgsConstructor
 public class Categories {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +25,19 @@ public class Categories {
   @JsonBackReference
   private List<Item> items; // Liste des items liés à cette catégorie
 
-  // Getters et Setters
+  public Categories(Long id, String name, LocalDateTime createdDate, List<Item> items) {
+    this.id = id;
+    this.name = name;
+    this.createdDate = createdDate;
+    this.items = items;
+  }
+
+  public Categories(Long id, String name, LocalDateTime createdDate) {
+    this.id = id;
+    this.name = name;
+    this.createdDate = createdDate;
+  }
+
   public Long getId() {
     return id;
   }

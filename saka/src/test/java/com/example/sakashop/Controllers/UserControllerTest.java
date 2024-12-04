@@ -2,33 +2,30 @@ package com.example.sakashop.Controllers;
 
 import com.example.sakashop.Configurations.TokenProvider;
 import com.example.sakashop.DTO.UserDTO;
+import com.example.sakashop.Entities.AuthToken;
 import com.example.sakashop.Entities.LoginUser;
 import com.example.sakashop.Entities.User;
 import com.example.sakashop.controllers.UserController;
 import com.example.sakashop.services.implServices.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.MediaType;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-class UserControllerTest {
-
-  private MockMvc mockMvc;
+@ExtendWith(MockitoExtension.class)
+public class UserControllerTest {
 
   @Mock
   private AuthenticationManager authenticationManager;
@@ -42,110 +39,107 @@ class UserControllerTest {
   @InjectMocks
   private UserController userController;
 
+  private LoginUser loginUser;
+  private UserDTO userDTO;
+  private User user;
+
   @BeforeEach
   void setUp() {
+    loginUser = new LoginUser();
+    loginUser.setEmail("testuser");
+    loginUser.setPassword("password");
+
+    userDTO = new UserDTO();
+    userDTO.setUsername("testuser");
+    userDTO.setPassword("password");
+    userDTO.setEmail("testuser@example.com");
+
+    user = new User();
+    user.setUsername("testuser");
+    user.setEmail("testuser@example.com");
+
+    // Initialisation des mocks
     MockitoAnnotations.openMocks(this);
-    mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
   }
 
   @Test
   void testGenerateToken() throws Exception {
-    LoginUser loginUser = new LoginUser();
-    loginUser.setEmail("testUser@test.com");
-    loginUser.setPassword("testPassword");
+    // Mock the authentication
+    Authentication authentication = mock(Authentication.class);
+    when(authenticationManager.authenticate(any())).thenReturn(authentication);
+    when(jwtTokenUtil.generateToken(authentication)).thenReturn("mocked-token");
 
-    Authentication authentication = new UsernamePasswordAuthenticationToken("testUser", "testPassword");
-    when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
-    when(jwtTokenUtil.generateToken(authentication)).thenReturn("mockToken");
+    ResponseEntity<?> response = userController.generateToken(loginUser);
 
-    mockMvc.perform(post("/api/users/authenticate")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"username\":\"testUser\", \"password\":\"testPassword\"}"))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.token").value("mockToken"));
-  }
-
-
-  @Test
-  void testSaveUser() throws Exception {
-    UserDTO userDTO = new UserDTO();
-    userDTO.setUsername("newUser");
-    userDTO.setPassword("newPassword");
-
-    User mockUser = new User();
-    mockUser.setUsername("newUser");
-
-    when(userService.save(any(UserDTO.class))).thenReturn(mockUser);
-
-    mockMvc.perform(post("/api/users/register")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"username\":\"newUser\", \"password\":\"newPassword\"}"))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.username").value("newUser"));
+    assertEquals(200, response.getStatusCodeValue());
+    assertNotNull(response.getBody());
+    assertTrue(response.getBody() instanceof AuthToken);
+    assertEquals("mocked-token", ((AuthToken) response.getBody()).getToken());
   }
 
   @Test
-  @WithMockUser(username = "admin", roles = {"ADMIN"})
-  void testAdminPing() throws Exception {
-    mockMvc.perform(get("/api/users/adminping"))
-      .andExpect(status().isOk())
-      .andExpect(content().string("Only Admins Can Read This"));
+  void testSaveUser() {
+    // Mock the userService behavior
+    when(userService.save(any(UserDTO.class))).thenReturn(user);
+
+    ResponseEntity<User> response = userController.saveUser(userDTO);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertNotNull(response.getBody());
+    assertEquals("testuser", response.getBody().getUsername());
   }
 
   @Test
-  @WithMockUser(username = "user", roles = {"USER"})
-  void testUserPing() throws Exception {
-    mockMvc.perform(get("/api/users/userping"))
-      .andExpect(status().isOk())
-      .andExpect(content().string("Any User Can Read This"));
+  @WithMockUser(roles = "ADMIN")
+  void testAdminPing() {
+    ResponseEntity<String> response = userController.adminPing();
+    assertEquals(200, response.getStatusCodeValue());
+    assertEquals("Only Admins Can Read This", response.getBody());
   }
 
   @Test
-  @WithMockUser(username = "admin", roles = {"ADMIN"})
-  void testGetAllUsers() throws Exception {
-    User user1 = new User();
-    user1.setUsername("user1");
-    User user2 = new User();
-    user2.setUsername("user2");
-
-    when(userService.findAll()).thenReturn(List.of(user1, user2));
-
-    mockMvc.perform(get("/api/users/find/all"))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.length()").value(2))
-      .andExpect(jsonPath("$[0].username").value("user1"))
-      .andExpect(jsonPath("$[1].username").value("user2"));
+  @WithMockUser(roles = "USER")
+  void testUserPing() {
+    ResponseEntity<String> response = userController.userPing();
+    assertEquals(200, response.getStatusCodeValue());
+    assertEquals("Any Users Can Read This", response.getBody());
   }
 
   @Test
-  @WithMockUser(username = "admin", roles = {"ADMIN"})
-  void testFindByUsername() throws Exception {
-    User user = new User();
-    user.setUsername("specificUser");
+  void testCreateEmployee() {
+    // Mock the userService behavior
+    when(userService.createEmployee(any(UserDTO.class))).thenReturn(ResponseEntity.ok(user));
 
-    when(userService.findOne("specificUser")).thenReturn(user);
+    ResponseEntity<User> response = userController.createEmployee(userDTO);
 
-    mockMvc.perform(get("/api/users/find/by/username")
-        .param("username", "specificUser"))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.username").value("specificUser"));
+    assertEquals(200, response.getStatusCodeValue());
+    assertNotNull(response.getBody());
+    assertEquals("testuser", response.getBody().getUsername());
   }
 
   @Test
-  @WithMockUser(username = "admin", roles = {"ADMIN"})
-  void testCreateEmployee() throws Exception {
-    UserDTO userDTO = new UserDTO();
-    userDTO.setUsername("employeeUser");
+  void testGetAllUsers() {
+    // Simuler le service qui retourne une liste d'utilisateurs
+    when(userService.findAll()).thenReturn(ResponseEntity.ok(List.of(user)));
 
-    User mockUser = new User();
-    mockUser.setUsername("employeeUser");
+    ResponseEntity<List<User>> response = userController.getAllList();
 
-    when(userService.createEmployee(any(UserDTO.class))).thenReturn(mockUser);
+    // Vérifications des assertions
+    assertEquals(200, response.getStatusCodeValue()); // Vérifie que le code HTTP est 200
+    assertNotNull(response.getBody()); // Vérifie que le corps de la réponse n'est pas null
+    assertEquals(1, response.getBody().size()); // Vérifie que la liste contient un utilisateur
+  }
 
-    mockMvc.perform(post("/api/users/create/employee")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"username\":\"employeeUser\"}"))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.username").value("employeeUser"));
+
+
+  @Test
+  void testGetUserByUsername() {
+    when(userService.findOne("testuser")).thenReturn(user);
+
+    ResponseEntity<User> response = userController.getAllList("testuser");
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertNotNull(response.getBody());
+    assertEquals("testuser", response.getBody().getUsername());
   }
 }

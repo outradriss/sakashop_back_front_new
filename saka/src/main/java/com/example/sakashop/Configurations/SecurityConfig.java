@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.annotation.Resource;
@@ -20,11 +21,11 @@ import javax.annotation.Resource;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
+    @Resource(name = "userService")
     private UserDetailsService userDetailsService;
 
     @Autowired
-    private PasswordEncoder encoder;
+    private PasswordEncoderConfig encoder;
 
     @Autowired
     private UnauthorizedEntryPoint unauthorizedEntryPoint;
@@ -38,7 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/api/users/authenticate", "/api/users/register", "/api/history/*","/api/products","/api/gestion-product/*","/api/products/delete/*","/api/gestion-product/save/category","/api/caisse/*").permitAll()
+                .antMatchers("/api/users/authenticate", "/api/users/register").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint).and()

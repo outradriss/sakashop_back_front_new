@@ -12,6 +12,10 @@ import { HistoryService } from '../service/product-service/history-service/histo
 export class HistoryComponent {
   productId!: number; // ID du produit
   productHistory: any[] = []; // Stocke les données retournées par le backend
+  paginatedProductHistory: any[] = [];
+  currentPage: number = 0;
+  itemsPerPage: number = 10; // Nombre de lignes à afficher par page
+  pages: number[] = [];
 
   constructor(private router : Router , private route : ActivatedRoute , private historyservice : HistoryService){}
   ngOnInit(): void {
@@ -28,11 +32,25 @@ export class HistoryComponent {
     this.historyservice.getProductHistory(productId).subscribe(
       (data) => {
         this.productHistory = data;
+        this.setPagination();
       },
       (error) => {
         console.error('Erreur lors du chargement de l\'historique :', error);
       }
     );
+  }
+  
+  setPagination(): void {
+    const totalPages = Math.ceil(this.productHistory.length / this.itemsPerPage);
+    this.pages = Array.from({ length: totalPages }, (_, i) => i);
+    this.changePage(0);
+  }
+  
+  changePage(page: number): void {
+    this.currentPage = page;
+    const start = page * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    this.paginatedProductHistory = this.productHistory.slice(start, end);
   }
 
 
@@ -41,7 +59,7 @@ export class HistoryComponent {
   }
   
   calculateSoldQuantity(): number {
-    return this.productHistory.reduce((total:any, product:any) => total + product.orderedQuantity, 0);
+    return this.productHistory.reduce((total:any, product:any) => total + product.cartQuantity, 0);
   }
   navigateTo(route: string): void {
     this.router.navigate([`/${route}`]);

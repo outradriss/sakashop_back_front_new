@@ -1,13 +1,13 @@
 <div class="history-container">
     <h3>Historique des Produits</h3>
   
-    <!-- Tableau d'historique -->
-    <div class="table-wrapper">
+    <!-- Tableau d'historique avec barre de défilement -->
+    <div class="table-scroll-wrapper">
       <table class="styled-table">
         <thead>
           <tr>
             <th>Nom du Produit</th>
-            <th>ID Produit</th>
+            <th>Code Produit</th>
             <th>Date d'Ajout</th>
             <th>Quantité en Stock</th>
             <th>Quantité Ajoutée</th>
@@ -21,25 +21,28 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let product of productHistory">
-            <td>{{ product.name }}</td>
-            <td>{{ product.id }}</td>
-            <td>{{ product.dateAdded | date: 'dd/MM/yyyy HH:mm' }}</td>
-            <td>{{ product.stockQuantity }}</td>
-            <td>{{ product.addedQuantity }}</td>
-            <td>{{ product.quantityAddedDate | date: 'dd/MM/yyyy HH:mm' }}</td>
-            <td>{{ product.orderId }}</td>
-            <td>{{ product.orderedQuantity }}</td>
-            <td>{{ product.orderDate | date: 'dd/MM/yyyy HH:mm' }}</td>
-            <td>{{ product.salesPrice | currency: 'MAD ':'symbol':'1.2-2' }}</td>
-            <td>
-              {{ product.pricePromo > 0 ? (product.pricePromo | currency: 'MAD ':'symbol':'1.2-2') : '-' }}
-            </td>
-            <td>
-              {{ product.negoPrice > 0 ? (product.negoPrice | currency: 'MAD ':'symbol':'1.2-2') : '-' }}
-            </td>
-          </tr>
-        </tbody>
+            <tr *ngFor="let product of productHistory">
+              <td>{{ product.nameProduct }}</td>
+              <td>{{ product.itemCode }}</td>
+              <td>{{ product.productAddedDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ product.stockQuantity }}</td>
+              <td>{{ product.orderedQuantity }}</td>
+              <td>{{ product.productAddedDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ product.orderId }}</td>
+              <td>{{ product.cartQuantity }}</td>
+              <td>{{ product.orderDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <!-- Affiche uniquement salesPrice si ni pricePromo ni negoPrice sont supérieurs à 0 -->
+                {{ product.pricePromo > 0 || product.negoPrice > 0 ? '-' : (product.salesPrice | currency: 'MAD ':'symbol':'1.2-2') }}
+              </td>
+              <td>
+                {{ product.pricePromo > 0 ? (product.pricePromo | currency: 'MAD ':'symbol':'1.2-2') : '-' }}
+              </td>
+              <td>
+                {{ product.negoPrice > 0 ? (product.negoPrice | currency: 'MAD ':'symbol':'1.2-2') : '-' }}
+              </td>
+            </tr>
+          </tbody>
       </table>
     </div>
   
@@ -60,12 +63,13 @@
         </tbody>
       </table>
     </div>
+  
     <div class="navigation-buttons">
-        <button (click)="navigateTo('gestion-produit')">Gestion de Produit</button>
-        <button (click)="navigateTo('credit-client')">Crédit Client</button>
-        <button (click)="navigateTo('meilleur-vente')">Meilleur Vente</button>
-        <button (click)="navigateTo('caisse/list')">Caisse</button>
-        <button class="btn-logout" (click)="logout()">Quitter</button>
-      </div>
+      <button (click)="navigateTo('gestion-produit')">Gestion de Produit</button>
+      <button (click)="navigateTo('credit-client')">Crédit Client</button>
+      <button (click)="navigateTo('meilleur-vente')">Meilleur Vente</button>
+      <button (click)="navigateTo('caisse/list')">Caisse</button>
+      <button class="btn-logout" (click)="logout()">Quitter</button>
+    </div>
   </div>
   

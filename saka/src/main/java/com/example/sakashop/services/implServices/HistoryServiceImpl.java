@@ -43,9 +43,10 @@ import java.util.stream.Collectors;
             Order associatedOrder = order.getOrder(); // Relation avec la commande
             return new ProductHistoryDTO(
               item.getName(),                       // Nom du produit
-              item.getId(),                         // ID du produit
+              item.getItemCode(),                   // ID du produit
               item.getProductAddedDate(),           // Date d'ajout du produit
-              item.getQuantity(),                   // Quantité actuelle en stock
+              item.getQuantity(),
+              item.getPricePromo(),// Quantité actuelle en stock
               order.getCartQuantity(),              // Quantité commandée pour ce produit
               order.getDateIntegration(),           // Date d'intégration
               associatedOrder.getIdOrder(),         // ID de la commande

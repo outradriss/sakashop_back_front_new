@@ -5,7 +5,6 @@ import java.util.Date;
 
 public class ProductHistoryDTO {
   private String nameProduct;
-  private Long productId;
   private Date productAddedDate;
   private int stockQuantity;
   private int cartQuantity;
@@ -16,15 +15,17 @@ public class ProductHistoryDTO {
   private double salesPrice;
   private double negoPrice;
   private LocalDateTime dateUpdate;
+  private String itemCode;
+  private double pricePromo;
 
-  public ProductHistoryDTO(String nameProduct, Long productId, Date productAddedDate, int stockQuantity,
+  public ProductHistoryDTO(String nameProduct,  String itemCode,Date productAddedDate,int stockQuantity,double pricePromo,
                            int cartQuantity, LocalDateTime dateIntegration, Long orderId, double totalPrice,
                            LocalDateTime orderDate, double salesPrice, double negoPrice, LocalDateTime dateUpdate) {
     this.nameProduct = nameProduct;
-    this.productId = productId;
     this.productAddedDate = productAddedDate;
     this.stockQuantity = stockQuantity;
     this.cartQuantity = cartQuantity;
+    this.pricePromo=pricePromo;
     this.dateIntegration = dateIntegration;
     this.orderId = orderId;
     this.totalPrice = totalPrice;
@@ -32,22 +33,31 @@ public class ProductHistoryDTO {
     this.salesPrice = salesPrice;
     this.negoPrice = negoPrice;
     this.dateUpdate = dateUpdate;
+    this.itemCode=itemCode;
   }
 
   public String getNameProduct() {
     return nameProduct;
   }
 
+  public double getPricePromo() {
+    return pricePromo;
+  }
+
+  public void setPricePromo(double pricePromo) {
+    this.pricePromo = pricePromo;
+  }
+
   public void setNameProduct(String nameProduct) {
     this.nameProduct = nameProduct;
   }
 
-  public Long getProductId() {
-    return productId;
+  public String getItemCode() {
+    return itemCode;
   }
 
-  public void setProductId(Long productId) {
-    this.productId = productId;
+  public void setItemCode(String itemCode) {
+    this.itemCode = itemCode;
   }
 
   public Date getProductAddedDate() {

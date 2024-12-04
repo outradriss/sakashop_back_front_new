@@ -18,7 +18,7 @@ public class Item {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
   @Column(name = "price_promo")
-  private String pricePromo;
+  private double pricePromo;
   @Column(name = "Item_Code")
   private String itemCode;
   @Column(name = "Item_Name")
@@ -52,7 +52,7 @@ public class Item {
 
 
 
-  public Item(Long id, String pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, Categories categories, LocalDateTime lastUpdated, boolean isPromo, Date expiredDate, Date productAddedDate) {
+  public Item(Long id, double pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, Categories categories, LocalDateTime lastUpdated, boolean isPromo, Date expiredDate, Date productAddedDate) {
     this.id = id;
     this.pricePromo = pricePromo;
     this.itemCode = itemCode;
@@ -108,17 +108,17 @@ public class Item {
   public Item() {
   }
 
-  public String getPricePromo() {
+  public double getPricePromo() {
     return pricePromo;
   }
 
-  public void setPricePromo(String promo) {
+  public void setPricePromo(double promo) {
     this.pricePromo = promo;
 
     // Met automatiquement isPromo à true si pricePromo est défini
     try {
-      if (pricePromo != null && !pricePromo.isEmpty()) {
-        Double pricePromoValue = Double.parseDouble(pricePromo);
+      if (pricePromo >0) {
+        Double pricePromoValue = pricePromo;
         this.isPromo = pricePromoValue > 0;
       } else {
         this.isPromo = false;

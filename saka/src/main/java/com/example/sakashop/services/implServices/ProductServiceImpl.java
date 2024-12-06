@@ -68,6 +68,7 @@ public class ProductServiceImpl implements productService {
     existingProduct.setSupplier(updatedProduct.getSupplier());
     existingProduct.setPricePromo(updatedProduct.getPricePromo());
     existingProduct.setIsPromo(updatedProduct.getIsPromo());
+    existingProduct.setExpiredDate(updatedProduct.getExpiredDate());
 
     // Sauvegarde du produit mis à jour
     Item savedProduct = productRepository.save(existingProduct);

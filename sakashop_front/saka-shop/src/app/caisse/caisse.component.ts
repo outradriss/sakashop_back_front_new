@@ -21,6 +21,9 @@ export class CaisseComponent {
   searchQuery: string = '';
   alerts: { message: string; productId: number }[] = [];
   dismissedAlerts: Set<number> = new Set(); // Stocker les IDs des produits déjà alertés
+  isPopupVisible = false;
+  expiringProducts: { name: string; expiredDate: string; id: number }[] = []; // Liste des produits proches de l'expiration
+
 
   constructor(private router: Router , private caisseService : CaisseService , private cdr: ChangeDetectorRef) {}
 
@@ -111,11 +114,13 @@ export class CaisseComponent {
     this.caisseService.getAllInCaisse().subscribe(
       (data) => {
         this.cachedProducts = data; // Stocke toutes les données des produits
-        this.products = this.cachedProducts.slice(0, 32); // Limite à 32 produits
+        this.products = this.cachedProducts.slice(0, 32);
+        this.checkProductExpiration(); // Limite à 32 produits
         this.filteredProducts = this.products.map((product) => ({
           ...product, // Conserve toutes les propriétés
           isPromo: product.isPromo, // Assure la copie de la propriété isPromo
-        })); // Prépare les données pour l'affichage limité
+          
+        })); 
       },
       (error) => {
         console.error('Erreur lors du chargement des produits :', error);
@@ -239,7 +244,15 @@ export class CaisseComponent {
     updateTotal(): void {
       this.calculateTotal();
     }
-  
+
+    showPopup(): void {
+      this.isPopupVisible = true;
+    }
+    
+    closePopup(): void {
+      this.isPopupVisible = false;
+    }
+    
   
 
   // Annuler la commande
@@ -267,36 +280,47 @@ export class CaisseComponent {
 
   checkProductExpiration(): void {
     const today = new Date(); // Aujourd'hui
-    const thresholdDate = new Date(); // Date limite (20 jours)
+    const thresholdDate = new Date(); // Date limite (14 jours)
     thresholdDate.setDate(today.getDate() + 14);
   
-    this.alerts = []; // Réinitialiser les alertes avant de vérifier
+    // Liste des produits concernés
+    const expiringProducts: { name: string; expiredDate: string; id: number }[] = [];
   
     this.cachedProducts.forEach((product) => {
-      debugger
       if (product.expiredDate) {
-        const expiredDate = new Date(product.expiredDate); // Assure que la date est bien un objet Date
+        const expiredDate = new Date(product.expiredDate);
   
         // Vérifie si la date est valide et tombe dans l'intervalle
-        if (
-          expiredDate instanceof Date &&
-          expiredDate > today &&
-          expiredDate <= thresholdDate
-        ) {
-          const diffInDays = Math.ceil(
-            (expiredDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-          );
-  
+        if (expiredDate > today && expiredDate <= thresholdDate) {
           // Vérifie si une alerte pour ce produit a déjà été ignorée
           if (!this.dismissedAlerts.has(product.id)) {
-            this.alerts.push({
-              message: `Attention, il reste ${diffInDays} jours avant que le produit "${product.name}" se périme.`,
-              productId: product.id,
+            expiringProducts.push({
+              name: product.name,
+              expiredDate: expiredDate.toLocaleDateString(),
+              id: product.id,
             });
           }
         }
       }
     });
+  
+    // Génère un message global uniquement si des produits expirants sont trouvés
+    if (expiringProducts.length > 0) {
+      const count = expiringProducts.length;
+  
+      // Génère une alerte globale sans inclure directement les produits (évite l'erreur de typage)
+      this.alerts = [
+        {
+          message: `Attention, il y a ${count} produit${count > 1 ? 's' : ''} dont la date d'expiration est proche. Cliquez sur "En savoir +" pour voir la liste complète.`,
+          productId: -1, // Utilisez une valeur fictive si nécessaire
+        },
+      ];
+  
+      // Conservez les produits expirants pour les afficher dans un popup ou autre
+      this.expiringProducts = expiringProducts; // Assurez-vous que `expiringProducts` existe dans la classe
+    } else {
+      this.alerts = []; // Pas d'alertes si aucun produit concerné
+    }
   
     this.cdr.detectChanges(); // Forcer la mise à jour de l'affichage
   }

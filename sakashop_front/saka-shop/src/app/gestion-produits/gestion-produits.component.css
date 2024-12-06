@@ -314,9 +314,18 @@ button:hover {
     color: #000;
   }
   .navigation-buttons button:nth-child(4) {
+    background-color: #a8dd98;
+    color: #000;
+  }
+  .navigation-buttons button:nth-child(5) {
+    background-color: #ff0783;
+    color: #000;
+  }
+  .navigation-buttons button:nth-child(6) {
     background-color: #ff0707;
     color: #000;
   }
+  
   .input-with-icon {
     position: relative;
     display: flex;
@@ -607,44 +616,6 @@ button:hover {
   background-color: #218838;
 }
 
-  
-/*Alerte*/
-.alerts-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  padding: 10px;
-  background-color: #ffcccb;
-  border-bottom: 1px solid #e0b4b4;
-}
-
-.alert {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background-color: #f44336;
-  color: white;
-  margin-bottom: 5px;
-  border-radius: 5px;
-}
-
-.close-btn {
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.close-btn:hover {
-  color: #000;
-}
-
-
-
 
 
 
@@ -684,4 +655,40 @@ button:hover {
   height: auto;
   max-height: 70%;
   overflow-y: auto;
+}
+.error-message {
+  color: #d32f2f;
+  background-color: #fdecea;
+  padding: 10px;
+  border: 1px solid #f5c6cb;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Conteneur global pour le message de succès */
+.global-success-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px 20px;
+  border: 1px solid #c3e6cb;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  z-index: 9999;
+  text-align: center;
+  animation: fadeOut 2s linear 1s forwards; /* Animation de disparition */
+}
+
+/* Animation de disparition */
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
 }

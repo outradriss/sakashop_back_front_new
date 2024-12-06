@@ -3,11 +3,12 @@ import { Categories, Product } from '../models/product.model';
 import { Route, Router } from '@angular/router';
 import { ProductService } from '../service/product-service/product.service';
 import Swal from 'sweetalert2';
+import { ToastrService } from 'ngx-toastr';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-gestion-produits',
   standalone: false,
-  
   templateUrl: './gestion-produits.component.html',
   styleUrl: './gestion-produits.component.css'
 })
@@ -42,9 +43,12 @@ export class GestionProduitsComponent {
   cachedProducts: Product[] = [];
   isDuplicateItemCode: boolean = false;
   isNameReadOnly: boolean = false; // Indique si le champ `name` est modifiable
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
+
  
 
-  constructor(private productService: ProductService, private router: Router) {}
+  constructor(private productService: ProductService, private router: Router , private toastr: ToastrService) {}
 
 
 loadCategoriesFromProducts(): void {
@@ -269,9 +273,14 @@ calculatePagination(): void {
   }
 
   saveProduct(): void {
-    // Vérifier la catégorie
-    if (!this.productForms.categories || !this.productForms.categories.id) {
-      alert('Veuillez sélectionner une catégorie.');
+    // Vérification de la catégorie
+    if (!this.productForms.categories?.id) {
+      Swal.fire({
+        title: 'Erreur',
+        text: 'Veuillez sélectionner une catégorie.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+      });
       return;
     }
   
@@ -279,9 +288,25 @@ calculatePagination(): void {
       ? this.productService.updateProduct(this.productForms.id, this.productForms)
       : this.productService.saveProduct(this.productForms);
   
-    saveOperation.subscribe(
-      (savedProduct) => {
+    saveOperation.subscribe({
+      next: (savedProduct) => {
         const action = this.editingProduct ? 'modifié' : 'ajouté';
+  
+        // Ajouter ou mettre à jour le produit dans la liste locale
+        if (this.editingProduct) {
+          const index = this.products.findIndex((prod) => prod.id === savedProduct.id);
+          if (index !== -1) {
+            this.products[index] = savedProduct;
+          }
+        } else {
+          this.products.push(savedProduct);
+        }
+  
+        // Mettre à jour le cache et appliquer les filtres
+        this.cachedProducts = [...this.products];
+        this.applyPaginationAndFilter();
+  
+        // Afficher une notification de succès
         Swal.fire({
           title: 'Succès',
           text: `Le produit "${this.productForms.name}" a été ${action} avec succès.`,
@@ -289,30 +314,27 @@ calculatePagination(): void {
           confirmButtonText: 'OK',
         });
   
-        if (this.editingProduct) {
-          // Mettre à jour le produit modifié dans les données locales
-          const index = this.products.findIndex((prod) => prod.id === savedProduct.id);
-          if (index !== -1) {
-            this.products[index] = savedProduct;
-          }
-        } else {
-          // Ajouter le nouveau produit à la liste
-          this.products.push(savedProduct);
-        }
-  
-        // Mettre à jour le cache local et appliquer la pagination
-        this.cachedProducts = [...this.products];
-        this.applyPaginationAndFilter();
-  
-        this.showPopup = false; // Fermer le popup
-        this.productForms = this.resetProductForm(); // Réinitialiser le formulaire
+        // Réinitialiser le formulaire et fermer le popup
+        this.resetFormAndClosePopup();
       },
-      (error) => {
+      error: (error) => {
         console.error(`Erreur lors de la sauvegarde du produit :`, error);
-        alert(`Erreur lors de la sauvegarde du produit.`);
-      }
-    );
+        Swal.fire({
+          title: 'Erreur',
+          text: 'Une erreur est survenue lors de la sauvegarde du produit. Veuillez réessayer.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
+      },
+    });
   }
+  
+  // Méthode utilitaire pour réinitialiser le formulaire et fermer le popup
+  private resetFormAndClosePopup(): void {
+    this.showPopup = false; // Fermer le popup
+    this.productForms = this.resetProductForm(); // Réinitialiser le formulaire
+  }
+  
   
 
   onItemCodeChange(): void {
@@ -618,18 +640,33 @@ addCategory(): void {
   // Appeler le service pour sauvegarder la catégorie
   this.productService.saveCategory(newCategory).subscribe(
     (savedCategory) => {
-      alert(`Catégorie "${savedCategory.name}" ajoutée avec succès.`);
-      this.categories.push(savedCategory); // Ajouter la nouvelle catégorie à la liste locale
-      this.showCategoryPopup = false; // Fermer le popup d'ajout de catégorie
+      // Message de succès
+      this.successMessage = `Catégorie "${savedCategory.name}" ajoutée avec succès.`;
+  
+      // Ajouter la catégorie à la liste locale
+      this.categories.push(savedCategory);
+  
+      // Fermer le popup
+      this.showCategoryPopup = false;
       this.newCategoryName = ''; // Réinitialiser le champ
+  
+      // Supprimer le message après 2 secondes
+      setTimeout(() => {
+        this.successMessage = null;
+      }, 2000);
     },
-    (error) => {
-      console.error('Erreur lors de l\'ajout de la catégorie :', error);
-      alert('Erreur lors de l\'ajout de la catégorie.');
+    (error: HttpErrorResponse) => {
+      console.error('Erreur capturée :', error);
+  
+      // Afficher un message d'erreur dans la popup
+      this.errorMessage =
+        error.status === 409 && typeof error.error === 'string'
+          ? error.error // Message brut du backend
+          : 'Une erreur est survenue. Veuillez réessayer.';
     }
-  );
+  );  
+   
 }
-
 
   showAddCategoryPopup(): void {
     this.newCategoryName = ''; // Réinitialiser le champ

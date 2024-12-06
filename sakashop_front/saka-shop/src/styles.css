@@ -38,3 +38,12 @@ label{
 }
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.toast-center-center {
+  top: 50% !important;       /* Position verticale centrée */
+  left: 50% !important;      /* Position horizontale centrée */
+  transform: translate(-50%, -50%) !important; /* Ajustement pour être centré */
+  z-index: 9999 !important;  /* S'assurer qu'il est au-dessus des modaux */
+  width: auto !important;    /* Éviter qu'il prenne toute la largeur */
+  text-align: center;        /* Centrer le texte à l'intérieur du toast */
+}

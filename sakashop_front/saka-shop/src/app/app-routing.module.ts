@@ -9,6 +9,8 @@ import { GestionVenteComponent } from './gestion-vente/gestion-vente.component';
 import { AuthGuard } from './auth.guard';
 import { GestionProduitsComponent } from './gestion-produits/gestion-produits.component';
 import { HistoryComponent } from './history/history.component';
+import { TurnoverComponent } from './turnover/turnover.component';
+import { ConsumerComponent } from './consumer/consumer.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent  },
@@ -19,6 +21,8 @@ const routes: Routes = [
   { path: 'meilleur-vente', component: GestionVenteComponent ,canActivate: [AuthGuard] },
   { path: 'gestion-product/list', component: GestionProduitsComponent ,canActivate: [AuthGuard] },
   { path: 'history', component: HistoryComponent ,canActivate: [AuthGuard] },
+  { path: 'consumer', component: ConsumerComponent ,canActivate: [AuthGuard] },
+  { path: 'turnover', component: TurnoverComponent ,canActivate: [AuthGuard] },
   { path: '**', component: LoginComponent  },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 ];

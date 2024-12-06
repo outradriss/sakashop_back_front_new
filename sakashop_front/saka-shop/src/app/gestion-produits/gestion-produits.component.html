@@ -2,7 +2,8 @@
     <div class="navigation-buttons">
         <button (click)="navigateTo('gestion-produit')">Gestion de Produit</button>
         <button (click)="navigateTo('credit-client')">Crédit Client</button>
-        <button (click)="navigateTo('meilleur-vente')">Meilleur Vente</button>
+        <button (click)="navigateTo('meilleur-vente')">Gesion de  Vente</button>
+        <button (click)="navigateTo('turnov')">chiffre d'affaire</button>
         <button (click)="navigateTo('caisse/list')">Caisse</button>
         <button class="btn-logout" (click)="logout()">Quitter</button>
       </div>
@@ -48,7 +49,7 @@
             <td>{{ product.quantity }}</td>
             <td>{{ product.buyPrice | currency: 'MAD ':'symbol':'1.2-2'  }}</td>
             <td>{{ product.salesPrice | currency: 'MAD ':'symbol':'1.2-2'  }}</td>
-            <td>{{ product.categories?.name }}</td>
+            <td>{{ product.categories.name }}</td>
             <td>{{ product.supplier }}</td>
             <td>{{ product.isPromo  ? 'Oui' : 'Non'  }}</td>
             <td>{{ product.pricePromo }}</td>
@@ -262,12 +263,20 @@
                   </button>
                 </div>
               
-              
+                <div *ngIf="successMessage" class="global-success-message">
+                  {{ successMessage }}
+                </div>
               <!-- Popup pour ajouter une nouvelle catégorie -->
               <div class="popup-overlay" *ngIf="showCategoryPopup">
                 <div class="popup">
                   <h3>Ajouter une Catégorie</h3>
                   <form (ngSubmit)="addCategory()" #categoryForm="ngForm">
+                    <!-- Zone de message générique -->
+                    <!-- Conteneur pour le message de succès -->
+                    <div *ngIf="errorMessage" class="error-message">
+                      {{ errorMessage }}
+                    </div>
+              
                     <div class="form-group">
                       <label for="newCategoryName">Nom de la Catégorie :</label>
                       <input
@@ -284,12 +293,9 @@
                     </div>
                   </form>
                 </div>
-              </div>
-              
-              
-              
-      
-            <!-- Fournisseur -->
+              </div>              
+
+                      <!-- Fournisseur -->
             <div class="form-group">
               <label for="supplier">Fournisseur :</label>
               <input

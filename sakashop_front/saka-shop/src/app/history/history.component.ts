@@ -8,7 +8,7 @@ import { FormControl, FormGroup } from '@angular/forms';
   selector: 'app-history',
   standalone: false,
   templateUrl: './history.component.html',
-  styleUrl: './history.component.css'
+  styleUrl: './history.component.css',
 })
 export class HistoryComponent {
   productId!: number; // ID du produit

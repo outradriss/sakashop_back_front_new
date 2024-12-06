@@ -37,10 +37,11 @@
         </div>
       </div>      
       <div class="navigation-buttons">
-        <button (click)="navigateTo('gestion-product/list')">Gestion de Produit</button>
-        <button (click)="navigateTo('gestion-product/list')">Gestion de vente / chiffre d'affaire</button>
+        <button (click)="navigateTo('gestion-product/list')">Gestion de STOCK</button>
+        <button (click)="navigateTo('turnover')">chiffre d'affaire</button>
+        <button (click)="navigateTo('vente')">Gestion de vente</button>
         <button (click)="navigateTo('credit-client')">Crédit Client</button>
-        <button (click)="navigateTo('meilleur-vente')">Meilleur Vente</button>
+        <button (click)="navigateTo('consumer')">Consumer</button>
         <button class="btn-logout" (click)="logout()">Quitter</button>
       </div>
     </div>
@@ -103,14 +104,31 @@
           </div>
         </div>
       
-   <!-- Alerte -->
-   <div class="alerts-container">
-    <div *ngFor="let alert of alerts" class="alert">
-      {{ alert.message }}
-      <button class="close-btn" (click)="dismissAlert(alert)">X</button>
-    </div>
+<!-- Alerte globale en haut de la page -->
+<div *ngIf="alerts.length > 0" class="global-alert">
+  <div class="alert-content">
+    <span>{{ alerts[0].message }}</span>
+    <button class="alert-btn" (click)="showPopup()">En savoir +</button>
+    <button class="close-btn" (click)="dismissAlert(alerts[0])">X</button>
   </div>
-  
+</div>
+
+<!-- Popup alert -->
+<div *ngIf="isPopupVisible" class="popup-overlay">
+  <div class="popup-content">
+    <button class="close-btn" (click)="closePopup()">X</button>
+    <h3>Produits proches de l'expiration</h3>
+    <ul>
+      <li *ngFor="let product of expiringProducts">
+        <strong>{{ product.name }}</strong> - Expire le {{ product.expiredDate }}
+      </li>
+    </ul>
+    <button class="action-btn" (click)="closePopup()">Fermer</button>
+  </div>
+</div>
+
+
+
     <!-- Modal de Confirmation -->
     <div class="modal" *ngIf="isModalOpen">
       <div class="modal-content">

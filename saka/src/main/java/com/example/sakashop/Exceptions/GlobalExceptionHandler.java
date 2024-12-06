@@ -1,5 +1,6 @@
 package com.example.sakashop.Exceptions;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -34,6 +35,17 @@ public class GlobalExceptionHandler {
   public ResponseEntity<?> handleBadCredentialsException(BadCredentialsException ex) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Identifiants invalides.");
   }
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  public ResponseEntity<String> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+    // Vérifiez si l'erreur concerne une clé dupliquée
+    if (ex.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
+      return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body("Vous ne pouvez pas ajouter une catégorie qui existe déjà.");
+    }
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur de base de données.");
+  }
+
 
 }
 

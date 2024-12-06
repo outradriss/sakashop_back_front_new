@@ -8,10 +8,10 @@ import com.example.sakashop.DTO.ProductHistoryDTO;
 import com.example.sakashop.Entities.Item;
 import com.example.sakashop.Entities.ItemsOrders;
 import com.example.sakashop.Entities.Order;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,36 +34,66 @@ import java.util.stream.Collectors;
         Item item = productRepository.findById(productId)
           .orElseThrow(() -> new EntityNotFoundException("Produit introuvable avec l'ID : " + productId));
 
-        // Récupère les données historiques de la table `ItemsOrders` pour cet item
+        // Vérifie si le code de l'item est valide
+        if (item.getItemCode() == null || item.getItemCode().trim().isEmpty()) {
+          throw new IllegalStateException("Le produit avec l'ID " + productId + " n'a pas de code valide.");
+        }
+
+        // Récupère les données historiques de la table `ItemsOrders`
         List<ItemsOrders> itemsOrders = itemsOrdersRepository.findByItem(item);
 
-        // Transformation des données en ProductHistoryDTO
+        // Vérifie si `itemsOrders` est vide
+        if (itemsOrders == null || itemsOrders.isEmpty()) {
+          return List.of(new ProductHistoryDTO(
+            item.getName(),
+            item.getItemCode(),
+            item.getProductAddedDate(),
+            item.getQuantity(),
+            item.getPricePromo() ,
+            item.getBuyPrice(),
+            0, // Quantité ajoutée par défaut
+            item.getSalesPrice(), // Prix de vente par défaut
+            item.getProductAddedDate(), // Date par défaut
+            null, // ID commande
+            0.0, // Total commande par défaut
+            null, // Date commande par défaut
+            0.0, // Prix négocié par défaut
+            null // Date de mise à jour par défaut
+          ));
+        }
+
+        // Transformation des données en `ProductHistoryDTO`
         return itemsOrders.stream()
           .map(order -> {
-            Order associatedOrder = order.getOrder(); // Relation avec la commande
+            Order associatedOrder = order.getOrder();
             return new ProductHistoryDTO(
-              item.getName(),                       // Nom du produit
-              item.getItemCode(),                   // ID du produit
-              item.getProductAddedDate(),           // Date d'ajout du produit
+              item.getName(),
+              item.getItemCode(),
+              item.getProductAddedDate(),
               item.getQuantity(),
-              item.getPricePromo(),// Quantité actuelle en stock
-              order.getCartQuantity(),              // Quantité commandée pour ce produit
-              order.getDateIntegration(),           // Date d'intégration
-              associatedOrder.getIdOrder(),         // ID de la commande
-              associatedOrder.getTotalePrice(),     // Total de la commande
-              associatedOrder.getDateOrder(),       // Date de la commande
-              order.getSalesPrice(),                // Prix de vente
-              order.getNegoPrice(),                 // Prix négocié
-              order.getDateUpdate()                 // Date de mise à jour
+              item.getPricePromo() ,
+              item.getBuyPrice() ,
+              order.getCartQuantity(),
+              order.getSalesPrice(),
+              order.getDateIntegration() != null ? order.getDateIntegration() : item.getProductAddedDate(),
+              associatedOrder != null ? associatedOrder.getIdOrder() : null,
+              associatedOrder != null ? associatedOrder.getTotalePrice() : 0.0,
+              associatedOrder != null ? associatedOrder.getDateOrder() : null,
+              order.getNegoPrice() ,
+              order.getDateUpdate() != null ? order.getDateUpdate() : null
             );
           })
           .collect(Collectors.toList());
 
       } catch (EntityNotFoundException ex) {
+        // Gérer le cas où le produit est introuvable
         throw ex; // Laisser remonter pour être géré par le contrôleur ou @ControllerAdvice
       } catch (Exception ex) {
+        // Gérer toute autre exception imprévue
         throw new RuntimeException("Erreur lors de la récupération de l'historique du produit", ex);
       }
     }
+
+
   }
 

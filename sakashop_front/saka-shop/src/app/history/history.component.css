@@ -1,131 +1,229 @@
 .history-container {
-    margin: 150px auto;
-    max-width: 90%;
+    margin: 10px auto;
+    max-width: 98%;
     font-family: Arial, sans-serif;
-  }
-  
-  .table-scroll-wrapper {
-    max-height: 400px; /* Hauteur maximale avec la barre de défilement */
+    background-color: #eaf3f3;
+    padding: 10px;
+    border-radius: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Boutons pour sélectionner le type d'historique */
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1px;
+}
+
+.btn-history {
+    margin: 0 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    border: none;
+    border-radius: 80px;
+    cursor: pointer;
+    background: linear-gradient(to right, #1e90ff, #00bcd4);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.btn-history:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Header row: Titre, informations produit, et calendrier */
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+/* Titre */
+.header-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #115106;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+/* Informations Produit */
+.product-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.product-info p {
+    margin: 0;
+    padding: 5px 0;
+}
+
+/* Calendrier */
+.calendar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+/* Tableaux */
+.table-scroll-wrapper {
+    max-height: 400px; /* Limite la hauteur totale du tableau */
     overflow-y: auto; /* Ajoute une barre de défilement verticale */
-    border: 1px solid #ccc; /* Bordure pour séparer visuellement */
-  }
-  .styled-table {
+    border-radius: 8px; /* Bordures arrondies */
+    border: 1px solid #ccc; /* Bordure légère */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombre légère */
+}
+
+.styled-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 16px;
     text-align: left;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .styled-table thead tr {
-    background-color: #009879;
-    color: #ffffff;
-    text-align: center;
-  }
-  
-  .styled-table th,
-  .styled-table td {
-    padding: 12px 15px;
-    border: 1px solid #dddddd;
-  }
-  
-  .styled-table tbody tr {
+}
+
+/* En-tête fixé */
+.styled-table thead th {
+    position: sticky; /* Fixe les en-têtes */
+    top: 0; /* Reste en haut */
+    z-index: 2; /* Assure que l'entête est au-dessus */
+    background-color: #009879; /* Couleur de fond */
+    color: #ffffff; /* Texte blanc */
+    padding: 12px 15px; /* Espacement */
+    border: 1px solid #ddd; /* Bordures */
+}
+
+/* Lignes du tableau */
+.styled-table tbody tr {
     background-color: #f9f9f9;
-  }
-  
-  .styled-table tbody tr:nth-child(even) {
-    background-color: #f3f3f3;
-  }
-  
-  .styled-table tbody tr:hover {
-    background-color: #f1f1f1;
-  }
-  
-  .styled-table tbody tr td {
+}
+
+.styled-table tbody tr:nth-child(even) {
+    background-color: #f3f3f3; /* Ligne alternative */
+}
+
+.styled-table tbody tr:hover {
+    background-color: #e0f7fa; /* Ligne survolée */
+}
+
+/* Cellules des lignes */
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
     text-align: center;
-  }
-  
-  .totals-table {
+}
+
+
+/* Totaux */
+.totals-styled-table {
     margin-top: 20px;
-    width: 40%;
+    width: 60%;
     margin-left: auto;
     margin-right: auto;
-    text-align: center;
-  }
-  
-  .totals-styled-table {
-    width: 100%;
     border-collapse: collapse;
     font-size: 16px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .totals-styled-table thead tr {
-    background-color: #f39c12;
+}
+
+.totals-styled-table thead tr {
+    background-color: #009879;
     color: #ffffff;
-  }
-  
-  .totals-styled-table th,
-  .totals-styled-table td {
-    padding: 12px 15px;
-    border: 1px solid #dddddd;
-  }
-  
-  .totals-styled-table tbody tr {
-    background-color: #fdfdfd;
-  }
-  
-  .totals-styled-table tbody tr:hover {
-    background-color: #f1f1f1;
-  }
-  
-    /* Conteneur pour les boutons de navigation */
+}
+
+.totals-styled-table th,
+.totals-styled-table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+/* Navigation boutons */
 .navigation-buttons {
     position: fixed;
-    bottom: 30px; /* Espace par rapport au bas de la page */
-    left: 40%; /* Centre horizontalement */
-    transform: translateX(-30%); /* Ajustement pour centrer */
+    bottom: 30px;
+    left: 40%;
+    transform: translateX(-30%);
     display: flex;
-    gap: 15px; /* Espace entre les boutons */
-  }
-  
-  /* Style pour les boutons */
-  .navigation-buttons button {
+    gap: 15px;
+}
+
+.navigation-buttons button {
     padding: 20px 30px;
     font-size: 1rem;
     border: none;
     border-radius: 50px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-  }
-  
-  .navigation-buttons button:hover {
+}
+
+.navigation-buttons button:hover {
     background-color: #0056b3;
     color: #fff;
-  }
-  
-  .navigation-buttons button:nth-child(1) {
+}
+
+.navigation-buttons button:nth-child(1) {
     background-color: #007bff;
     color: #fff;
-  }
-  
-  .navigation-buttons button:nth-child(2) {
+}
+
+.navigation-buttons button:nth-child(2) {
     background-color: #17a2b8;
     color: #fff;
-  }
-  
-  .navigation-buttons button:nth-child(3) {
+}
+
+.navigation-buttons button:nth-child(3) {
     background-color: #ffc107;
     color: #000;
-  }
-  .navigation-buttons button:nth-child(4) {
-    background-color: #07f7ff;
-    color: #000;
+}
 
-  }
-  .navigation-buttons button:nth-child(5) {
-    background-color: #ff0000;
+.navigation-buttons button:nth-child(4) {
+    background-color: #ff07ee;
     color: #000;
-    transform: translateX(100%);
-  }
-  
+}
+
+.navigation-buttons button:nth-child(5) {
+    background-color: #ff0707;
+    color: #000;
+    transform: translateX(200%);
+}
+
+/* Champs date-range */
+.mat-form-field {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.mat-hint {
+    font-size: 12px;
+    color: #999;
+}
+
+.mat-error {
+    color: #f44336;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.mat-datepicker-toggle {
+    color: #3f51b5;
+}
+
+.buttons-container .btn-apply {
+    background-color: #4caf50;
+    color: #fff;
+}
+
+.buttons-container .btn-reset {
+    background-color: #f44336;
+    color: #fff;
+}

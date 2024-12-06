@@ -1,75 +1,122 @@
 <div class="history-container">
-    <h3>Historique des Produits</h3>
-  
-    <!-- Tableau d'historique avec barre de défilement -->
-    <div class="table-scroll-wrapper">
-      <table class="styled-table">
-        <thead>
-          <tr>
-            <th>Nom du Produit</th>
-            <th>Code Produit</th>
-            <th>Date d'Ajout</th>
-            <th>Quantité en Stock</th>
-            <th>Quantité Ajoutée</th>
-            <th>Date d'Ajout de Quantité</th>
-            <th>ID Commande</th>
-            <th>Quantité Commandée</th>
-            <th>Date de Commande</th>
-            <th>Prix de Vente</th>
-            <th>Prix Promo</th>
-            <th>Prix Négocié</th>
-          </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let product of productHistory">
-              <td>{{ product.nameProduct }}</td>
-              <td>{{ product.itemCode }}</td>
-              <td>{{ product.productAddedDate | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td>{{ product.stockQuantity }}</td>
-              <td>{{ product.orderedQuantity }}</td>
-              <td>{{ product.productAddedDate | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td>{{ product.orderId }}</td>
-              <td>{{ product.cartQuantity }}</td>
-              <td>{{ product.orderDate | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td>
-                <!-- Affiche uniquement salesPrice si ni pricePromo ni negoPrice sont supérieurs à 0 -->
-                {{ product.pricePromo > 0 || product.negoPrice > 0 ? '-' : (product.salesPrice | currency: 'MAD ':'symbol':'1.2-2') }}
-              </td>
-              <td>
-                {{ product.pricePromo > 0 ? (product.pricePromo | currency: 'MAD ':'symbol':'1.2-2') : '-' }}
-              </td>
-              <td>
-                {{ product.negoPrice > 0 ? (product.negoPrice | currency: 'MAD ':'symbol':'1.2-2') : '-' }}
-              </td>
-            </tr>
-          </tbody>
-      </table>
+    <!-- Boutons pour sélectionner le type d'historique -->
+    <div class="button-container">
+        <button class="btn-history" mat-raised-button color="primary" (click)="showPurchaseHistory()">
+            Historique d'Achat
+        </button>
+        <button class="btn-history" mat-raised-button color="accent" (click)="showSalesHistory()">
+            Historique de Vente
+        </button>
     </div>
-  
-    <!-- Totaux en bas du tableau -->
+
+    <!-- Header avec Titre, Informations Produit et Calendrier -->
+    <div class="header-row">
+        <h3 class="header-title">{{ showPurchase ? 'Historique d\'Achat' : 'Historique de Vente' }}</h3>
+        <div class="product-info" *ngIf="selectedProduct">
+            <p><strong>Nom du Produit :</strong> {{ selectedProduct.nameProduct }}</p>
+            <p><strong>Code Produit :</strong> {{ selectedProduct.itemCode }}</p>
+        </div>
+        <div class="calendar-container">
+            <mat-form-field appearance="outline" class="date-range-field">
+                <mat-label>Choisir une période</mat-label>
+                <mat-date-range-input [formGroup]="range" [rangePicker]="picker">
+                    <input matStartDate formControlName="start" placeholder="Date de début" />
+                    <input matEndDate formControlName="end" placeholder="Date de fin" />
+                </mat-date-range-input>
+                <mat-hint>Ex: 01/01/2024 – 31/12/2024</mat-hint>
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-date-range-picker #picker></mat-date-range-picker>
+            </mat-form-field>
+            <div class="buttons-container">
+                <button class="btn-apply" mat-raised-button color="accent" (click)="filterByDateRange()">Appliquer</button>
+                <button class="btn-reset" mat-raised-button color="primary" (click)="resetDateRange()">Réinitialiser</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau d'historique -->
+    <div class="history-table">
+        <!-- Historique d'achat -->
+        <div class="table-scroll-wrapper" *ngIf="showPurchase">
+            <!-- Message d'erreur -->
+            <div *ngIf="productHistory.length === 0" class="no-data-message">
+                <p>Aucune donnée trouvée pour la plage de dates sélectionnée.</p>
+            </div>
+            <table class="styled-table" *ngIf="productHistory.length > 0">
+                <thead>
+                    <tr>
+                        <th>Date d'Ajout du produit </th>
+                        <th>Quantité en Stock</th>
+                        <th>Prix d'Achat</th>
+                        <th>PVC prévu</th>
+                        <th>Quantité Supplémentaire</th>
+                        <th>Date d'Ajout Quantité Supplémentaire</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let product of productHistory">
+                        <td>{{ product.productAddedDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                        <td>{{ product.stockQuantity }}</td>
+                        <td>{{ product.buyPrice | currency: 'MAD ':'symbol':'1.2-2' }}</td>
+                        <td>{{ product.salesPrice | currency: 'MAD ':'symbol':'1.2-2' }}</td>
+                        <td>{{ product.addedQuantity }}</td>
+                        <td>{{ product.quantityAddedDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Historique de vente -->
+        <div class="table-scroll-wrapper" *ngIf="showSales">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>ID Commande</th>
+                        <th>Quantité Commandée</th>
+                        <th>Date de la Commande</th>
+                        <th>PVC par unité (normale)</th>
+                        <th>PVC par unité (avec Promo)</th>
+                        <th>PVC par unité (avec Négociation)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let product of productHistory">
+                        <td>{{ product.orderId }}</td>
+                        <td>{{ product.cartQuantity }}</td>
+                        <td>{{ product.orderDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                        <td>{{ product.salesPrice | currency: 'MAD ':'symbol':'1.2-2' }}</td>
+                        <td>{{ product.pricePromo > 0 ? (product.pricePromo | currency: 'MAD ':'symbol':'1.2-2') : '-' }}</td>
+                        <td>{{ product.negoPrice > 0 ? (product.negoPrice | currency: 'MAD ':'symbol':'1.2-2') : '-' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Totaux -->
     <div class="totals-table">
-      <table class="totals-styled-table">
-        <thead>
-          <tr>
-            <th>Quantité Restante</th>
-            <th>Quantité Vendue</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{{ calculateRemainingQuantity() }}</td>
-            <td>{{ calculateSoldQuantity() }}</td>
-          </tr>
-        </tbody>
-      </table>
+        <table class="totals-styled-table">
+            <thead>
+                <tr>
+                    <th>Quantité Restante en Stock</th>
+                    <th>Quantité Vendue</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ calculateRemainingQuantity() }}</td>
+                    <td>{{ calculateSoldQuantity() }}</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-  
+
+    <!-- Navigation -->
     <div class="navigation-buttons">
-      <button (click)="navigateTo('gestion-produit')">Gestion de Produit</button>
-      <button (click)="navigateTo('credit-client')">Crédit Client</button>
-      <button (click)="navigateTo('meilleur-vente')">Meilleur Vente</button>
-      <button (click)="navigateTo('caisse/list')">Caisse</button>
-      <button class="btn-logout" (click)="logout()">Quitter</button>
+        <button (click)="navigateTo('gestion-product/list')">Gestion de Produit</button>
+        <button (click)="navigateTo('credit-client')">Crédit Client</button>
+        <button (click)="navigateTo('meilleur-vente')">Meilleur Vente</button>
+        <button (click)="navigateTo('caisse/list')">Caisse</button>
+        <button class="btn-logout" (click)="logout()">Quitter</button>
     </div>
-  </div>
-  
+</div>

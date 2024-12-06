@@ -2,6 +2,7 @@ package com.example.sakashop.Exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -27,6 +28,11 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleBadRequest(IllegalArgumentException ex) {
     ErrorResponse errorResponse = new ErrorResponse("Invalid data", ex.getMessage());
     return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(BadCredentialsException.class)
+  public ResponseEntity<?> handleBadCredentialsException(BadCredentialsException ex) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Identifiants invalides.");
   }
 
 }

@@ -37,9 +37,13 @@ export class GestionProduitsComponent {
   totalPages: number = 84; // Nombre total de pages (à mettre à jour dynamiquement)
   pageSize: number = 10;
   pagesToShow: number[] = []; // Pages affichées en tant que boutons
-remainingPages: number[] = []; // Pages affichées dans le menu déroulant
+  remainingPages: number[] = []; // Pages affichées dans le menu déroulant
   visiblePages: number[] = [];
   cachedProducts: Product[] = [];
+  isDuplicateItemCode: boolean = false;
+  isNameReadOnly: boolean = false; // Indique si le champ `name` est modifiable
+ 
+
   constructor(private productService: ProductService, private router: Router) {}
 
 
@@ -78,26 +82,29 @@ updatePagination(): void {
 // Appeler cette méthode après chaque chargement des produits
 loadProducts(): void {
   if (this.cachedProducts.length > 0) {
-    // Si les données sont déjà en cache, appliquez simplement la pagination et le filtrage
+    // Si les données sont déjà en cache, appliquez la pagination et le filtrage immédiatement
     this.applyPaginationAndFilter();
-  } else {
-    // Sinon, récupérer les données depuis le backend
-    this.productService.getAllProducts().subscribe(
-      (data) => {
-        this.cachedProducts = data; // Met toutes les données en cache
-        this.products = [...this.cachedProducts]; // Initialise les produits
-        this.filteredProducts = [...this.products]; // Initialise les produits filtrés
-        this.totalPages = Math.ceil(this.cachedProducts.length / this.pageSize); // Calcule le nombre total de pages
-        this.updatePagination(); // Met à jour les boutons de pagination
-        this.loadCategoriesFromProducts(); // Extrait les catégories
-        this.applyPaginationAndFilter(); // Applique la pagination et le filtrage
-      },
-      (error) => {
-        console.error('Erreur lors du chargement des produits', error);
-      }
-    );
+    return;
   }
+
+  // Charger les données depuis le backend si non en cache
+  this.productService.getAllProducts().subscribe(
+    (data) => {
+      this.cachedProducts = [...data]; // Stocker les données dans le cache
+      this.products = [...data]; // Initialiser les produits
+      this.filteredProducts = [...this.products]; // Initialiser les produits filtrés
+
+      // Mise à jour des catégories et de la pagination
+      this.loadCategoriesFromProducts();
+      this.totalPages = Math.ceil(this.cachedProducts.length / this.pageSize);
+      this.applyPaginationAndFilter();
+    },
+    (error) => {
+      console.error('Erreur lors du chargement des produits', error);
+    }
+  );
 }
+
 disablePromo(product: Product): void {
   if (!product.isPromo) return;
 
@@ -124,7 +131,7 @@ disablePromo(product: Product): void {
             icon: 'success',
             confirmButtonText: 'OK',
           });
-          this.loadProducts(); // Rafraîchit la liste des produits
+         this.loadProducts(); // Rafraîchit la liste des produits
         },
         (error) => {
           Swal.fire({
@@ -184,21 +191,22 @@ applyPaginationAndFilter(): void {
 
   // Appliquer le filtre de recherche
   if (this.searchQuery.trim()) {
-    const query = this.searchQuery.trim().toLowerCase();
-    const filtered = this.cachedProducts.filter(
-      (product) =>
-        product.name.toLowerCase().includes(query) || // Filtrer par nom
-        product.itemCode.toLowerCase().includes(query) // Optionnel : filtrer par code produit
-    );
-    this.filteredProducts = filtered.slice(startIndex, endIndex); // Appliquer la pagination sur les données filtrées
-    this.totalPages = Math.ceil(filtered.length / this.pageSize); // Mettre à jour le nombre total de pages basé sur les données filtrées
+      const query = this.searchQuery.trim().toLowerCase();
+      const filtered = this.cachedProducts.filter(
+          (product) =>
+              product.name.toLowerCase().includes(query) || // Filtrer par nom
+              product.itemCode.toLowerCase().includes(query) // Filtrer par code produit
+      );
+      this.filteredProducts = filtered.slice(startIndex, endIndex); // Appliquer la pagination sur les données filtrées
+      this.totalPages = Math.ceil(filtered.length / this.pageSize); // Mettre à jour le nombre total de pages basé sur les données filtrées
   } else {
-    // Pas de recherche : appliquer uniquement la pagination sur toutes les données
-    this.filteredProducts = this.cachedProducts.slice(startIndex, endIndex);
-    this.totalPages = Math.ceil(this.cachedProducts.length / this.pageSize);
+      // Pas de recherche : appliquer uniquement la pagination sur toutes les données
+      this.filteredProducts = this.cachedProducts.slice(startIndex, endIndex);
+      this.totalPages = Math.ceil(this.cachedProducts.length / this.pageSize);
   }
 
-  this.updatePagination(); // Mettre à jour les boutons de pagination
+  // Recalculer les pages visibles
+  this.calculatePagination();
 }
 
 
@@ -239,18 +247,20 @@ filterProducts(): void {
 calculatePagination(): void {
   this.visiblePages = [];
   this.remainingPages = [];
+
   // Ajouter la page précédente, actuelle et suivante comme boutons visibles
   for (let i = Math.max(0, this.currentPage - 1); i <= Math.min(this.currentPage + 1, this.totalPages - 1); i++) {
-    this.visiblePages.push(i);
+      this.visiblePages.push(i);
   }
 
   // Ajouter les autres pages au menu déroulant
   for (let i = 0; i < this.totalPages; i++) {
-    if (!this.visiblePages.includes(i)) {
-      this.remainingPages.push(i);
-    }
+      if (!this.visiblePages.includes(i)) {
+          this.remainingPages.push(i);
+      }
   }
 }
+
   // Ajouter, Modifier, Supprimer, Réinitialiser les champs, etc.
   showAddProductPopup(): void {
     this.showPopup = true;
@@ -259,27 +269,43 @@ calculatePagination(): void {
   }
 
   saveProduct(): void {
+    // Vérifier la catégorie
     if (!this.productForms.categories || !this.productForms.categories.id) {
       alert('Veuillez sélectionner une catégorie.');
       return;
     }
   
-    // Continuer avec la sauvegarde
     const saveOperation = this.editingProduct
       ? this.productService.updateProduct(this.productForms.id, this.productForms)
       : this.productService.saveProduct(this.productForms);
   
     saveOperation.subscribe(
-      () => {
+      (savedProduct) => {
         const action = this.editingProduct ? 'modifié' : 'ajouté';
         Swal.fire({
           title: 'Succès',
-          text: `Le produit "${action}" a été ajouté avec succès.`,
+          text: `Le produit "${this.productForms.name}" a été ${action} avec succès.`,
           icon: 'success',
           confirmButtonText: 'OK',
         });
-        this.showPopup = false; // Ferme le popup
-        this.loadProducts(); // Rafraîchit la liste des produits
+  
+        if (this.editingProduct) {
+          // Mettre à jour le produit modifié dans les données locales
+          const index = this.products.findIndex((prod) => prod.id === savedProduct.id);
+          if (index !== -1) {
+            this.products[index] = savedProduct;
+          }
+        } else {
+          // Ajouter le nouveau produit à la liste
+          this.products.push(savedProduct);
+        }
+  
+        // Mettre à jour le cache local et appliquer la pagination
+        this.cachedProducts = [...this.products];
+        this.applyPaginationAndFilter();
+  
+        this.showPopup = false; // Fermer le popup
+        this.productForms = this.resetProductForm(); // Réinitialiser le formulaire
       },
       (error) => {
         console.error(`Erreur lors de la sauvegarde du produit :`, error);
@@ -287,6 +313,34 @@ calculatePagination(): void {
       }
     );
   }
+  
+
+  onItemCodeChange(): void {
+    // Réinitialiser les erreurs et champs liés
+    this.isDuplicateItemCode = false; // Supprimer le message d'erreur
+    this.productForms.name = ''; // Réinitialiser le champ name
+    this.isNameReadOnly = false; // Rendre modifiable
+  }
+  
+  onItemCodeBlur(): void {
+    if (!this.editingProduct) { // Vérifier uniquement en mode ajout
+      const existingProduct = this.products.find(
+        (product) => product.itemCode === this.productForms.itemCode
+      );
+  
+      if (existingProduct) {
+        // Si un doublon est trouvé
+        this.isDuplicateItemCode = true;
+        this.productForms.name = existingProduct.name; // Remplir le champ name
+        this.isNameReadOnly = true; // Rendre le champ non modifiable
+      } else {
+        // Pas de doublon, réinitialiser les erreurs et champs
+        this.isDuplicateItemCode = false;
+        this.isNameReadOnly = false;
+      }
+    }
+  }
+  
   
   
   refreshData(): void {
@@ -301,7 +355,7 @@ calculatePagination(): void {
       }
     );
   }
-   // Gestion des remises
+
 // Afficher le popup pour sélectionner un produit
 showAddDiscountPopup(): void {
   this.showDiscountPopup = true;
@@ -371,7 +425,6 @@ applyDiscount(): void {
     alert('Aucun produit sélectionné pour appliquer la remise.');
     return;
   }
-
   // Vérification et application du prix promo
   if (this.promoPrice > 0) {
     this.selectedProduct.pricePromo = this.promoPrice; // Définir le nouveau prix promo
@@ -420,43 +473,49 @@ hideApplyDiscountPopup(): void {
       
       confirmDelete(): void {
         if (this.deletingProduct && this.deletingProduct.id) {
-          this.productService.deleteProduct(this.deletingProduct.id).subscribe(
-            () => {
-              alert('Produit supprimé avec succès.');
-              this.loadProducts(); // Rafraîchit la liste des produits
-              this.showConfirmDeletePopup = false; // Ferme le popup
-              this.deletingProduct = null;
-            },
-            (error) => {
-              console.error('Erreur lors de la suppression du produit :', error);
-              alert('Erreur lors de la suppression du produit.');
-            }
-          );
+            this.productService.deleteProduct(this.deletingProduct.id).subscribe(
+                () => {
+                    Swal.fire({
+                        title: 'Succès',
+                        text: 'Produit supprimé avec succès.',
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                    });
+    
+                    // Supprimer le produit des listes locales
+                    if (this.deletingProduct) {
+                        this.cachedProducts = this.cachedProducts.filter(
+                            (product) => product.id !== this.deletingProduct?.id
+                        );
+                        this.products = [...this.cachedProducts]; // Actualiser la liste principale
+                        this.applyPaginationAndFilter(); // Réappliquer la pagination et le filtrage
+                    }
+    
+                    this.showConfirmDeletePopup = false; // Fermer le popup
+                    this.deletingProduct = null;
+                },
+                (error) => {
+                    console.error('Erreur lors de la suppression du produit :', error);
+                    Swal.fire({
+                        title: 'Erreur',
+                        text: 'Une erreur s\'est produite lors de la suppression du produit.',
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                    });
+                }
+            );
+        } else {
+            console.warn('Aucun produit sélectionné pour la suppression.');
         }
-      }
-      
+    }
+    
+     
       cancelDelete(): void {
         this.showConfirmDeletePopup = false;
         this.deletingProduct = null;
       }
-      deleteProduct(product: Product): void {
-        if (product.id) {
-          this.productService.deleteProduct(product.id).subscribe(
-            (message) => {
-              alert(message); // Affiche le message renvoyé par le backend
-              this.loadProducts(); // Rafraîchissez la liste des produits
-            },
-            (error) => {
-              console.error('Erreur lors de la suppression du produit :', error);
-              alert('Erreur lors de la suppression du produit.');
-            }
-          );
-        } else {
-          alert("L'ID du produit est introuvable.");
-        }
-      }
   
-
+  
   hidePopup(): void {
     this.showPopup = false;
     this.productForms = this.resetProductForm();
@@ -581,6 +640,14 @@ addCategory(): void {
     this.showCategoryPopup = false;
   }
 
+  viewHistory(productId: number): void {
+    this.router.navigate(['/history'], { queryParams: { id: productId } });
+  }
+
+
+
+
+
 
   logout() {
     localStorage.removeItem('token');
@@ -588,8 +655,6 @@ addCategory(): void {
     this.router.navigate(['/login']);
   }
   
-  viewHistory(productId: number): void {
-    this.router.navigate(['/history'], { queryParams: { id: productId } });
-  }
+
 
 }

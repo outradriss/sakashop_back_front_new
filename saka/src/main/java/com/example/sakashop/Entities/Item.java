@@ -47,12 +47,12 @@ public class Item {
   @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ItemsOrders> itemsOrders = new ArrayList<>();
   @Column(name = "product_added_date")
-  private Date productAddedDate;
+  private LocalDateTime productAddedDate;
 
 
 
 
-  public Item(Long id, double pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, Categories categories, LocalDateTime lastUpdated, boolean isPromo, Date expiredDate, Date productAddedDate) {
+  public Item(Long id, double pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, Categories categories, LocalDateTime lastUpdated, boolean isPromo, Date expiredDate, LocalDateTime productAddedDate) {
     this.id = id;
     this.pricePromo = pricePromo;
     this.itemCode = itemCode;
@@ -68,7 +68,7 @@ public class Item {
     this.productAddedDate = productAddedDate;
   }
 
-  public Date getProductAddedDate() {
+  public LocalDateTime getProductAddedDate() {
     return productAddedDate;
   }
 
@@ -96,7 +96,7 @@ public class Item {
     this.expiredDate = expiredDate;
   }
 
-  public void setProductAddedDate(Date productAddedDate) {
+  public void setProductAddedDate(LocalDateTime productAddedDate) {
     this.productAddedDate = productAddedDate;
   }
 

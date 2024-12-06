@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserDetailsService, userService {
     private BCryptPasswordEncoder bcryptEncoder;
 
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    User response = userDao.findByUsername(username);
+    User response = userDao.findByEmail(username);
 
     // Vérification que la réponse n'est pas null et contient un corps valide
     if (response == null) {
@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserDetailsService, userService {
 
     User user = response; // Récupération de l'objet User encapsulé dans ResponseEntity
     return new org.springframework.security.core.userdetails.User(
-      user.getUsername(),
+      user.getEmail(),
       user.getPassword(),
       getAuthority(user)
     );

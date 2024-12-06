@@ -10,7 +10,7 @@ import java.util.List;
 public interface UserDAO extends CrudRepository<User, Long> {
     User findByUsername(String username);
 
-  List<User> findByEmail(String email);
+  User findByEmail(String email);
 
   boolean existsByEmail(String email);
 }

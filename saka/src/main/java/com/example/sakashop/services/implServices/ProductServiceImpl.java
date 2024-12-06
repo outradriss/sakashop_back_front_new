@@ -42,11 +42,11 @@ public class ProductServiceImpl implements productService {
     item.setCategories(category); // Associer l'entité persistante
     return productRepository.save(item);
   }
+
   @CacheEvict(value = "categories", allEntries = true)
   public Categories addCategory(Categories categories) {
    return categoryRepo.save(categories);
   }
-
 
 
   @CacheEvict(value = "products", allEntries = true)
@@ -60,7 +60,6 @@ public class ProductServiceImpl implements productService {
     Item existingProduct = productRepository.findById(id)
       .orElseThrow(() -> new RuntimeException("Produit introuvable"));
 
-    // Mise à jour des champs
     existingProduct.setName(updatedProduct.getName());
     existingProduct.setBuyPrice(updatedProduct.getBuyPrice());
     existingProduct.setQuantity(updatedProduct.getQuantity());

@@ -33,6 +33,7 @@ export class ProductService {
   updateProduct(id: number, product: Product): Observable<Product> {
     return this.http.put<Product>(`${this.apiUrl}/${id}`, product);
   }
+  
   deleteProduct(id: number): Observable<string> {
     return this.http.delete(`${this.apiUrl}/delete/${id}`, { responseType: 'text' });
   }

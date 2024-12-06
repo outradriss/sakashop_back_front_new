@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Product } from '../models/product.model';
 import { CaisseService } from '../service/product-service/caisse-service/caisse.service';
@@ -19,11 +19,14 @@ export class CaisseComponent {
   products: Product[] = []; // Tous les produits (limités à 32 pour affichage initial)
   cart: Product[] = []; // Panier
   searchQuery: string = '';
+  alerts: { message: string; productId: number }[] = [];
+  dismissedAlerts: Set<number> = new Set(); // Stocker les IDs des produits déjà alertés
 
-  constructor(private router: Router , private caisseService : CaisseService) {}
+  constructor(private router: Router , private caisseService : CaisseService , private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadProducts();
+    this.checkProductExpiration();
   }
 
   // Ajouter au panier
@@ -261,6 +264,50 @@ export class CaisseComponent {
   navigateTo(route: string) {
     this.router.navigate([`/${route}`]);
   }
+
+  checkProductExpiration(): void {
+    const today = new Date(); // Aujourd'hui
+    const thresholdDate = new Date(); // Date limite (20 jours)
+    thresholdDate.setDate(today.getDate() + 14);
+  
+    this.alerts = []; // Réinitialiser les alertes avant de vérifier
+  
+    this.cachedProducts.forEach((product) => {
+      debugger
+      if (product.expiredDate) {
+        const expiredDate = new Date(product.expiredDate); // Assure que la date est bien un objet Date
+  
+        // Vérifie si la date est valide et tombe dans l'intervalle
+        if (
+          expiredDate instanceof Date &&
+          expiredDate > today &&
+          expiredDate <= thresholdDate
+        ) {
+          const diffInDays = Math.ceil(
+            (expiredDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+          );
+  
+          // Vérifie si une alerte pour ce produit a déjà été ignorée
+          if (!this.dismissedAlerts.has(product.id)) {
+            this.alerts.push({
+              message: `Attention, il reste ${diffInDays} jours avant que le produit "${product.name}" se périme.`,
+              productId: product.id,
+            });
+          }
+        }
+      }
+    });
+  
+    this.cdr.detectChanges(); // Forcer la mise à jour de l'affichage
+  }
+  
+  
+  // Fermer l'alerte
+  dismissAlert(alert: { message: string; productId: number }): void {
+    this.alerts = this.alerts.filter((a) => a.productId !== alert.productId);
+    this.dismissedAlerts.add(alert.productId); // Empêche l'affichage futur de cette alerte
+  }
+
   logout() {
     localStorage.removeItem('token');
     // Redirige l'utilisateur vers la page de login

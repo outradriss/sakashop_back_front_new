@@ -22,7 +22,6 @@
     </button>
       <button (click)="exportToCSV()" class="btn-export-csv">Exporter en CSV</button>
     </div>
-  
     <!-- Tableau des Produits -->
     <div class="product-list">
       <table>
@@ -53,8 +52,8 @@
             <td>{{ product.supplier }}</td>
             <td>{{ product.isPromo  ? 'Oui' : 'Non'  }}</td>
             <td>{{ product.pricePromo }}</td>
-            <td>{{ product.productAddedDate}}</td>
-            <td>{{ product.expiredDate}}</td>
+            <td>{{ product.productAddedDate | date: 'dd/MM/yyyy HH:mm'}}  </td>
+            <td>{{ product.expiredDate | date: 'dd/MM/yyyy HH:mm' }}</td>
             <td>
               <button (click)="editProduct(product)" class="btn-edit">Modifier</button>
               <button (click)="openConfirmDeletePopup(product)" class="btn-delete">Supprimer</button>
@@ -113,37 +112,47 @@
         <div class="popup product-popup">
           <h3>{{ editingProduct ? 'Modifier Produit' : 'Ajouter Produit' }}</h3>
           <form #productForm="ngForm" (ngSubmit)="saveProduct()" novalidate>
-            <!-- Item Code -->
-            <div class="form-group">
-              <label for="itemCode">Item Code :</label>
-              <input
-                type="text"
-                id="itemCode"
-                [(ngModel)]="productForms.itemCode"
-                name="itemCode"
-                required
-                #itemCode="ngModel"
-              />
-              <div *ngIf="(productForm.submitted || itemCode.touched) && itemCode.invalid" class="error">
-                Item Code est requis.
-              </div>
-            </div>
-      
-            <!-- Nom du Produit -->
-            <div class="form-group">
-              <label for="name">Nom du Produit :</label>
-              <input
-                type="text"
-                id="name"
-                [(ngModel)]="productForms.name"
-                name="name"
-                required
-                #name="ngModel"
-              />
-              <div *ngIf="(productForm.submitted || name.touched) && name.invalid" class="error">
-                Nom du Produit est requis.
-              </div>
-            </div>
+            
+     <!-- Item Code -->
+     <div class="form-group">
+      <label for="itemCode">Item Code :</label>
+      <input
+        type="text"
+        id="itemCode"
+        [(ngModel)]="productForms.itemCode"
+        name="itemCode"
+        required
+        #itemCode="ngModel"
+        (input)="onItemCodeChange()" 
+        (blur)="onItemCodeBlur()"
+      />
+      <div *ngIf="itemCode.invalid && itemCode.touched && !isDuplicateItemCode && !editingProduct" class="error">
+        Item Code est requis.
+      </div>
+      <div *ngIf="isDuplicateItemCode" class="error">
+        Item Code est déjà utilisé en stock , vous nous pouvez pas changé le nom.
+      </div>
+    </div>
+ 
+    
+
+<!-- Nom du Produit -->
+<div class="form-group">
+  <label for="name">Nom du Produit :</label>
+  <input
+    type="text"
+    id="name"
+    [(ngModel)]="productForms.name"
+    name="name"
+    required
+    #name="ngModel"
+    [readonly]="isNameReadOnly"/>
+  <div *ngIf="(productForm.submitted || name.touched) && name.invalid" class="error">
+    Nom du Produit est requis.
+  </div>
+</div>
+
+
             <div class="form-group">
                 <label for="productAddedDate">Date et Heure d'Ajout :</label>
                 <input
@@ -320,9 +329,6 @@
           </form>
         </div>
       </div>
-      
-      
-   
       <!-- Popup d'Ajout de Remise -->
   <div class="popup-overlay" *ngIf="showDiscountPopup">
     <div class="popup discount-popup">
@@ -341,8 +347,6 @@
       <button (click)="hideDiscountPopup()">Annuler</button>
     </div>
   </div>
-
-
  <!-- Popup d'Application de Remise -->
  <div class="popup-overlay" *ngIf="showApplyDiscountPopup">
     <div class="popup">

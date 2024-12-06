@@ -15,7 +15,9 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { GestionProduitsComponent } from './gestion-produits/gestion-produits.component';
 import { HistoryComponent } from './history/history.component';
-
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
+import { MatNativeDateModule } from '@angular/material/core';
 @NgModule({
   declarations: [
     AppComponent,
@@ -35,10 +37,13 @@ import { HistoryComponent } from './history/history.component';
     ReactiveFormsModule,
     HttpClientModule,
     NgxChartsModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    MatDatepickerModule,
+    MatInputModule,
+    MatNativeDateModule
   ],
   providers: [
-    { provide: LOCALE_ID, useValue: 'ar-MA' } // Définit la locale marocaine
+    { provide: LOCALE_ID, useValue: 'en-US' } 
   ],
   bootstrap: [AppComponent]
 })

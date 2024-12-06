@@ -103,6 +103,13 @@
           </div>
         </div>
       
+   <!-- Alerte -->
+   <div class="alerts-container">
+    <div *ngFor="let alert of alerts" class="alert">
+      {{ alert.message }}
+      <button class="close-btn" (click)="dismissAlert(alert)">X</button>
+    </div>
+  </div>
   
     <!-- Modal de Confirmation -->
     <div class="modal" *ngIf="isModalOpen">

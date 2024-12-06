@@ -3,7 +3,7 @@
 @import url('../node_modules/simple-keyboard/build/css/index.css');
 body{
   
-  background-color: rgb(255, 255, 255);
+  background-color: rgb(187, 214, 199);
 }
 .auth-card{
   background: #c31432;  /* fallback for old browsers */
@@ -36,3 +36,5 @@ label{
 .simple-keyboard {
   max-width: 850px;
 }
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

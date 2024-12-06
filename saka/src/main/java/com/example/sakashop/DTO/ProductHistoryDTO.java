@@ -3,9 +3,10 @@ package com.example.sakashop.DTO;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+
 public class ProductHistoryDTO {
   private String nameProduct;
-  private Date productAddedDate;
+  private LocalDateTime productAddedDate;
   private int stockQuantity;
   private int cartQuantity;
   private LocalDateTime dateIntegration;
@@ -17,15 +18,15 @@ public class ProductHistoryDTO {
   private LocalDateTime dateUpdate;
   private String itemCode;
   private double pricePromo;
+  private double buyPrice;
 
-  public ProductHistoryDTO(String nameProduct,  String itemCode,Date productAddedDate,int stockQuantity,double pricePromo,
-                           int cartQuantity, LocalDateTime dateIntegration, Long orderId, double totalPrice,
-                           LocalDateTime orderDate, double salesPrice, double negoPrice, LocalDateTime dateUpdate) {
+  public ProductHistoryDTO(String nameProduct, String itemCode, LocalDateTime productAddedDate, int stockQuantity, double pricePromo, double buyPrice,
+                           int cartQuantity, double salesPrice, LocalDateTime dateIntegration, Long orderId, double totalPrice,
+                           LocalDateTime orderDate, double negoPrice, LocalDateTime dateUpdate) {
     this.nameProduct = nameProduct;
     this.productAddedDate = productAddedDate;
     this.stockQuantity = stockQuantity;
     this.cartQuantity = cartQuantity;
-    this.pricePromo=pricePromo;
     this.dateIntegration = dateIntegration;
     this.orderId = orderId;
     this.totalPrice = totalPrice;
@@ -34,11 +35,14 @@ public class ProductHistoryDTO {
     this.negoPrice = negoPrice;
     this.dateUpdate = dateUpdate;
     this.itemCode=itemCode;
+    this.pricePromo=pricePromo;
+    this.buyPrice=buyPrice;
   }
 
   public String getNameProduct() {
     return nameProduct;
   }
+
 
   public double getPricePromo() {
     return pricePromo;
@@ -52,6 +56,14 @@ public class ProductHistoryDTO {
     this.nameProduct = nameProduct;
   }
 
+  public double getBuyPrice() {
+    return buyPrice;
+  }
+
+  public void setBuyPrice(double buyPrice) {
+    this.buyPrice = buyPrice;
+  }
+
   public String getItemCode() {
     return itemCode;
   }
@@ -60,11 +72,11 @@ public class ProductHistoryDTO {
     this.itemCode = itemCode;
   }
 
-  public Date getProductAddedDate() {
+  public LocalDateTime getProductAddedDate() {
     return productAddedDate;
   }
 
-  public void setProductAddedDate(Date productAddedDate) {
+  public void setProductAddedDate(LocalDateTime productAddedDate) {
     this.productAddedDate = productAddedDate;
   }
 

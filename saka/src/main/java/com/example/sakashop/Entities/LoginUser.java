@@ -20,7 +20,6 @@ public class LoginUser {
     return Email;
   }
 
-
   public void setEmail(String email) {
     Email = email;
   }

@@ -252,9 +252,7 @@ export class CaisseComponent {
     closePopup(): void {
       this.isPopupVisible = false;
     }
-    
-  
-
+ 
   // Annuler la commande
   cancel(): void {
     Swal.fire({

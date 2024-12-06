@@ -43,20 +43,7 @@
       </div>
     </div>
   
-    <!-- Graphique -->
-    <div *ngIf="salesData" class="chart-container">
-      <h3>Graphique des Produits Vendus</h3>
-      <ngx-charts-bar-vertical
-        [view]="[700, 400]"
-        [scheme]="colorScheme"
-        [results]="chartData"
-        [xAxis]="true"
-        [yAxis]="true"
-        [legend]="false"
-        [showDataLabel]="true"
-      >
-      </ngx-charts-bar-vertical>
-    </div>
+
     <div class="navigation-buttons">
         <button (click)="navigateTo('gestion-produit')">Gestion de Produit</button>
         <button (click)="navigateTo('credit-client')">Crédit Client</button>

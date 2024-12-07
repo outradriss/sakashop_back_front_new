@@ -18,7 +18,7 @@ const routes: Routes = [
   { path: 'home', component: HomeComponent,canActivate: [AuthGuard]  },
   { path: 'caisse/list', component: CaisseComponent ,canActivate: [AuthGuard] },
   { path: 'credit-client', component: CreditClientsComponent ,canActivate: [AuthGuard] },
-  { path: 'meilleur-vente', component: GestionVenteComponent ,canActivate: [AuthGuard] },
+  { path: 'gestion-vente', component: GestionVenteComponent ,canActivate: [AuthGuard] },
   { path: 'gestion-product/list', component: GestionProduitsComponent ,canActivate: [AuthGuard] },
   { path: 'history', component: HistoryComponent ,canActivate: [AuthGuard] },
   { path: 'consumer', component: ConsumerComponent ,canActivate: [AuthGuard] },

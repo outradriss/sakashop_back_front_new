@@ -4,6 +4,7 @@ package com.example.sakashop.services.implServices;
 import com.example.sakashop.DAO.HistoryREpo;
 import com.example.sakashop.DAO.ItemsOrdersREpo;
 import com.example.sakashop.DAO.ProductRepository;
+import com.example.sakashop.DTO.OrderRequestDTO;
 import com.example.sakashop.DTO.ProductHistoryDTO;
 import com.example.sakashop.Entities.Item;
 import com.example.sakashop.Entities.ItemsOrders;
@@ -20,12 +21,12 @@ import java.util.stream.Collectors;
 
     private final ProductRepository productRepository;
     private final ItemsOrdersREpo itemsOrdersRepository;
-    private final  HistoryREpo historyREpo;
+    private final HistoryREpo historyREpo;
 
-    public HistoryServiceImpl(ProductRepository productRepository, ItemsOrdersREpo itemsOrdersRepository,HistoryREpo historyREpo) {
+    public HistoryServiceImpl(ProductRepository productRepository, ItemsOrdersREpo itemsOrdersRepository, HistoryREpo historyREpo) {
       this.productRepository = productRepository;
       this.itemsOrdersRepository = itemsOrdersRepository;
-      this.historyREpo=historyREpo;
+      this.historyREpo = historyREpo;
     }
 
     public List<ProductHistoryDTO> getProductHistory(Long productId) {
@@ -49,7 +50,7 @@ import java.util.stream.Collectors;
             item.getItemCode(),
             item.getProductAddedDate(),
             item.getQuantity(),
-            item.getPricePromo() ,
+            item.getPricePromo(),
             item.getBuyPrice(),
             0, // Quantité ajoutée par défaut
             item.getSalesPrice(), // Prix de vente par défaut
@@ -71,15 +72,15 @@ import java.util.stream.Collectors;
               item.getItemCode(),
               item.getProductAddedDate(),
               item.getQuantity(),
-              item.getPricePromo() ,
-              item.getBuyPrice() ,
+              item.getPricePromo(),
+              item.getBuyPrice(),
               order.getCartQuantity(),
               order.getSalesPrice(),
               order.getDateIntegration() != null ? order.getDateIntegration() : item.getProductAddedDate(),
               associatedOrder != null ? associatedOrder.getIdOrder() : null,
               associatedOrder != null ? associatedOrder.getTotalePrice() : 0.0,
               associatedOrder != null ? associatedOrder.getDateOrder() : null,
-              order.getNegoPrice() ,
+              order.getNegoPrice(),
               order.getDateUpdate() != null ? order.getDateUpdate() : null
             );
           })
@@ -93,6 +94,40 @@ import java.util.stream.Collectors;
         throw new RuntimeException("Erreur lors de la récupération de l'historique du produit", ex);
       }
     }
+
+    public List<OrderRequestDTO> getAllProductHistory() {
+      // Récupérer toutes les données de ItemsOrders avec Items inclus
+      List<ItemsOrders> itemsOrders = itemsOrdersRepository.findAllWithItems();
+
+      // Mapper chaque ItemsOrders vers un DTO OrderRequestDTO
+      return itemsOrders.stream().map(itemsOrder -> {
+        // Récupérer le buyPrice depuis Items
+        double buyPrice = itemsOrder.getItem() != null && itemsOrder.getItem().getBuyPrice() > 0
+          ? itemsOrder.getItem().getBuyPrice()
+          : 0; // Si buyPrice est indisponible, définir 0 ou lever une exception personnalisée.
+
+        return new OrderRequestDTO.Builder(
+          itemsOrder.getId(),
+          itemsOrder.getName(),
+          itemsOrder.getCartQuantity(),
+          itemsOrder.getStockQuantity(),
+          itemsOrder.getPromoPrice() > 0, // Promo ?
+          itemsOrder.getPromoPrice(),
+          itemsOrder.getSalesPrice(),
+          itemsOrder.getDateIntegration(),
+          itemsOrder.getDateUpdate(),
+          itemsOrder.getItem().getId(),
+          itemsOrder.getId(),
+          buyPrice * itemsOrder.getCartQuantity(), // Totale Price basé sur buyPrice
+          itemsOrder.getNegoPrice(),
+          buyPrice
+        ).setBuyPrice(buyPrice)
+          .setPricePromo(itemsOrder.getPromoPrice())
+          .setTotalePrice(buyPrice * itemsOrder.getCartQuantity())
+          .buildOrder();
+      }).collect(Collectors.toList());
+    }
+
 
 
   }

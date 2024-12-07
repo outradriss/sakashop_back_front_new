@@ -65,7 +65,6 @@ public class CaisseServiceImpl implements caisseService {
       order.setDateOrder(orders.get(0).getDateOrder());
       order.setLastUpdated(orders.get(0).getLastUpdated());
       order.setTotalePrice(totaleCommande);
-
       Order savedOrder = caisseOrderRepo.save(order);
 
       // Préparation des entités ItemsOrders
@@ -85,6 +84,7 @@ public class CaisseServiceImpl implements caisseService {
         itemsOrders.setCartQuantity(orderDTO.getQuantity());
         itemsOrders.setSalesPrice(orderDTO.getSalesPrice());
         itemsOrders.setNegoPrice(orderDTO.getNegoPrice());
+        itemsOrders.setPromoPrice(orderDTO.getPricePromo());
 
         // Mise à jour du stock
         updateProductStock(item, orderDTO.getQuantity());

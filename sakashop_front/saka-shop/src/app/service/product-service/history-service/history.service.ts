@@ -13,4 +13,7 @@ export class HistoryService {
   getProductHistory(productId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${productId}`);
   }
+  getSalesData(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/ALL`);
+  }
 }

@@ -1,54 +1,103 @@
-<div class="sales-container">
-    <h2>Gestion des Meilleures Ventes</h2>
-  
-    <!-- Sélection de la date -->
-    <div class="date-picker">
-      <label for="salesDate">Choisissez une date :</label>
-      <input 
-        type="date" 
-        id="salesDate" 
-        [(ngModel)]="selectedDate" 
-        (change)="fetchSalesData()"
-      />
+<div class="gestion-vente-container">
+  <!-- Menu latéral -->
+  <div class="sidebar">
+    <ul>
+      <li (click)="navigateTo('meilleur-vente')">Meilleure Vente</li>
+      <li (click)="navigateTo('statistique')">Statistique</li>
+      <li (click)="navigateTo('gestion-vente')">Gestion de Vente</li>
+      <li>Vide</li>
+      <li>Vide</li>
+      <li>Vide</li>
+      <li>Vide</li>
+    </ul>
+  </div>
+
+  <!-- Contenu principal -->
+  <div class="main-content">
+    <!-- Titre de la page -->
+    <div class="header">
+      <h1>Gestion de Vente</h1>
     </div>
-  
-    <!-- Résumé des ventes -->
-    <div *ngIf="salesData" class="sales-summary">
-      <h3>Pour le jour {{ selectedDate | date: 'dd/MM/yyyy' }}</h3>
-      <p>
-        Liste des produits les plus vendus :
-      </p>
-      <table>
+
+    <!-- Sélection de la période -->
+    <div class="date-range-container">
+      <form [formGroup]="dateRangeForm">
+        <mat-form-field appearance="outline" class="date-range-field">
+          <mat-label>Sélectionner une période</mat-label>
+          <mat-date-range-input [rangePicker]="picker">
+            <input matStartDate formControlName="start" placeholder="Date de début" />
+            <input matEndDate formControlName="end" placeholder="Date de fin" />
+          </mat-date-range-input>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-date-range-picker #picker></mat-date-range-picker>
+        </mat-form-field>
+      </form>
+      <div class="date-range-actions">
+        <button mat-raised-button color="primary" (click)="applyDateFilter()">Appliquer</button>
+        <button mat-raised-button color="warn" (click)="resetDateFilter()">Réinitialiser</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <!-- En-tête du tableau -->
+      <table class="sales-table">
         <thead>
           <tr>
-            <th>Produit</th>
-            <th>Quantité Vendue</th>
-            <th>Total des Ventes (DH)</th>
-            <th>Marge (DH)</th>
+            <th>Produits Vendus</th>
+            <th>Quantité Vendus</th>
+            <th>Prix d'Achat</th>
+            <th>Prix de Vente</th>
+            <th>Date</th>
           </tr>
         </thead>
-        <tbody>
-          <tr *ngFor="let product of salesData.products">
-            <td>{{ product.name }}</td>
-            <td>{{ product.quantitySold }}</td>
-            <td>{{ product.totalSales | currency: 'DH ' }}</td>
-            <td>{{ product.margin | currency: 'DH ' }}</td>
-          </tr>
-        </tbody>
       </table>
-  
-      <div class="totals">
-        <h4>Total des Ventes : {{ salesData.totalSales | currency: 'MAD ' }}</h4>
-        <h4>Marge Totale : {{ salesData.totalMargin | currency: ' MAD ' }}</h4>
+    
+      <!-- Corps avec scroll vertical -->
+      <div class="table-body-scroll">
+        <table class="sales-table">
+          <tbody>
+            <tr *ngFor="let sale of filteredSales">
+              <td>{{ sale.nameProduct }}</td>
+              <td>{{ sale.quantity }}</td>
+              <td>{{ sale.buyPrice | currency: 'MAD ':'symbol':'1.2-2' }}</td>
+              <td>{{ sale.salesPrice | currency: 'MAD ':'symbol':'1.2-2' }}</td>
+              <td>{{ sale.lastUpdated }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>   
+    <!-- Barre des totaux -->
+    <div class="totals-bar">
+      <div class="total-item">
+        <span>Total Produits :</span>
+        <span>{{ totalProducts }}</span>
+      </div>
+      <div class="total-item">
+        <span>Total quantité :</span>
+        <span>{{ totalQuantity }}</span>
+      </div>
+      <div class="total-item">
+        <span>Total Prix d'Achat :</span>
+        <span>{{ totalBuyPrice | currency: 'MAD ':'symbol':'1.2-2' }}</span>
+      </div>
+      <div class="total-item">
+        <span>Total Prix de Vente :</span>
+        <span>{{ totalSellPrice | currency: 'MAD ':'symbol':'1.2-2' }}</span>
+      </div>
+      <div class="total-item">
+        <span>Marge :</span>
+        <span>{{ profitMarginAmount | currency: 'MAD ':'symbol':'1.2-2' }} ({{ profitMarginPercentage | number:'1.0-2' }}%)</span>
       </div>
     </div>
-  
-
-    <div class="navigation-buttons">
-        <button (click)="navigateTo('gestion-produit')">Gestion de Produit</button>
-        <button (click)="navigateTo('credit-client')">Crédit Client</button>
-        <button (click)="navigateTo('meilleur-vente')">Caisse</button>
-        <button class="btn-logout" (click)="logout()">Quitter</button>
-      </div>
   </div>
-  
+</div>
+
+<div class="navigation-buttons">
+  <button (click)="navigateTo('gestion-product/list')">Gestion de STOCK</button>
+  <button (click)="navigateTo('turnover')">Chiffre d'Affaire</button>
+  <button (click)="navigateTo('caisse/list')">caisee</button>
+  <button (click)="navigateTo('credit-client')">Crédit Client</button>
+  <button (click)="navigateTo('consumer')">Frais Admin </button>
+  <button class="btn-logout" (click)="logout()">Quitter</button>
+</div>

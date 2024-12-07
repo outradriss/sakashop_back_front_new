@@ -1,49 +1,181 @@
-/* Add application styles & imports to this file! */
 @import url('https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css');
-@import url('../node_modules/simple-keyboard/build/css/index.css');
-body{
-  
-  background-color: rgb(187, 214, 199);
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f4f6f9; /* Couleur de fond douce */
+  color: #333; /* Couleur principale pour le texte */
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
-.auth-card{
-  background: #c31432;  /* fallback for old browsers */
-  background: -webkit-linear-gradient(to right, #240b36, #c31432);  /* Chrome 10-25, Safari 5.1-6 */
-  background: linear-gradient(to right, #240b36, #c31432); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-  border-radius: 5px;
-  box-shadow: 0px 0px 30px #f7f7f7;
+
+/* Carte de connexion */
+.auth-card {
+  background: linear-gradient(135deg, #1e3c72, #2a5298); /* Dégradé bleu professionnel */
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  max-width: 400px;
+  margin: 50px auto;
 }
-label{
+
+label {
   color: #fff;
-  font-weight: 700;
+  font-weight: 500;
+  margin-bottom: 5px;
 }
-.user-image{
+
+.user-image {
   height: 70px;
 }
-.auth-avatar{
+
+.auth-avatar {
   text-align: center;
   margin-top: -50px;
 }
-.auth{
+
+.auth {
   margin-top: 35px;
   border: none;
   border-radius: 6px;
 }
-.btn-my{
-  background-color: #d39e00;
-  border-color: #d39e00;
+
+/* Bouton personnalisé */
+.btn-my {
+  background-color: #007bff;
+  border-color: #007bff;
   color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
+
+.btn-my:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
 .simple-keyboard {
   max-width: 850px;
 }
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+/* Toast */
 .toast-center-center {
-  top: 50% !important;       /* Position verticale centrée */
-  left: 50% !important;      /* Position horizontale centrée */
-  transform: translate(-50%, -50%) !important; /* Ajustement pour être centré */
-  z-index: 9999 !important;  /* S'assurer qu'il est au-dessus des modaux */
-  width: auto !important;    /* Éviter qu'il prenne toute la largeur */
-  text-align: center;        /* Centrer le texte à l'intérieur du toast */
+  top: 50% !important; 
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important; 
+  z-index: 9999 !important;
+  width: auto !important;
+  text-align: center; 
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .auth-card {
+    padding: 20px;
+  }
+
+  .btn-my {
+    font-size: 0.9rem;
+    padding: 8px 15px;
+  }
+
+  .simple-keyboard {
+    max-width: 100%;
+  }
+}
+
+/* Titres */
+h1, h2, h3 {
+  color: #2c3e50; /* Couleur sobre pour les titres */
+  margin-bottom: 15px;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+/* Liens */
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #0056b3;
+}
+
+/* Inputs */
+input, textarea {
+  font-size: 1rem;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input:focus, textarea:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Cartes */
+.card {
+  background-color: #fff;
+  border: 1px solid #e3e6f0;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.card-header {
+  background-color: #f8f9fc;
+  border-bottom: 1px solid #e3e6f0;
+  padding: 15px;
+  font-weight: 700;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+/* Boutons secondaires */
+.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: #fff;
+  font-size: 0.9rem;
+  padding: 8px 15px;
+  border-radius: 5px;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+/* Animation sur les boutons */
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
 }

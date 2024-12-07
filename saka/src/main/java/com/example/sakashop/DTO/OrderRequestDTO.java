@@ -23,6 +23,7 @@ public class OrderRequestDTO {
   private final Long itemsOrders;
   private final double totalePrice;
   private final double negoPrice;
+  private final double buyPrice;
 
   // Constructeur privé pour le Pattern Builder
   private OrderRequestDTO(Builder builder) {
@@ -39,6 +40,7 @@ public class OrderRequestDTO {
     this.itemsOrders = builder.itemsOrders;
     this.totalePrice = builder.totalePrice;
     this.negoPrice = builder.negoPrice;
+    this.buyPrice=builder.buyPrice;
   }
 
   // Getter uniquement (immuabilité)
@@ -93,6 +95,9 @@ public class OrderRequestDTO {
   public double getNegoPrice() {
     return negoPrice;
   }
+  public double getBuyPrice() {
+    return buyPrice;
+  }
 
   // Classe Builder interne avec annotations pour Jackson
   @JsonPOJOBuilder(buildMethodName = "buildOrder", withPrefix = "set")
@@ -110,6 +115,7 @@ public class OrderRequestDTO {
     private Long itemsOrders;
     private double totalePrice;
     private double negoPrice;
+    private  double buyPrice;
 
     @JsonCreator // Indique à Jackson d'utiliser ce constructeur pour désérialiser
     public Builder(
@@ -125,7 +131,8 @@ public class OrderRequestDTO {
       @JsonProperty("itemId") Long itemId,
       @JsonProperty("itemsOrders") Long itemsOrders,
       @JsonProperty("totalePrice") double totalePrice,
-      @JsonProperty("negoPrice") double negoPrice
+      @JsonProperty("negoPrice") double negoPrice,
+      @JsonProperty("buyPrice") double buyPrice
     ) {
       this.idOrder = idOrder;
       this.nameProduct = nameProduct;
@@ -140,6 +147,7 @@ public class OrderRequestDTO {
       this.itemsOrders = itemsOrders;
       this.totalePrice = totalePrice;
       this.negoPrice = negoPrice;
+      this.buyPrice=buyPrice;
     }
 
     public Builder setIdOrder(Long idOrder) {
@@ -149,6 +157,10 @@ public class OrderRequestDTO {
 
     public Builder setNameProduct(String nameProduct) {
       this.nameProduct = nameProduct;
+      return this;
+    }
+    public Builder setBuyPrice(double buyPrice) {
+      this.buyPrice = buyPrice;
       return this;
     }
 

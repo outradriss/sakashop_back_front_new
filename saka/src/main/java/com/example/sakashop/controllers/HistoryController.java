@@ -1,5 +1,6 @@
 package com.example.sakashop.controllers;
 
+import com.example.sakashop.DTO.OrderRequestDTO;
 import com.example.sakashop.DTO.ProductHistoryDTO;
 import com.example.sakashop.Exceptions.EntityNotFoundException;
 import com.example.sakashop.services.implServices.HistoryServiceImpl;
@@ -32,4 +33,16 @@ public class HistoryController {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur interne : " + ex.getMessage());
     }
   }
+  @GetMapping("/ALL")
+  public ResponseEntity<?> getAllProductHistory() {
+    try {
+      List<OrderRequestDTO> history = historyService.getAllProductHistory();
+      return ResponseEntity.ok(history);
+    } catch (EntityNotFoundException ex) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    } catch (Exception ex) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur interne : " + ex.getMessage());
+    }
+  }
+
 }

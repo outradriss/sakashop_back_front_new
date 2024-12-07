@@ -39,9 +39,10 @@ public class ItemsOrders {
 
   @Column(name = "nego_price", nullable = false)
   private double negoPrice;
+  @Column(name = "promo_price")
+  private double promoPrice;
 
-
-  public ItemsOrders(Long id, Order order, Item item, String name, LocalDateTime dateIntegration, double salesPrice, LocalDateTime dateUpdate, int stockQuantity, int cartQuantity, double negoPrice) {
+  public ItemsOrders(Long id, Order order, Item item, String name, LocalDateTime dateIntegration, double salesPrice, LocalDateTime dateUpdate, int stockQuantity, int cartQuantity, double negoPrice, double promoPrice) {
     this.id = id;
     this.order = order;
     this.item = item;
@@ -52,11 +53,19 @@ public class ItemsOrders {
     this.stockQuantity = stockQuantity;
     this.cartQuantity = cartQuantity;
     this.negoPrice = negoPrice;
+    this.promoPrice = promoPrice;
   }
 
   public ItemsOrders() {
   }
 
+  public double getPromoPrice() {
+    return promoPrice;
+  }
+
+  public void setPromoPrice(double promoPrice) {
+    this.promoPrice = promoPrice;
+  }
 
   public double getSalesPrice() {
     return salesPrice;

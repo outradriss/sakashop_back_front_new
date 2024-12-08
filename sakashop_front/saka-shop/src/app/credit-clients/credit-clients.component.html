@@ -1,164 +1,272 @@
 <div class="credit-container">
-  <h2>Gestion des Crédits Clients</h2>
 
-  <!-- Bouton Ajouter un Client -->
-  <div class="add-client-button">
-    <button (click)="showAddClientPopup()" class="btn-add-client">+ Ajouter Client</button>
-  </div>
-
-  <!-- Barre de Recherche pour les Clients -->
-  <div class="search-bar">
+  <!-- Bouton Ajouter Crédit -->
+  <button class="btn-add-credit" (click)="showSearchBar()">Ajouter Crédit</button>
+  <div class="search-client-bar">
     <input
       type="text"
       placeholder="Rechercher un client..."
       [(ngModel)]="searchQuery"
-      (input)="filterClients()"
+      (input)="filterClientByName()"
+      class="search-client-input"
     />
   </div>
 
-  <!-- Liste des Clients -->
-  <div class="client-list">
-    <h3>Clients avec des Crédits</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Nom du Client</th>
-          <th>Total des Crédits (€)</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let client of filteredClients">
-          <td>{{ client.name }}</td>
-          <td>{{ calculateTotalCredits(client.credits) | currency }}</td>
-          <td>
-            <button (click)="viewCredits(client)" class="btn-view">Voir Crédits</button>
-            <button (click)="deleteClient(client)" class="btn-delete">Supprimer</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+<!-- Tableau -->
+<div class="credit-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Nom de Client</th>
+        <th>Quantité</th>
+        <th>Totale</th>
+        <th>Date Crédit</th>
+        <th>Date Prévue</th>
+        <th>Commentaire</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let credit of paginatedCredits; let i = index">
+        <td>{{ credit.nameClient }}</td>
+        <td>{{ credit.quantity }}</td>
+        <td>{{ credit.totale | currency: 'MAD ':'symbol':'1.2-2' }}</td>
+        <td>{{ credit.localDateTime }}</td>
+        <td>{{ credit.datePayCredit }}</td>
+        <td>{{ credit.comment }}</td>
+        <td class="table-actions">
+          <button class="btn-action btn-edit" (click)="editCredit(i)">Edit</button>
+          <button class="btn-action btn-delete" (click)="deleteCredit(i)">Delete</button>
+          <button class="btn-action btn-pay" (click)="openPayPopup(credit)">Payé</button>
+          <button class="btn-action btn-view" (click)="viewDetails(credit)">Afficher les Détails</button>
+        </td>
+      </tr>
+    </tbody>
+<!-- Popup Payé -->
+<div class="popup-overlay" *ngIf="showPayPopup">
+  <div class="popup">
+    <h3>Payer un Crédit</h3>
+    <div class="form-group">
+      <label for="payAmount">Montant à payer :</label>
+      <input
+        type="number"
+        id="payAmount"
+        [(ngModel)]="payAmount"
+        name="payAmount"
+        min="0"
+        max="{{ selectedCredit?.totale }}"
+        required
+      />
+    </div>
+    <div class="popup-actions">
+      <button class="btn-submit" (click)="payCredit()">OK</button>
+      <button class="btn-cancel" (click)="closePayPopup()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+  </table>
+</div>
+
+<!-- Pagination -->
+<div class="pagination">
+  <button 
+    *ngFor="let page of totalPages" 
+    [class.active]="currentPage === page" 
+    (click)="changePage(page)">
+    {{ page }}
+  </button>
+</div>
+
+
+<!-- Popup Détails -->
+<div class="popup-overlay" *ngIf="showDetailsPopup">
+  <div class="popup horizontal-popup">
+    <h3>Détails du Crédit</h3>
+    <div class="details-table-container">
+      <table class="details-table">
+        <thead>
+          <tr>
+            <th>Nom du Client</th>
+            <th>Nom du Produit</th>
+            <th>Quantité</th>
+            <th>Totale</th>
+            <th>Date Crédit</th>
+            <th>Date Prévue</th>
+            <th>Commentaire</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ selectedCredit?.nameClient }}</td>
+            <td>{{ selectedCredit?.product.name }}</td>
+            <td>{{ selectedCredit?.quantity }}</td>
+            <td>{{ selectedCredit?.totale | currency: 'MAD ':'symbol':'1.2-2' }}</td>
+            <td>{{ selectedCredit?.localDateTime }}</td>
+            <td>{{ selectedCredit?.datePayCredit }}</td>
+            <td>{{ selectedCredit?.comment }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="popup-actions">
+      <button class="btn-cancel" (click)="closeDetailsPopup()">Fermer</button>
+      <button class="btn-add-credit" (click)="addAnotherCredit(selectedCredit?.nameClient)">Ajouter d'autre crédit pour ce client</button>
+    </div>
+  </div>
+</div>
+
+  <!-- Barre de recherche au centre -->
+  <div class="search-overlay" *ngIf="showSearch">
+    <div class="search-container">
+      <div class="search-bar">
+        <input
+          type="text"
+          placeholder="Rechercher un produit..."
+          [(ngModel)]="searchQuery"
+          (input)="filterProducts()"
+          class="search-input"
+        />
+        <ul class="results-list" *ngIf="filteredProducts.length > 0">
+          <li
+            class="result-item"
+            *ngFor="let product of filteredProducts"
+            (click)="selectProduct(product)"
+          >
+            {{ product.name }}
+          </li>
+        </ul>
+      </div>
+      <button class="btn-cancel-search" (click)="cancelSearch()">Annuler</button>
+    </div>
   </div>
 
-  <!-- Liste des Crédits du Client Sélectionné -->
-  <div *ngIf="selectedClient" class="credit-list">
-    <h3>Crédits pour {{ selectedClient.name }}</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Produit</th>
-          <th>Date</th>
-          <th>Description</th>
-          <th>Montant</th>
-          <th>Date Prévue pour Payer</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let credit of selectedClient.credits; let i =index">
-          <td>{{ credit.name }}</td>
-          <td>{{ credit.creditDate | date }}</td>
-          <td>{{ credit.description }}</td>
-          <td>{{ credit.buyPrice | currency }}</td>
-          <td>{{ credit.dueDate | date }}</td>
-          <td>
-            <button (click)="editCredit(credit,i)" class="btn-edit">Modifier</button>
-            <button (click)="deleteCredit(credit)" class="btn-delete">Supprimer</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Popup d'Ajout/Modification de Client -->
+  <!-- Popup Ajouter Crédit -->
   <div class="popup-overlay" *ngIf="showPopup">
     <div class="popup">
-      <h3>{{ isEditing ? 'Modifier un Crédit' : 'Ajouter un Client' }}</h3>
-      <form (ngSubmit)="isEditing ? updateCredit() : addClient()">
-        
-        <div class="product-list">
-          <label for="product">Produit :</label>
-          <div class="search-bar">
-            <input
-              type="text"
-              placeholder="Rechercher un produit..."
-              [(ngModel)]="searchQuery"
-              (input)="filterProducts()"
-            />
-            <!-- Liste déroulante des produits -->
-            <ul *ngIf="filteredProducts.length > 0" class="dropdown-menu">
-              <li 
-                *ngFor="let product of filteredProducts" 
-                (click)="selectProduct(product)"
-                class="dropdown-item"
-              >
-                {{ product.name }}
-              </li>
-            </ul>
-          </div>
-        </div>        
+      <h3>Ajouter un Crédit</h3>
+      <form (ngSubmit)="saveCredit()" #creditForm="ngForm">
+        <!-- Nom Produit -->
         <div class="form-group">
-          <label for="creditDate">Date :</label>
+          <label for="productName">Nom du Produit :</label>
           <input
-            type="date"
-            [(ngModel)]="clientForm.credit.creditDate"
+            type="text"
+            id="productName"
+            [(ngModel)]="productName"
+            name="productName"
+            readonly
             required
           />
         </div>
+  
+        <!-- Nom Client -->
         <div class="form-group">
-          <label for="creditDate">prix de vente :</label>
+          <label for="clientName">Nom de Client :</label>
           <input
-            type="price"
-            id="buyPrice"
-            [(ngModel)]="clientForm.credit.buyPrice"
+            type="text"
+            id="clientName"
+            [(ngModel)]="clientName"
+            name="clientName"
+            required
+          />
+        </div>
+  
+        <!-- Prix de Produit -->
+        <div class="form-group">
+          <label for="productPrice">Prix de Produit :</label>
+          <input
+            type="number"
+            id="productPrice"
+            [(ngModel)]="productPrice"
+            name="productPrice"
+            readonly
+            required
+          />
+        </div>
+  
+        <!-- Quantité -->
+        <div class="form-group">
+          <label for="quantity">Quantité :</label>
+          <input
+            type="number"
+            id="quantity"
+            [(ngModel)]="quantity"
+            name="quantity"
+            (input)="calculateTotal()"
+            min="1"
+            required
+          />
+        </div>
+  
+        <!-- Totale -->
+        <div class="form-group">
+          <label for="total">Totale :</label>
+          <input
+            type="number"
+            id="total"
+            [(ngModel)]="total"
+            name="total"
+            readonly
+            required
+          />
+        </div>
+  
+        <!-- Date de Crédit -->
+        <div class="form-group">
+          <label for="creditDate">Date de Crédit :</label>
+          <input
+            type="date"
+            id="creditDate"
+            [(ngModel)]="creditDate"
             name="creditDate"
             required
           />
         </div>
-        <div class="form-group">
-          <label for="description">Description du Crédit :</label>
-          <textarea
-            id="description"
-            [(ngModel)]="clientForm.credit.description"
-            name="description"
-            rows="3"
-            required
-          ></textarea>
-        </div>
-        <div class="form-group">
-          <label for="amount">Montant :</label>
-          <input
-            type="number"
-            id="amount"
-            [(ngModel)]="clientForm.credit.amount"
-            name="amount"
-            required
-            min="0"
-          />
-        </div>
+  
+        <!-- Date Prévue -->
         <div class="form-group">
           <label for="dueDate">Date Prévue pour Payer :</label>
           <input
             type="date"
             id="dueDate"
-            [(ngModel)]="clientForm.credit.dueDate"
+            [(ngModel)]="dueDate"
             name="dueDate"
             required
           />
         </div>
+  
+        <!-- Commentaire -->
+        <div class="form-group">
+          <label for="comment">Commentaire :</label>
+          <input
+            type="text"
+            id="comment"
+            [(ngModel)]="comment"
+            name="comment"
+            required
+          />
+        </div>
+  
+        <!-- Actions -->
         <div class="popup-actions">
-          <button type="submit" class="btn-submit">{{ isEditing ? 'Mettre à jour' : 'Ajouter' }}</button>
-          <button type="button" class="btn-cancel" (click)="hidePopup()">Annuler</button>
+          <button
+            type="submit"
+            class="btn-submit"
+            [disabled]="!creditForm.form.valid"
+          >
+            Enregistrer
+          </button>
+          <button type="button" class="btn-cancel" (click)="closePopup()">Annuler</button>
         </div>
       </form>
     </div>
   </div>
-
+  
   <div class="navigation-buttons">
-    <button (click)="navigateTo('gestion-product/list')">Gestion de Produit</button>
-    <button (click)="navigateTo('caisse')">Caisse</button>
-    <button (click)="navigateTo('vente')">Meilleure Vente</button>
-    <button (click)="navigateTo('turnover')">Chiffre d'Affaire</button>
-    <button (click)="logout()">Quitter</button>
+    <button (click)="navigateTo('gestion-product/list')">Gestion de STOCK</button>
+    <button (click)="navigateTo('turnover')">chiffre d'affaire</button>
+    <button (click)="navigateTo('gestion-vente')">Gestion de vente</button>
+    <button (click)="navigateTo('credit-client')">Crédit Client</button>
+    <button (click)="navigateTo('consumer')">Frais Admin </button>
+    <button class="btn-logout" (click)="logout()">Quitter</button>
   </div>
-</div>

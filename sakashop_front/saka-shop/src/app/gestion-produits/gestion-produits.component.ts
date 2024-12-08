@@ -396,6 +396,8 @@ filterDiscountProducts(): void {
   );
 }
 
+
+
 // Vérifier et sélectionner un produit pour une remise
 selectDiscountProduct(product: Product): void {
   this.selectedProduct = product;

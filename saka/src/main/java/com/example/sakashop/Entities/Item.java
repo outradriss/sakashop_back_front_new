@@ -47,7 +47,7 @@ public class Item {
   private List<ItemsOrders> itemsOrders = new ArrayList<>();
   @Column(name = "product_added_date")
   private LocalDateTime productAddedDate;
-  @ManyToMany(mappedBy = "items") // Inverse de la relation définie dans Credit
+  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Credit> credits = new ArrayList<>();
 
 

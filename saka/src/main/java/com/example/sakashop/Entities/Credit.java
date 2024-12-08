@@ -6,10 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Data
@@ -19,20 +18,21 @@ public class Credit {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id ;
+  @Column(name = "name_client")
   private String nameClient;
   @Column(name = "date_credit")
-  private LocalDateTime localDateTime ;
+  private LocalDate localDateTime ;
   @Column(name = "date_update")
   private LocalDateTime updatedDate ;
   @Column(name = "date_pay")
-  private Date  datePayCredit ;
+  private LocalDate  datePayCredit ;
   @Column(name="total")
   private double totale ;
-  @ManyToMany
-  @JoinTable(
-    name = "credit_item", // Table intermédiaire
-    joinColumns = @JoinColumn(name = "credit_id"), // Colonne pour Credit
-    inverseJoinColumns = @JoinColumn(name = "item_id") // Colonne pour Item
-  )
-  private List<Item> items = new ArrayList<>();
+  @Column(name = "quantity")
+  private int quantity;
+  @Column(name = "comment")
+  private String comment;
+  @ManyToOne
+  @JoinColumn(name = "item_id" ,nullable = false)
+  private Item product;
 }

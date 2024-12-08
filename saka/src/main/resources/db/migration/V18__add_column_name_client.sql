@@ -1,0 +1,2 @@
+ALTER TABLE credit
+ADD COLUMN name_client VARCHAR(255) NOT NULL;

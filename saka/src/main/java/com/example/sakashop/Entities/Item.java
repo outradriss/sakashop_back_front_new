@@ -31,7 +31,6 @@ public class Item {
   private double salesPrice;
   @Column(name = "Supplier")
   private String supplier;
-
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "category_id", nullable = false)
   @JsonIgnore
@@ -48,8 +47,8 @@ public class Item {
   private List<ItemsOrders> itemsOrders = new ArrayList<>();
   @Column(name = "product_added_date")
   private LocalDateTime productAddedDate;
-
-
+  @ManyToMany(mappedBy = "items") // Inverse de la relation définie dans Credit
+  private List<Credit> credits = new ArrayList<>();
 
 
   public Item(Long id, double pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, Categories categories, LocalDateTime lastUpdated, boolean isPromo, Date expiredDate, LocalDateTime productAddedDate) {
@@ -67,6 +66,8 @@ public class Item {
     this.expiredDate = expiredDate;
     this.productAddedDate = productAddedDate;
   }
+
+
 
   public LocalDateTime getProductAddedDate() {
     return productAddedDate;

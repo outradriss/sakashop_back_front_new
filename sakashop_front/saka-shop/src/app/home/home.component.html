@@ -1,4 +1,17 @@
-<div class="dashboard">
+<div class="dashboard-home">
+  <div class="text-overlay">
+    <!-- Génération dynamique des spans pour "SAKA SHOP" -->
+    <span *ngFor="let rotation of rotations; let i = index" 
+          [ngStyle]="{
+            '--rotate': rotation.rotate + 'deg', 
+            '--translateX': rotation.translateX + 'px', 
+            '--translateY': rotation.translateY + 'px'
+          }">
+      SAKA SHOP
+    </span>
+  </div>
+
+  <div class="dashboard">
     <div class="tile" (click)="navigateTo('gestion-product/list')">
       <i class="fas fa-boxes"></i>
       <span>Gestion Produit</span>
@@ -7,13 +20,21 @@
       <i class="fas fa-cash-register"></i>
       <span>Caisse</span>
     </div>
-    <div class="tile" (click)="navigateTo('meilleur-vente')">
+    <div class="tile" (click)="navigateTo('gestion-vente')">
       <i class="fas fa-chart-line"></i>
-      <span>Meilleure Vente</span>
+      <span>Gestion de Vente</span>
     </div>
     <div class="tile" (click)="navigateTo('credit-client')">
       <i class="fas fa-user-friends"></i>
       <span>Crédit Client</span>
     </div>
+    <div class="tile" (click)="navigateTo('turnover')">
+      <i class="fas fa-chart-line"></i>
+      <span>Chiffre d'Affaire</span>
+    </div>
+    <div class="tile" (click)="navigateTo('support')">
+      <i class="fas fa-life-ring"></i>
+      <span>Support</span>
+    </div>
   </div>
-  
+</div>

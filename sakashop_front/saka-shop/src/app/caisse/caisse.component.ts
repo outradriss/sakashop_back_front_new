@@ -4,6 +4,7 @@ import { Product } from '../models/product.model';
 import { CaisseService } from '../service/product-service/caisse-service/caisse.service';
 import Swal from 'sweetalert2';
 import { DisplayProduct } from '../models/DisplayProductInCaisse.model.service';
+import { SharedService } from '../service/shared.service';
 
 @Component({
   selector: 'app-caisse',
@@ -25,11 +26,14 @@ export class CaisseComponent {
   expiringProducts: { name: string; expiredDate: string; id: number }[] = []; // Liste des produits proches de l'expiration
 
 
-  constructor(private router: Router , private caisseService : CaisseService , private cdr: ChangeDetectorRef) {}
+  constructor(private router: Router , private caisseService : CaisseService , private cdr: ChangeDetectorRef , private sharedService : SharedService) {}
 
   ngOnInit(): void {
     this.loadProducts();
     this.checkProductExpiration();
+    this.sharedService.reloadCaisse$.subscribe(() => {
+      this.loadProducts(); // Recharge les produits de la caisse lorsque notifié
+    });
   }
 
   // Ajouter au panier

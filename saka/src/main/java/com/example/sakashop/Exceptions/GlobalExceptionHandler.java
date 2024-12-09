@@ -7,6 +7,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.LocalDateTime;
+import java.util.Map;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -50,6 +53,25 @@ public class GlobalExceptionHandler {
   public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
   }
+
+  @ExceptionHandler(InvalidDataException.class)
+  public ResponseEntity<Map<String, Object>> handleInvalidDataException(InvalidDataException ex) {
+    Map<String, Object> errorResponse = Map.of(
+      "message", ex.getMessage(),
+      "timestamp", LocalDateTime.now()
+    );
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+  }
+
+  @ExceptionHandler(DatabaseException.class)
+  public ResponseEntity<Map<String, Object>> handleDatabaseException(DatabaseException ex) {
+    Map<String, Object> errorResponse = Map.of(
+      "message", "Erreur de base de données : " + ex.getMessage(),
+      "timestamp", LocalDateTime.now()
+    );
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+  }
+
 
 
 }

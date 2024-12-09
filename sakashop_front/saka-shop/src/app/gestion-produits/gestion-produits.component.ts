@@ -5,6 +5,7 @@ import { ProductService } from '../service/product-service/product.service';
 import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
+import { SharedService } from '../service/shared.service';
 
 @Component({
   selector: 'app-gestion-produits',
@@ -48,7 +49,7 @@ export class GestionProduitsComponent {
 
  
 
-  constructor(private productService: ProductService, private router: Router , private toastr: ToastrService) {}
+  constructor(private productService: ProductService, private router: Router , private toastr: ToastrService , private sharedService : SharedService) {}
 
 
 loadCategoriesFromProducts(): void {
@@ -619,6 +620,9 @@ hideApplyDiscountPopup(): void {
   }
   ngOnInit(): void {
     this.loadProducts();
+    this.sharedService.reloadProducts$.subscribe(() => {
+      this.loadProducts(); // Recharge les produits lorsque notifié
+    });
   }
 
   loadingCategories: boolean = false; // Indique si les catégories sont en cours de chargement

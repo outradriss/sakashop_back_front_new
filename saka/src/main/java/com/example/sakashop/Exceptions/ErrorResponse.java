@@ -1,18 +1,22 @@
 package com.example.sakashop.Exceptions;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+import java.time.LocalDateTime;
+
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ErrorResponse {
+  private String message;
+  private String errorType;
+  private LocalDateTime timestamp;
 
-  private String error; // Le type ou le titre de l'erreur
-  private String message; // Le message d'erreur détaillé
+  public ErrorResponse(String message, String errorType) {
+    this.message = message;
+    this.errorType = errorType;
+    this.timestamp = LocalDateTime.now();
+  }
 
 }

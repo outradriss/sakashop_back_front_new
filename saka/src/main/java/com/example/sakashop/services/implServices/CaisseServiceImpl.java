@@ -12,8 +12,10 @@ import com.example.sakashop.Exceptions.EntityNotFoundException;
 import com.example.sakashop.Exceptions.InsufficientStockException;
 import com.example.sakashop.services.caisseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,15 @@ import java.util.stream.Collectors;
 
 @Service
 public class CaisseServiceImpl implements caisseService {
+   // kafkaTemplate c'est l'outil principal pour envoyer des messages à kafka
+  private final KafkaTemplate<String, Object> kafkaTemplate;
+
+  @Value("${spring.kafka.topic.orders.name}")
+  private String ordersTopic;
+
+  public CaisseServiceImpl(KafkaTemplate<String, Object> kafkaTemplate) {
+    this.kafkaTemplate = kafkaTemplate;
+  }
 
   @Autowired
   CaisseRepo caisseRepo;
@@ -41,6 +52,7 @@ public class CaisseServiceImpl implements caisseService {
     return caisseRepo.findAllWithCategoryForCaisse();
   }
 
+
   @CacheEvict(value = "products", allEntries = true)
   @Transactional
   public void saveOrders(List<OrderRequestDTO> orders) {
@@ -49,56 +61,15 @@ public class CaisseServiceImpl implements caisseService {
     }
 
     try {
-      // Calcul du prix total de la commande
-      double totaleCommande = orders.stream()
-        .mapToDouble(orderDTO -> {
-          // Calculer le prix total basé sur les règles de priorité
-          double priceToUse = orderDTO.getNegoPrice() > 0
-            ? orderDTO.getNegoPrice()
-            : (orderDTO.getIsPromo() ? orderDTO.getPricePromo() : orderDTO.getSalesPrice());
-          return priceToUse * orderDTO.getQuantity();
-        })
-        .sum();
+      // Parcourir les commandes pour les envoyer au Producer Kafka
+      orders.forEach(orderDTO -> {
+        kafkaTemplate.send(ordersTopic, orderDTO);
+      });
 
-      // Création et sauvegarde de la commande principale
-      Order order = new Order();
-      order.setDateOrder(orders.get(0).getDateOrder());
-      order.setLastUpdated(orders.get(0).getLastUpdated());
-      order.setTotalePrice(totaleCommande);
-      Order savedOrder = caisseOrderRepo.save(order);
+      System.out.println("Toutes les commandes ont été publiées avec succès dans Kafka.");
 
-      // Préparation des entités ItemsOrders
-      List<ItemsOrders> itemsOrdersToSave = orders.stream().map(orderDTO -> {
-        // Recherche de l'item
-        Item item = productRepository.findById(orderDTO.getItemId())
-          .orElseThrow(() -> new EntityNotFoundException("Item introuvable avec l'ID : " + orderDTO.getItemId()));
-
-        // Création de l'entité ItemsOrders
-        ItemsOrders itemsOrders = new ItemsOrders();
-        itemsOrders.setOrder(savedOrder); // Associer à la commande unique
-        itemsOrders.setItem(item); // Associer l'item
-        itemsOrders.setName(item.getName());
-        itemsOrders.setDateIntegration(orderDTO.getDateOrder());
-        itemsOrders.setDateUpdate(orderDTO.getLastUpdated());
-        itemsOrders.setStockQuantity(item.getQuantity());
-        itemsOrders.setCartQuantity(orderDTO.getQuantity());
-        itemsOrders.setSalesPrice(orderDTO.getSalesPrice());
-        itemsOrders.setNegoPrice(orderDTO.getNegoPrice());
-        itemsOrders.setPromoPrice(orderDTO.getPricePromo());
-
-        // Mise à jour du stock
-        updateProductStock(item, orderDTO.getQuantity());
-
-        return itemsOrders;
-      }).collect(Collectors.toList());
-
-      // Sauvegarde de tous les items associés à la commande
-      itemsOrdersREpo.saveAll(itemsOrdersToSave);
-
-    } catch (EntityNotFoundException e) {
-      throw new RuntimeException("Erreur lors de la recherche d'un item : " + e.getMessage(), e);
     } catch (Exception e) {
-      throw new RuntimeException("Erreur critique lors de l'enregistrement des commandes.", e);
+      throw new RuntimeException("Erreur critique lors de l'envoi des commandes dans Kafka.", e);
     }
   }
 

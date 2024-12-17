@@ -26,29 +26,31 @@ public class SaveOrdersController {
   ProductServiceImpl productService;
 
   @PostMapping("/saveOrder")
-  @Transactional
-  public ResponseEntity<?> saveOrder(@RequestBody List<OrderRequestDTO> orders) {
+  public ResponseEntity<?> saveOrders(@RequestBody List<OrderRequestDTO> orders) {
     try {
-      caisseService.saveOrders(orders);
+      if (orders == null || orders.isEmpty()) {
+        throw new IllegalArgumentException("La liste des commandes est vide.");
+      }
 
-      // Retournez une réponse structurée
-      Map<String, Object> response = new HashMap<>();
-      response.put("status", "success");
-      response.put("message", "Commandes enregistrées et stock mis à jour.");
-      return ResponseEntity.ok().body(response);
-    } catch (RuntimeException e) {
-      Map<String, Object> response = new HashMap<>();
-      response.put("status", "error");
-      response.put("message", "Erreur lors de l'enregistrement : " + e.getMessage());
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+      // Processer et sauvegarder les commandes
+      caisseService.processAndSaveOrder(orders);
+
+      return ResponseEntity.ok(Map.of(
+        "status", "success",
+        "message", "Commandes enregistrées avec succès."
+      ));
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(Map.of(
+        "status", "error",
+        "message", "Erreur de validation : " + e.getMessage()
+      ));
     } catch (Exception e) {
-      Map<String, Object> response = new HashMap<>();
-      response.put("status", "error");
-      response.put("message", "Erreur inattendue lors de l'enregistrement.");
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+        "status", "error",
+        "message", "Erreur inattendue lors de l'enregistrement des commandes : " + e.getMessage()
+      ));
     }
   }
 
-
-
 }
+

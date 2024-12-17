@@ -12,6 +12,7 @@ import com.example.sakashop.Entities.Order;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -105,6 +106,18 @@ import java.util.stream.Collectors;
           ? itemsOrder.getItem().getBuyPrice()
           : 0; // Si buyPrice est indisponible, définir 0 ou lever une exception personnalisée.
 
+        // Créer la liste des items (ItemRequestDTO)
+        List<OrderRequestDTO.ItemRequestDTO> itemDTOList = new ArrayList<>();
+        if (itemsOrder.getItem() != null) {
+          OrderRequestDTO.ItemRequestDTO itemRequestDTO = new OrderRequestDTO.ItemRequestDTO();
+          itemRequestDTO.setNameProduct(itemsOrder.getName());
+          itemRequestDTO.setQuantity(itemsOrder.getCartQuantity());
+          itemRequestDTO.setSalesPrice(itemsOrder.getSalesPrice());
+          itemRequestDTO.setTotalePrice(buyPrice * itemsOrder.getCartQuantity());
+          itemRequestDTO.setItemId(itemsOrder.getItem().getId());
+          itemDTOList.add(itemRequestDTO);
+        }
+
         return new OrderRequestDTO.Builder(
           itemsOrder.getId(),
           itemsOrder.getName(),
@@ -115,17 +128,17 @@ import java.util.stream.Collectors;
           itemsOrder.getSalesPrice(),
           itemsOrder.getDateIntegration(),
           itemsOrder.getDateUpdate(),
-          itemsOrder.getItem().getId(),
+          itemsOrder.getItem() != null ? itemsOrder.getItem().getId() : null,
           itemsOrder.getId(),
           buyPrice * itemsOrder.getCartQuantity(), // Totale Price basé sur buyPrice
           itemsOrder.getNegoPrice(),
-          buyPrice
-        ).setBuyPrice(buyPrice)
-          .setPricePromo(itemsOrder.getPromoPrice())
-          .setTotalePrice(buyPrice * itemsOrder.getCartQuantity())
+          buyPrice,
+          itemDTOList // Fournir la liste des items ici
+        )
           .buildOrder();
       }).collect(Collectors.toList());
     }
+
 
 
 

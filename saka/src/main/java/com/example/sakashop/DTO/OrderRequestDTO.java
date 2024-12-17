@@ -1,14 +1,16 @@
 package com.example.sakashop.DTO;
 
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @JsonDeserialize(builder = OrderRequestDTO.Builder.class)
-
 public class OrderRequestDTO {
   private final Long idOrder;
   private final String nameProduct;
@@ -24,26 +26,13 @@ public class OrderRequestDTO {
   private final double totalePrice;
   private final double negoPrice;
   private final double buyPrice;
+  private final List<ItemRequestDTO> items; // Nouvelle liste pour les articles
 
-  // Constructeur privé pour le Pattern Builder
-  private OrderRequestDTO(Builder builder) {
-    this.idOrder = builder.idOrder;
-    this.nameProduct = builder.nameProduct;
-    this.quantity = builder.quantity;
-    this.quantityAddedUrgent = builder.quantityAddedUrgent;
-    this.isPromo = builder.isPromo;
-    this.pricePromo = builder.pricePromo;
-    this.salesPrice = builder.salesPrice;
-    this.dateOrder = builder.dateOrder;
-    this.lastUpdated = builder.lastUpdated;
-    this.itemId = builder.itemId;
-    this.itemsOrders = builder.itemsOrders;
-    this.totalePrice = builder.totalePrice;
-    this.negoPrice = builder.negoPrice;
-    this.buyPrice=builder.buyPrice;
+  // Getter pour `items`
+  public List<ItemRequestDTO> getItems() {
+    return items;
   }
 
-  // Getter uniquement (immuabilité)
   public Long getIdOrder() {
     return idOrder;
   }
@@ -60,7 +49,7 @@ public class OrderRequestDTO {
     return quantityAddedUrgent;
   }
 
-  public boolean getIsPromo() {
+  public boolean isPromo() {
     return isPromo;
   }
 
@@ -95,13 +84,33 @@ public class OrderRequestDTO {
   public double getNegoPrice() {
     return negoPrice;
   }
+
   public double getBuyPrice() {
     return buyPrice;
   }
 
-  // Classe Builder interne avec annotations pour Jackson
+  // Constructeur privé pour le Builder
+  private OrderRequestDTO(Builder builder) {
+    this.idOrder = builder.idOrder;
+    this.nameProduct = builder.nameProduct;
+    this.quantity = builder.quantity;
+    this.quantityAddedUrgent = builder.quantityAddedUrgent;
+    this.isPromo = builder.isPromo;
+    this.pricePromo = builder.pricePromo;
+    this.salesPrice = builder.salesPrice;
+    this.dateOrder = builder.dateOrder;
+    this.lastUpdated = builder.lastUpdated;
+    this.itemId = builder.itemId;
+    this.itemsOrders = builder.itemsOrders;
+    this.totalePrice = builder.totalePrice;
+    this.negoPrice = builder.negoPrice;
+    this.buyPrice = builder.buyPrice;
+    this.items = builder.items;
+  }
+
   @JsonPOJOBuilder(buildMethodName = "buildOrder", withPrefix = "set")
   public static class Builder {
+    @JsonProperty("id_order")
     private Long idOrder;
     private String nameProduct;
     private int quantity;
@@ -109,15 +118,21 @@ public class OrderRequestDTO {
     private boolean isPromo;
     private double pricePromo;
     private double salesPrice;
+    @JsonProperty("date_order")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime dateOrder;
+    @JsonProperty("last_updated")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime lastUpdated;
     private Long itemId;
     private Long itemsOrders;
+    @JsonProperty("totale_price")
     private double totalePrice;
     private double negoPrice;
-    private  double buyPrice;
+    private double buyPrice;
+    private List<ItemRequestDTO> items; // Builder pour `items`
 
-    @JsonCreator // Indique à Jackson d'utiliser ce constructeur pour désérialiser
+    @JsonCreator
     public Builder(
       @JsonProperty("idOrder") Long idOrder,
       @JsonProperty("nameProduct") String nameProduct,
@@ -132,7 +147,8 @@ public class OrderRequestDTO {
       @JsonProperty("itemsOrders") Long itemsOrders,
       @JsonProperty("totalePrice") double totalePrice,
       @JsonProperty("negoPrice") double negoPrice,
-      @JsonProperty("buyPrice") double buyPrice
+      @JsonProperty("buyPrice") double buyPrice,
+      @JsonProperty("items") List<ItemRequestDTO> items // Ajout des articles
     ) {
       this.idOrder = idOrder;
       this.nameProduct = nameProduct;
@@ -147,75 +163,11 @@ public class OrderRequestDTO {
       this.itemsOrders = itemsOrders;
       this.totalePrice = totalePrice;
       this.negoPrice = negoPrice;
-      this.buyPrice=buyPrice;
-    }
-
-    public Builder setIdOrder(Long idOrder) {
-      this.idOrder = idOrder;
-      return this;
-    }
-
-    public Builder setNameProduct(String nameProduct) {
-      this.nameProduct = nameProduct;
-      return this;
-    }
-    public Builder setBuyPrice(double buyPrice) {
       this.buyPrice = buyPrice;
-      return this;
+      this.items = items;
     }
-
-    public Builder setQuantity(int quantity) {
-      this.quantity = quantity;
-      return this;
-    }
-
-    public Builder setQuantityAddedUrgent(int quantityAddedUrgent) {
-      this.quantityAddedUrgent = quantityAddedUrgent;
-      return this;
-    }
-
-    public Builder setIsPromo(boolean isPromo) {
-      this.isPromo = isPromo;
-      return this;
-    }
-
-    public Builder setPricePromo(double pricePromo) {
-      this.pricePromo = pricePromo;
-      return this;
-    }
-
-    public Builder setSalesPrice(double salesPrice) {
-      this.salesPrice = salesPrice;
-      return this;
-    }
-
-    public Builder setDateOrder(LocalDateTime dateOrder) {
-      this.dateOrder = dateOrder;
-      return this;
-    }
-
-    public Builder setLastUpdated(LocalDateTime lastUpdated) {
-      this.lastUpdated = lastUpdated;
-      return this;
-    }
-
-    public Builder setItemId(Long itemId) {
-      this.itemId = itemId;
-      return this;
-    }
-
-    public Builder setItemsOrders(Long itemsOrders) {
-      this.itemsOrders = itemsOrders;
-      return this;
-    }
-
-    public Builder setTotalePrice(double totalePrice) {
-      this.totalePrice = totalePrice;
-      return this;
-    }
-
-    public Builder setNegoPrice(double negoPrice) {
-      this.negoPrice = negoPrice;
+    public Builder setItems(List<ItemRequestDTO> items) {
+      this.items = items;
       return this;
     }
 
@@ -223,4 +175,54 @@ public class OrderRequestDTO {
       return new OrderRequestDTO(this);
     }
   }
+
+  public static class ItemRequestDTO {
+    private String nameProduct;
+    private int quantity;
+    private double salesPrice;
+    private double totalePrice;
+    private Long itemId;
+
+    // Getters et setters
+    public String getNameProduct() {
+      return nameProduct;
+    }
+
+    public void setNameProduct(String nameProduct) {
+      this.nameProduct = nameProduct;
+    }
+
+    public int getQuantity() {
+      return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+      this.quantity = quantity;
+    }
+
+    public double getSalesPrice() {
+      return salesPrice;
+    }
+
+    public void setSalesPrice(double salesPrice) {
+      this.salesPrice = salesPrice;
+    }
+
+    public double getTotalePrice() {
+      return totalePrice;
+    }
+
+    public void setTotalePrice(double totalePrice) {
+      this.totalePrice = totalePrice;
+    }
+
+    public Long getItemId() {
+      return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+      this.itemId = itemId;
+    }
+  }
 }
+

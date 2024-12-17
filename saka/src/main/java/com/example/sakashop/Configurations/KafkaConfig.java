@@ -16,20 +16,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-@EnableKafka // Active la prise en charge de KafkaListener
+@EnableKafka
 @PropertySource("classpath:kafka.properties")
 public class KafkaConfig {
 
-  // 1. Producer Configuration
   @Bean
   public ProducerFactory<String, Object> producerFactory() {
-    Map<String, Object> configProps = new HashMap<>();
-    configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-    configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-    configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonSerializer.class);
-    configProps.put(ProducerConfig.ACKS_CONFIG, "all"); // Attendre que toutes les répliques confirment
-    configProps.put(ProducerConfig.RETRIES_CONFIG, 3); // Nombre de tentatives en cas d’échec
-    return new DefaultKafkaProducerFactory<>(configProps);
+    return new DefaultKafkaProducerFactory<>(producerConfigs());
+  }
+
+  @Bean
+  public Map<String, Object> producerConfigs() {
+    Map<String, Object> props = new HashMap<>();
+    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "${spring.kafka.bootstrap-servers}");
+    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonSerializer.class);
+    return props;
   }
 
   @Bean
@@ -37,30 +39,25 @@ public class KafkaConfig {
     return new KafkaTemplate<>(producerFactory());
   }
 
-  // 2. Consumer Configuration
   @Bean
   public ConsumerFactory<String, Object> consumerFactory() {
-    Map<String, Object> configProps = new HashMap<>();
-    configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-    configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "order-group");
-    configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-    configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonDeserializer.class);
-    configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-    configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false); // Gestion manuelle des offsets
-    return new DefaultKafkaConsumerFactory<>(configProps);
+    Map<String, Object> props = new HashMap<>();
+    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "${spring.kafka.bootstrap-servers}");
+    props.put(ConsumerConfig.GROUP_ID_CONFIG, "${spring.kafka.consumer.group-id}");
+    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonDeserializer.class);
+    return new DefaultKafkaConsumerFactory<>(props);
   }
 
   @Bean
   public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
     ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
     factory.setConsumerFactory(consumerFactory());
-    factory.setConcurrency(3); // Pour plusieurs threads de consommation
     return factory;
   }
 
-  // 3. Topic Configuration (facultatif mais recommandé)
   @Bean
   public NewTopic ordersTopic() {
-    return new NewTopic("orders-topic", 3, (short) 2); // 3 partitions, facteur de réplication 2
+    return new NewTopic("mydb.sakashop.orders", 3, (short) 3);
   }
 }

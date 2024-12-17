@@ -1,6 +1,7 @@
 package com.example.sakashop.DAO;
 
 import com.example.sakashop.Entities.Item;
+import com.example.sakashop.Entities.ItemsOrders;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,6 +36,8 @@ public interface ProductRepository extends JpaRepository<Item, Long> {
   @Query("UPDATE Item i SET i.quantity = i.quantity + :quantity WHERE i.id = :itemId")
   int incrementItemQuantity(@Param("itemId") Long itemId, @Param("quantity") int quantity);
 
+  @Query("SELECT io FROM ItemsOrders io JOIN FETCH io.item i WHERE io.order.id = :orderId")
+  Optional<ItemsOrders> findByOrderIdWithItem(@Param("orderId") Long orderId);
 
 
 }

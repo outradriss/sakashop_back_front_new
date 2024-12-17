@@ -1,0 +1,17 @@
+{
+  "name": "mysql-source-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "database.hostname": "localhost",
+    "database.port": "3307",
+    "database.user": "debezium",
+    "database.password": "password",
+    "database.server.id": "184054",
+    "database.server.name": "dbserver1",
+    "table.whitelist": "sakashop.orders",
+    "topic.prefix": "mydb",
+    "schema.history.internal.kafka.bootstrap.servers": "localhost:9092",
+    "schema.history.internal.kafka.topic": "schema-changes.sakashop"
+  }
+}
+

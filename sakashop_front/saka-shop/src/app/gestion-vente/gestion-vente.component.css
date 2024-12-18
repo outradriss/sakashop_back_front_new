@@ -161,7 +161,7 @@
 .total-item {
   text-align: center; /* Centrer le contenu de chaque cellule */
   padding: 0;
-  border-right: 1px solid #1181ea; /* Ajouter une bordure droite entre les colonnes */
+  border-right: 1px solid #ffffff; /* Ajouter une bordure droite entre les colonnes */
 }
 
 .total-item:last-child {
@@ -210,20 +210,20 @@
   
   .navigation-buttons button:nth-child(3) {
     background-color: #ffc107;
-    color: #000;
+    color: #fff;
   }
   .navigation-buttons button:nth-child(4) {
     background-color: #579fcf;
-    color: #000;
+    color: #fff;
    
   }
   .navigation-buttons button:nth-child(5) {
     background-color: #ff0783;
-    color: #000;
+    color: #fff;
   }
   .navigation-buttons button:nth-child(6) {
     background-color: #ff0707;
-    color: #000;
+    color: #fff;
     transform: translateX(150%);
   }
   

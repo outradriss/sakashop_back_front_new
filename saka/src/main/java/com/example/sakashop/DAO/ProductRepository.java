@@ -39,5 +39,13 @@ public interface ProductRepository extends JpaRepository<Item, Long> {
   @Query("SELECT io FROM ItemsOrders io JOIN FETCH io.item i WHERE io.order.id = :orderId")
   Optional<ItemsOrders> findByOrderIdWithItem(@Param("orderId") Long orderId);
 
+  @Query(value = "SELECT * FROM items " +
+    "WHERE expired_date <= CURRENT_DATE " +
+    "OR expired_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL 30 DAY",
+    nativeQuery = true)
+  List<Item> findItemsToCheck();
+
+  @Query(value = "SELECT COUNT(*) FROM items WHERE expired_date <= CURRENT_DATE OR expired_date BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL 30 DAY", nativeQuery = true)
+  long countItemsToCheck();
 
 }

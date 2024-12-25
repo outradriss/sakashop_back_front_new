@@ -1,3 +1,4 @@
+/*
 package com.example.sakashop.Configurations.reader;
 
 import com.example.sakashop.DAO.ProductRepository;
@@ -50,3 +51,4 @@ public class ItemReaderConfig implements ItemReader<Item> {
     }
   }
 }
+*/

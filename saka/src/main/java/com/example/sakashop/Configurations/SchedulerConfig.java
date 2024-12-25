@@ -1,3 +1,4 @@
+/*
 package com.example.sakashop.Configurations;
 
 import com.example.sakashop.DAO.ProductRepository;
@@ -46,3 +47,4 @@ public class SchedulerConfig {
   }
 
 }
+*/

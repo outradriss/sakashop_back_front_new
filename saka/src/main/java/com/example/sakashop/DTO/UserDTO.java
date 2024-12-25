@@ -2,6 +2,8 @@ package com.example.sakashop.DTO;
 
 import com.example.sakashop.Entities.User;
 
+import javax.persistence.Column;
+
 public class UserDTO {
 
     private String username;
@@ -9,6 +11,8 @@ public class UserDTO {
     private String email;
     private String phone;
     private String name;
+    @Column(name = "c_password")
+    private String cPassword;
 
 
     public String getUsername() {

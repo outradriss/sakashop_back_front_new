@@ -1,3 +1,4 @@
+/*
 package com.example.sakashop.Configurations.writer;
 
 import com.example.sakashop.DAO.ProductRepository;
@@ -27,3 +28,4 @@ public class ItemWriterConfig implements ItemWriter<Item> {
   }
 
 }
+*/

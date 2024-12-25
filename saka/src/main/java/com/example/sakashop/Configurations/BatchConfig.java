@@ -1,3 +1,4 @@
+/*
 package com.example.sakashop.Configurations;
 
 import com.example.sakashop.Entities.Item;
@@ -33,3 +34,4 @@ public class BatchConfig {
       .build();
   }
 }
+*/

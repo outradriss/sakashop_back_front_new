@@ -22,8 +22,8 @@ export class ProductService {
 }
 
   saveProduct(product: Product): Observable<Product> {
-
-    return this.http.post<Product>(`${this.apiUrl}/save`, product);
+    const { negoPrice,totalePrice, ...cleanProduct } = product; 
+    return this.http.post<Product>(`${this.apiUrl}/save`, cleanProduct);
   }
   
   saveCategory(category: Categories): Observable<Categories> {

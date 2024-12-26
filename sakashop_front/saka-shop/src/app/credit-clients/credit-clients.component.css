@@ -8,12 +8,12 @@ body {
 /* Container */
 .credit-container {
   text-align: center;
-  margin-top: 50px;
+  margin-top: 10px;
 }
 
 /* Button Ajouter Crédit */
 .btn-add-credit {
-  padding: 12px 20px;
+  padding: 10px 10px;
   font-size: 1.2rem;
   background-color: #007bff;
   color: white;
@@ -72,8 +72,6 @@ body {
   text-align: left;
   border-bottom: 1px solid #ddd;
 }
-
-
 
 .popup-actions {
   display: flex;
@@ -377,7 +375,7 @@ input.ng-valid.ng-touched {
 
 /* Mise en page du tableau */
 .credit-table {
-  margin: 30px auto; /* Centrer le tableau */
+  margin: 1px auto; /* Centrer le tableau */
   max-width: 90%; /* Réduction de la largeur pour un rendu plus professionnel */
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Légère ombre */

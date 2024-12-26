@@ -48,7 +48,7 @@ export class GestionVenteComponent {
         // Filtrer les données par défaut pour `date_update = now()`
         const today = new Date();
         this.filteredSales = this.sales.filter((sale) => {
-          const lastUpdated = new Date(sale.lastUpdated);
+          const lastUpdated = new Date(sale.dateOrder);
           return (
             lastUpdated.getDate() === today.getDate() &&
             lastUpdated.getMonth() === today.getMonth() &&
@@ -65,60 +65,52 @@ export class GestionVenteComponent {
     );
   }
 
-  sortSalesByDate(): void {
-    this.filteredSales.sort((a, b) => {
-      const dateA = new Date(a.lastUpdated).getTime();
-      const dateB = new Date(b.lastUpdated).getTime();
-      return dateA - dateB; // Du plus ancien au plus récent
-    });
-  }
-  
-  // Appliquer les filtres de date
-  applyDateFilter(): void {
-    const { start, end } = this.dateRangeForm.value;
-  
-    if (start && end) {
-      // Convertir les valeurs de `start` et `end` en objets `Date`
-      const startDate = new Date(start);
-      const endDate = new Date(end);
-  
-      // Ajuster `endDate` pour inclure toute la journée jusqu'à 23:59:59
-      endDate.setHours(23, 59, 59, 999);
-  
-      // Filtrer les ventes en fonction de la plage de dates
-      this.filteredSales = this.sales.filter((sale) => {
-        const saleDate = new Date(sale.lastUpdated); // Convertir `lastUpdated` en objet `Date`
-        return saleDate >= startDate && saleDate <= endDate;
-      });
-    } else {
-      // Si aucune plage de dates n'est définie, afficher toutes les ventes
-      this.filteredSales = [...this.sales];
-    }
-    this.sortSalesByDate();
-    // Recalculer les totaux
-    this.calculateTotals(this.filteredSales);
-  }
-  
-  // Réinitialiser le filtre de date
   resetDateFilter(): void {
     const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+  
     this.dateRangeForm.setValue({
-      start: today,
-      end: today,
+      start: startOfDay,
+      end: endOfDay,
     });
   
-    // Filtrer les données pour afficher uniquement celles du jour J
+    // Réinitialiser pour afficher uniquement les données d'aujourd'hui
     this.filteredSales = this.sales.filter((sale) => {
-      const saleDate = new Date(sale.lastUpdated);
-      return (
-        saleDate.getDate() === today.getDate() &&
-        saleDate.getMonth() === today.getMonth() &&
-        saleDate.getFullYear() === today.getFullYear()
-      );
+      const saleDate = new Date(sale.dateOrder);
+      return saleDate >= startOfDay && saleDate <= endOfDay;
     });
+  
     this.sortSalesByDate();
     this.calculateTotals(this.filteredSales); // Recalcule les totaux
   }
+  
+  applyDateFilter(): void {
+    const startDate = new Date(this.dateRangeForm.value.start);
+    const endDate = new Date(this.dateRangeForm.value.end);
+  
+    if (startDate && endDate) {
+      // Ajuster les dates pour inclure toute la journée
+      const startOfDay = new Date(startDate.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(endDate.setHours(23, 59, 59, 999));
+  
+      // Filtrer les ventes dans la plage de dates sélectionnée
+      this.filteredSales = this.sales.filter((sale) => {
+        const saleDate = new Date(sale.dateOrder);
+        return saleDate >= startOfDay && saleDate <= endOfDay;
+      });
+  
+      this.sortSalesByDate();
+      this.calculateTotals(this.filteredSales); // Recalcule les totaux
+    }
+  }
+  
+  sortSalesByDate(): void {
+    this.filteredSales.sort(
+      (a, b) => new Date(a.dateOrder).getTime() - new Date(b.dateOrder).getTime()
+    );
+  }
+  
   
 
   // Calculer les totaux

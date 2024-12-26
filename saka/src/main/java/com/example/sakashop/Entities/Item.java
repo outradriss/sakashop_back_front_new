@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,7 +43,7 @@ public class Item {
   @Column(name = "isPromo")
   private boolean isPromo;
   @Column(name = "expiredDate")
-  private Date expiredDate;
+  private LocalDate expiredDate;
   @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ItemsOrders> itemsOrders = new ArrayList<>();
   @Column(name = "product_added_date")
@@ -51,7 +52,7 @@ public class Item {
   private List<Credit> credits = new ArrayList<>();
 
 
-  public Item(Long id, double pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, Categories categories, LocalDateTime lastUpdated, boolean isPromo, Date expiredDate, LocalDateTime productAddedDate) {
+  public Item(Long id, double pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, Categories categories, LocalDateTime lastUpdated, boolean isPromo, LocalDate expiredDate, LocalDateTime productAddedDate) {
     this.id = id;
     this.pricePromo = pricePromo;
     this.itemCode = itemCode;
@@ -89,11 +90,11 @@ public class Item {
     isPromo = promo;
   }
 
-  public Date getExpiredDate() {
+  public LocalDate getExpiredDate() {
     return expiredDate;
   }
 
-  public void setExpiredDate(Date expiredDate) {
+  public void setExpiredDate(LocalDate expiredDate) {
     this.expiredDate = expiredDate;
   }
 

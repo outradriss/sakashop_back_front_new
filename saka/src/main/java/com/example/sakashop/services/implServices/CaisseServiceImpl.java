@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -61,6 +60,7 @@ public class CaisseServiceImpl implements caisseService {
 
 
   @Transactional
+  @CacheEvict(value = "products", allEntries = true)
   public void processAndSaveOrder(List<OrderRequestDTO> orderDTOList) {
     if (orderDTOList == null || orderDTOList.isEmpty()) {
       throw new IllegalArgumentException("La liste des commandes est vide.");
@@ -113,6 +113,7 @@ public class CaisseServiceImpl implements caisseService {
   }
 
   @Transactional
+  @CacheEvict(value = "products", allEntries = true)
   public void processOrderFromKafka(OrderRequestDTO orderDTO) {
     if (orderDTO == null) {
       throw new IllegalArgumentException("La commande est nulle.");

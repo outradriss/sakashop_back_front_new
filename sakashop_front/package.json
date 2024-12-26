@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@angular/animations": "^19.0.3",
+    "@angular/cdk": "^19.0.2",
+    "@angular/material": "^19.0.2",
+    "@swimlane/ngx-charts": "^19.0.0",
+    "apexcharts": "^4.1.0",
+    "ng-apexcharts": "^1.15.0"
+  }
+}

@@ -24,7 +24,8 @@ export class CaisseComponent {
   dismissedAlerts: Set<number> = new Set(); // Stocker les IDs des produits déjà alertés
   isPopupVisible = false;
   expiringProducts: { name: string; expiredDate: string; id: number }[] = []; // Liste des produits proches de l'expiration
-
+  cancelReason = '';
+  isPopupVisibledelete=false;
 
   constructor(private router: Router , private caisseService : CaisseService , private cdr: ChangeDetectorRef , private sharedService : SharedService) {}
 
@@ -257,24 +258,72 @@ export class CaisseComponent {
       this.isPopupVisible = false;
     }
  
-  // Annuler la commande
-  cancel(): void {
-    Swal.fire({
-      title: 'Annuler la commande',
-      text: 'Êtes-vous sûr de vouloir annuler la commande ?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Oui, annuler',
-      cancelButtonText: 'Non, continuer',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire('Commande annulée', 'Votre commande a été annulée avec succès.', 'success');
-        this.cart.forEach((item) => (item.quantityInCart = 0)); // Réinitialiser les quantités dans le panier
-        this.cart = [];
-        this.updateTotal(); 
-      }
-    });
+// Annuler la commande
+cancel(): void {
+  Swal.fire({
+    title: 'Annuler la commande',
+    text: 'Êtes-vous sûr de vouloir annuler la commande ?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Oui, annuler',
+    cancelButtonText: 'Non, continuer',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      this.showCancelPopupDelete(); // Afficher le popup de la cause
+    }
+  });
+}
+
+showCancelPopupDelete() {
+  this.isPopupVisibledelete = true;
+}
+
+closeCancelPopupDelete() {
+  this.isPopupVisibledelete = false;
+  this.cancelReason = '';
+}
+
+submitCancel() {
+  if (this.cancelReason.trim() === '') {
+    Swal.fire('Erreur', 'Veuillez fournir une raison pour l\'annulation.', 'error');
+    return;
   }
+  // Récupérer le texte saisi et les produits annulés
+  const cancellationInfo = {
+    reason: this.cancelReason,
+    itemId: this.cart.map(item => item.id)
+  };
+
+  // Envoyer les informations d'annulation au backend
+  this.sendCancellationInfo(cancellationInfo);
+
+  // Réinitialiser la valeur saisie et le panier
+  this.cancelReason = '';
+  this.cart.forEach((item) => (item.quantityInCart = 0)); // Réinitialiser les quantités dans le panier
+  this.cart = [];
+  this.updateTotal();
+  this.closeCancelPopupDelete();
+}
+
+sendCancellationInfo(cancellationInfo: { reason: string; itemId: number[] }) {
+  this.caisseService.sendCancellationInfo(cancellationInfo).subscribe(
+    (response) => {
+      console.log('Informations d\'annulation envoyées avec succès :', response);
+    },
+    (error) => {
+      console.error('Erreur lors de l\'envoi des informations d\'annulation :', error);
+    }
+  );
+}
+
+showCancelPopup() {
+  this.isPopupVisible = true;
+}
+
+closeCancelPopup() {
+  this.isPopupVisible = false;
+}
+
   
   navigateTo(route: string) {
     this.router.navigate([`/${route}`]);

@@ -17,7 +17,9 @@ export class CaisseService {
   saveOrders(orders: any[]): Observable<any> {
     return this.http.post(`${this.apiUrl}/saveOrder`, orders, { responseType: 'text' });
   }
-  
+  sendCancellationInfo(cancellationInfo: { reason: string; itemId: number[] }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/cancel`, cancellationInfo);
+  }
   
   
 }

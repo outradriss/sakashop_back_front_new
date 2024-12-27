@@ -388,13 +388,13 @@
         <input type="number" id="promoPrice" [value]="promoPrice" readonly />
       </div>
       
-     <!-- Activer/Désactiver la Période -->
-<div class="form-group">
-  <label class="checkbox-label">
-    <span>Activer la gestion automatique de la période</span>
-    <input type="checkbox" [(ngModel)]="enablePeriod" name="enablePeriod" />
-  </label>
+<!-- ...existing code... -->
+<div class="form-group checkbox-container align-left">
+  <input type="checkbox" id="enablePeriod" [(ngModel)]="enablePeriod" name="enablePeriod" />
+  <label for="enablePeriod">Activer la gestion automatique de la période</label>
 </div>
+<!-- ...existing code... -->
+
 
       <!-- Sélection de la Période (si activée) -->
       <div *ngIf="enablePeriod">

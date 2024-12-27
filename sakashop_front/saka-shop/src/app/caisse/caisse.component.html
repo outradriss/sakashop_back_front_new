@@ -102,6 +102,17 @@
             [disabled]="cart.length===0">Annuler</button>
           </div>
         </div>
+<!-- Popup alert -->
+<div *ngIf="isPopupVisibledelete" class="cancel-popup-overlay">
+  <div class="cancel-popup-content">
+    <label for="cancelReason">Pourquoi voulez-vous annuler la commande ?</label>
+    <input type="text" id="cancelReason" [(ngModel)]="cancelReason" placeholder="Entrez votre raison ici..." />
+    <div class="cancel-popup-actions">
+      <button class="btn-submit" (click)="submitCancel()">Soumettre</button>
+      <button class="btn-cancel" (click)="closeCancelPopupDelete()">Fermer</button>
+    </div>
+  </div>
+</div>
       
 <!-- Alerte globale en haut de la page -->
 <div *ngIf="alerts.length > 0" class="global-alert">
@@ -111,6 +122,8 @@
     <button class="close-btn" (click)="dismissAlert(alerts[0])">X</button>
   </div>
 </div>
+
+
 
 <!-- Popup alert -->
 <div *ngIf="isPopupVisible" class="popup-overlay">

@@ -52,6 +52,7 @@ export class GestionProduitsComponent {
   discountDurationDays: number = 0;
   dateRangeForm!: FormGroup;
   enablePeriod: boolean = false;
+
   
 
   constructor(private productService: ProductService, private router: Router , private toastr: ToastrService , private sharedService : SharedService) {}

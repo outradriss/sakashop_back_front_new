@@ -480,3 +480,105 @@ body {
   background-color: #0056b3;
 }
 
+
+/* Popup overlay cancel commande */
+.cancel-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* Couleur plus sombre pour le fond */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  animation: fadeIn 0.3s ease-in-out; /* Animation de fondu */
+}
+
+/* Animation de fondu */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Popup content */
+.cancel-popup-content {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 15px;
+  width: 400px; /* Ajusté pour une meilleure apparence */
+  max-width: 90%;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Ombre plus douce */
+  text-align: center; /* Alignement centré pour un texte naturel */
+  position: relative;
+  animation: slideIn 0.3s ease-in-out; /* Animation de glissement */
+}
+
+/* Animation de glissement */
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Popup title */
+.cancel-popup-content h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 20px;
+}
+.cancel-popup-content  label {
+  font-size: 20px;
+  font-weight: 600;
+  color: #b60d0d;
+  margin-bottom: 20px;
+}
+
+/* Input field */
+.cancel-popup-content input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Buttons */
+.cancel-popup-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.cancel-popup-actions .btn-submit {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-popup-actions .btn-cancel {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-popup-actions .btn-submit:hover,
+.cancel-popup-actions .btn-cancel:hover {
+  opacity: 0.9;
+}

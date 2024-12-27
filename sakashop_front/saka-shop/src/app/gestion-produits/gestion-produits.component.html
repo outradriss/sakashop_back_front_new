@@ -352,48 +352,86 @@
       <button (click)="hideDiscountPopup()">Annuler</button>
     </div>
   </div>
- <!-- Popup d'Application de Remise -->
- <div class="popup-overlay" *ngIf="showApplyDiscountPopup">
-    <div class="popup">
-      <div class="popup-header">
-        <h3>Ajouter une Remise</h3>
+<!-- Popup d'Application de Remise -->
+<div class="popup-overlay" *ngIf="showApplyDiscountPopup">
+  <div class="popup">
+    <div class="popup-header">
+      <h3>Ajouter une Remise</h3>
+    </div>
+    <form>
+      <!-- Champ Prix Actuel -->
+      <div class="form-group">
+        <label for="currentPrice">Prix Actuel :</label>
+        <input type="number" id="currentPrice" [value]="selectedProduct?.salesPrice" readonly />
       </div>
-      <form>
-        <!-- Champ Prix Actuel -->
+      <!-- Champ Prix Promo Actuel (si en promo) -->
+      <div class="form-group" *ngIf="selectedProduct?.isPromo">
+        <label for="currentPromoPrice">Prix Promo Actuel :</label>
+        <input type="number" id="currentPromoPrice" [value]="selectedProduct?.pricePromo" readonly />
+      </div>
+      <!-- Champ Remise (%) -->
+      <div class="form-group">
+        <label for="discount">Remise (%) :</label>
+        <input
+          type="number"
+          id="discount"
+          [(ngModel)]="discountPercentage"
+          name="discountPercentage"
+          (input)="calculatePromoPrice()"
+          min="0"
+          max="100"
+        />
+      </div>
+      <!-- Champ Nouveau Prix Promo -->
+      <div class="form-group">
+        <label for="promoPrice">Nouveau Prix Promo :</label>
+        <input type="number" id="promoPrice" [value]="promoPrice" readonly />
+      </div>
+      
+     <!-- Activer/Désactiver la Période -->
+<div class="form-group">
+  <label class="checkbox-label">
+    <span>Activer la gestion automatique de la période</span>
+    <input type="checkbox" [(ngModel)]="enablePeriod" name="enablePeriod" />
+  </label>
+</div>
+
+      <!-- Sélection de la Période (si activée) -->
+      <div *ngIf="enablePeriod">
         <div class="form-group">
-          <label for="currentPrice">Prix Actuel :</label>
-          <input type="number" id="currentPrice" [value]="selectedProduct?.salesPrice" readonly />
+          <label for="discountDurationDays">Sélection de la Période :</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-date-range-input [rangePicker]="picker">
+              <input matStartDate placeholder="Date de début" />
+              <input matEndDate placeholder="Date de fin" />
+            </mat-date-range-input>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-date-range-picker #picker></mat-date-range-picker>
+          </mat-form-field>
         </div>
-        <!-- Champ Prix Promo Actuel (si en promo) -->
-        <div class="form-group" *ngIf="selectedProduct?.isPromo">
-          <label for="currentPromoPrice">Prix Promo Actuel :</label>
-          <input type="number" id="currentPromoPrice" [value]="selectedProduct?.pricePromo" readonly />
-        </div>
-        <!-- Champ Remise (%) -->
+
+        <!-- Champ Période Manuelle (en jours) -->
         <div class="form-group">
-          <label for="discount">Remise (%) :</label>
+          <label for="discountDurationDays">Durée de la Remise (en jours) :</label>
           <input
             type="number"
-            id="discount"
-            [(ngModel)]="discountPercentage"
-            name="discountPercentage"
-            (input)="calculatePromoPrice()"
-            min="0"
-            max="100"
+            id="discountDurationDays"
+            [(ngModel)]="discountDurationDays"
+            name="discountDurationDays"
+            min="1"
+            placeholder="Ex: 20 jours"
           />
         </div>
-        <!-- Champ Nouveau Prix Promo -->
-        <div class="form-group">
-          <label for="promoPrice">Nouveau Prix Promo :</label>
-          <input type="number" id="promoPrice" [value]="promoPrice" readonly />
-        </div>
-        <!-- Actions -->
-        <div class="popup-actions">
-          <button type="button" (click)="applyDiscount()">Appliquer</button>
-          <button type="button" (click)="hideApplyDiscountPopup()">Annuler</button>
-        </div>
-      </form>
-    </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="popup-actions">
+        <button type="button" (click)="applyDiscount()">Appliquer</button>
+        <button type="button" (click)="hideApplyDiscountPopup()">Annuler</button>
+      </div>
+    </form>
   </div>
-  
+</div>
+
+
   

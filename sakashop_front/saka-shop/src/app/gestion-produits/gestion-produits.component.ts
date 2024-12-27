@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SharedService } from '../service/shared.service';
+import { FormGroup } from '@angular/forms';
 
 
 @Component({
@@ -47,8 +48,11 @@ export class GestionProduitsComponent {
   isNameReadOnly: boolean = false; // Indique si le champ `name` est modifiable
   errorMessage: string | null = null;
   successMessage: string | null = null;
-
- 
+  discountStartDate: Date | null = null;
+  discountDurationDays: number = 0;
+  dateRangeForm!: FormGroup;
+  enablePeriod: boolean = false;
+  
 
   constructor(private productService: ProductService, private router: Router , private toastr: ToastrService , private sharedService : SharedService) {}
 

@@ -692,3 +692,38 @@ button:hover {
     visibility: hidden;
   }
 }
+
+.popup form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Ajoute un espacement uniforme entre les champs */
+}
+
+.form-group {
+  width: 100%;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.popup-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+
+.checkbox-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.checkbox-label input {
+  margin-top: 8px;
+}

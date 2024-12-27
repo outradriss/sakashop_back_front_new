@@ -65,7 +65,7 @@ class CaisseServiceImplTest {
     Mockito.when(caisseOrderRepo.save(Mockito.any(Order.class))).thenReturn(mockOrder);
 
     // Act
-    caisseService.saveOrders(orderRequestDTOS);
+    caisseService.(orderRequestDTOS);
 
     // Assert
     Mockito.verify(productRepository).findById(1L);

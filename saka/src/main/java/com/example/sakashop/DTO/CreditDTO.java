@@ -1,5 +1,6 @@
 package com.example.sakashop.DTO;
 
+import com.example.sakashop.Entities.Item;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreditDTO {
-
   private String nameClient;
   private String comment;
   private LocalDate localDateTime;
@@ -20,4 +20,5 @@ public class CreditDTO {
   private double productPrice;
   private int quantity;
   private double totale;
+  private Item product;
 }

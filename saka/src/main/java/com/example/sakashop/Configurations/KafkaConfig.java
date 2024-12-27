@@ -1,3 +1,4 @@
+/*
 package com.example.sakashop.Configurations;
 
 import org.apache.kafka.clients.admin.NewTopic;
@@ -61,3 +62,4 @@ public class KafkaConfig {
     return new NewTopic("mydb.sakashop.orders", 3, (short) 3);
   }
 }
+*/

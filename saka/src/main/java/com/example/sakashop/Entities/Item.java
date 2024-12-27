@@ -2,6 +2,9 @@ package com.example.sakashop.Entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
@@ -14,6 +17,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "items")
+@AllArgsConstructor
 public class Item {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +36,8 @@ public class Item {
   private double salesPrice;
   @Column(name = "Supplier")
   private String supplier;
+  @Version
+  private int version;
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "category_id", nullable = false)
   @JsonIgnore
@@ -51,22 +57,6 @@ public class Item {
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Credit> credits = new ArrayList<>();
 
-
-  public Item(Long id, double pricePromo, String itemCode, String name, int quantity, double buyPrice, double salesPrice, String supplier, Categories categories, LocalDateTime lastUpdated, boolean isPromo, LocalDate expiredDate, LocalDateTime productAddedDate) {
-    this.id = id;
-    this.pricePromo = pricePromo;
-    this.itemCode = itemCode;
-    this.name = name;
-    this.quantity = quantity;
-    this.buyPrice = buyPrice;
-    this.salesPrice = salesPrice;
-    this.supplier = supplier;
-    this.categories = categories;
-    this.lastUpdated = lastUpdated;
-    this.isPromo = isPromo;
-    this.expiredDate = expiredDate;
-    this.productAddedDate = productAddedDate;
-  }
 
 
 

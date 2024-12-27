@@ -1,5 +1,6 @@
 package com.example.sakashop.DAO;
 
+import com.example.sakashop.DTO.ItemCaisseDTO;
 import com.example.sakashop.Entities.Item;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,5 +25,4 @@ public interface CaisseRepo extends JpaRepository<Item,Long> {
 
   @Query("SELECT i FROM Item i JOIN FETCH i.categories")
   List<Item> findAllWithCategoryForCaisse();
-
 }

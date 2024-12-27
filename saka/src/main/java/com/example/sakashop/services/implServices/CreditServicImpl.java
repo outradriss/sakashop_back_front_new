@@ -13,6 +13,7 @@ import com.example.sakashop.controllers.CreditController;
 import com.example.sakashop.services.creditService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,7 @@ public class CreditServicImpl implements creditService {
 
   @Override
   @Transactional
+  @CacheEvict(value = "productForCredit", allEntries = true)
   public Credit createCredit(CreditDTO creditRequest) {
     try {
       // Récupérer le produit à partir du nom
@@ -108,6 +110,7 @@ public class CreditServicImpl implements creditService {
 
   @Transactional
   @Override
+  @CacheEvict(value = "productForCredit", allEntries = true)
   public void deleteCredit(Long id) {
     log.info("Tentative de suppression du crédit avec l'ID: {}", id);
 
@@ -159,6 +162,7 @@ public class CreditServicImpl implements creditService {
 
   @Override
   @Transactional
+  @CacheEvict(value = "productForCredit", allEntries = true)
   public void payCredit(Long id) {
     log.info("Début de la suppression du crédit avec l'ID: {}", id);
 
@@ -197,6 +201,7 @@ public class CreditServicImpl implements creditService {
 
   @Override
   @Transactional
+  @CacheEvict(value = "productForCredit", allEntries = true)
   public Credit updateCredit(Long id, CreditDTO creditRequest) {
     log.info("Demande de mise à jour du crédit avec l'ID: {}", id);
 

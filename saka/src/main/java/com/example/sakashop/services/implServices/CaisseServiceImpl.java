@@ -8,35 +8,22 @@ import com.example.sakashop.DTO.OrderRequestDTO;
 import com.example.sakashop.Entities.Item;
 import com.example.sakashop.Entities.ItemsOrders;
 import com.example.sakashop.Entities.Order;
-import com.example.sakashop.Exceptions.EntityNotFoundException;
-import com.example.sakashop.Exceptions.InsufficientStockException;
-import com.example.sakashop.services.caisseService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class CaisseServiceImpl implements caisseService {
-   // kafkaTemplate c'est l'outil principal pour envoyer des messages à kafka
-  private final KafkaTemplate<String, Object> kafkaTemplate;
-
-  @Value("${spring.kafka.topic.orders.name}")
-  private String ordersTopic;
-
-  public CaisseServiceImpl(KafkaTemplate<String, Object> kafkaTemplate) {
-    this.kafkaTemplate = kafkaTemplate;
-  }
+public class CaisseServiceImpl {
+  private static final Logger logger = LoggerFactory.getLogger(CaisseServiceImpl.class);
 
   @Autowired
   CaisseRepo caisseRepo;
@@ -46,95 +33,109 @@ public class CaisseServiceImpl implements caisseService {
 
   @Autowired
   ProductRepository productRepository;
+
   @Autowired
   ItemsOrdersREpo itemsOrdersREpo;
 
-
-  @Override
   @Cacheable(value = "products", key = "'allProducts'")
   @Transactional(readOnly = true)
   public List<Item> getAllProducts() {
     return caisseRepo.findAllWithCategoryForCaisse();
   }
 
-
-
   @Transactional
-  @CacheEvict(value = "products", allEntries = true)
+  @CacheEvict(value = "products",  key = "'allProducts'",allEntries = true)
   public void processAndSaveOrder(List<OrderRequestDTO> orderDTOList) {
     if (orderDTOList == null || orderDTOList.isEmpty()) {
       throw new IllegalArgumentException("La liste des commandes est vide.");
     }
 
-    // Création de l'entité `Order` pour toute la commande
-    Order order = new Order();
-    order.setDateOrder(orderDTOList.get(0).getDateOrder());
-    order.setLastUpdated(orderDTOList.get(0).getLastUpdated());
-    order.setTotalePrice(orderDTOList.stream().mapToDouble(OrderRequestDTO::getTotalePrice).sum());
+    // Préparer une commande
+    for (OrderRequestDTO orderDTO : orderDTOList) {
+      processSingleOrder(orderDTO);
+    }
+  }
 
-    // Traiter chaque article de la commande
-    List<ItemsOrders> itemsOrdersList = orderDTOList.stream().map(itemDTO -> {
-      // Vérification si l'ID de l'article existe en base
-      Optional<Item> itemOptional = productRepository.findById(itemDTO.getItemId());
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @CacheEvict(value = "products",  key = "'allProducts'",allEntries = true)
+  public void processSingleOrder(OrderRequestDTO orderDTO) {
+    long startTime = System.currentTimeMillis();
+    try {
+      // Vérification des données d'entrée
+      if (orderDTO == null) {
+        logger.error("OrderRequestDTO est nul.");
+        throw new IllegalArgumentException("L'ordre fourni est nul.");
+      }
+      if (orderDTO.getItemId() == null || orderDTO.getItemId() <= 0) {
+        logger.error("ID de l'article invalide : {}", orderDTO.getItemId());
+        throw new IllegalArgumentException("ID de l'article invalide : " + orderDTO.getItemId());
+      }
+      if (orderDTO.getQuantity() <= 0) {
+        logger.error("Quantité invalide pour l'article : {}", orderDTO.getItemId());
+        throw new IllegalArgumentException("Quantité invalide pour l'article : " + orderDTO.getItemId());
+      }
+
+      // Récupérer l'article
+      Optional<Item> itemOptional = productRepository.findById(orderDTO.getItemId());
       if (itemOptional.isEmpty()) {
-        throw new IllegalArgumentException("Article non trouvé : " + itemDTO.getItemId());
+        logger.error("Article non trouvé : {}", orderDTO.getItemId());
+        throw new IllegalArgumentException("Article non trouvé : " + orderDTO.getItemId());
       }
 
       Item item = itemOptional.get();
 
-      // Vérification de la disponibilité du stock
-      if (item.getQuantity() < itemDTO.getQuantity()) {
-        throw new IllegalStateException("Stock insuffisant pour l'article : " + itemDTO.getItemId());
+      // Vérification et mise à jour du champ 'name'
+      if (item.getName() == null || item.getName().isEmpty()) {
+        item.setName(orderDTO.getNameProduct());
+        logger.warn("Nom de l'article mis à jour depuis le DTO : {}", orderDTO.getNameProduct());
       }
-      // Création de l'entité `ItemsOrders`
+
+      // Vérification du stock disponible
+      if (item.getQuantity() < orderDTO.getQuantity()) {
+        logger.warn("Stock insuffisant pour l'article : {}", item.getId());
+        throw new IllegalStateException("Stock insuffisant pour l'article : " + item.getId());
+      }
+
+      // Mise à jour du stock
+      int updatedStock = item.getQuantity() - orderDTO.getQuantity();
+      item.setQuantity(updatedStock);
+
+      // Sauvegarder l'article avec versionning
+      productRepository.save(item);
+      logger.info("Stock mis à jour avec succès pour l'article : {}. Stock actuel : {}", item.getId(), item.getQuantity());
+
+      // Créer une nouvelle commande
+      Order order = new Order();
+      order.setDateOrder(orderDTO.getDateOrder());
+      order.setLastUpdated(orderDTO.getLastUpdated());
+      order.setTotalePrice(orderDTO.getTotalePrice());
+
+      // Associer les articles à la commande
       ItemsOrders itemsOrders = new ItemsOrders();
-      itemsOrders.setOrder(order); // Associer la commande
-      itemsOrders.setItem(item); // Associer l'article
-      itemsOrders.setName(itemDTO.getNameProduct());
-      itemsOrders.setCartQuantity(itemDTO.getQuantity());
-      itemsOrders.setStockQuantity(item.getQuantity()); // Stock actuel
-      itemsOrders.setSalesPrice(itemDTO.getSalesPrice());
-      itemsOrders.setPromoPrice(itemDTO.getPricePromo());
-      itemsOrders.setNegoPrice(itemDTO.getNegoPrice());
-      itemsOrders.setDateIntegration(LocalDateTime.now()); // Date actuelle pour l'intégration
+      itemsOrders.setOrder(order);
+      itemsOrders.setItem(item);
+      itemsOrders.setCartQuantity(orderDTO.getQuantity());
+      itemsOrders.setStockQuantity(item.getQuantity());
+      itemsOrders.setSalesPrice(orderDTO.getSalesPrice());
+      itemsOrders.setPromoPrice(orderDTO.getPricePromo());
+      itemsOrders.setNegoPrice(orderDTO.getNegoPrice());
+      itemsOrders.setDateIntegration(LocalDateTime.now());
+      itemsOrders.setName(item.getName());
 
-      return itemsOrders;
-    }).collect(Collectors.toList());
+      order.setItemsOrders(List.of(itemsOrders));
 
-    if (itemsOrdersList.isEmpty()) {
-      throw new IllegalArgumentException("Aucun article valide à traiter dans la commande.");
+      // Sauvegarder la commande
+      caisseOrderRepo.save(order);
+
+      long endTime = System.currentTimeMillis();
+      logger.info("Commande traitée avec succès pour l'article : {} en {} ms", item.getId(), (endTime - startTime));
+
+    } catch (Exception e) {
+      logger.error("Erreur lors du traitement de l'article : {}", orderDTO.getItemId(), e);
+      throw e;
     }
-
-    // Associer les articles à la commande
-    order.setItemsOrders(itemsOrdersList);
-
-    // Sauvegarder la commande avec ses articles
-    caisseOrderRepo.save(order);
   }
 
-  @Transactional
-  @CacheEvict(value = "products", allEntries = true)
-  public void processOrderFromKafka(OrderRequestDTO orderDTO) {
-    if (orderDTO == null) {
-      throw new IllegalArgumentException("La commande est nulle.");
-    }
-    // Étape 1 : Récupérer ItemsOrders avec l'article lié via order_id
-    ItemsOrders itemsOrders = productRepository.findByOrderIdWithItem(orderDTO.getIdOrder())
-      .orElseThrow(() -> new IllegalArgumentException("Aucun article trouvé pour l'ID de commande : " + orderDTO.getIdOrder()));
-
-    Item item = itemsOrders.getItem(); // Article associé
-    int cartQuantity = itemsOrders.getCartQuantity(); // Quantité commandée depuis ItemsOrders
-
-    // Étape 2 : Vérifier la disponibilité du stock
-    if (item.getQuantity() < cartQuantity) {
-      throw new IllegalStateException("Stock insuffisant pour l'article : " + item.getId());
-    }
-
-    // Étape 3 : Mise à jour du stock (quantity = quantity - cartQuantity)
-    updateProductStock(item, cartQuantity);
-
-    System.out.println("Commande traitée avec succès pour order_id : " + orderDTO.getIdOrder());
-  }
 
   private void updateProductStock(Item item, int cartQuantity) {
     int updatedStock = item.getQuantity() - cartQuantity;
@@ -144,4 +145,25 @@ public class CaisseServiceImpl implements caisseService {
     item.setQuantity(updatedStock);
     productRepository.save(item); // Mettre à jour la quantité en stock
   }
+
+
+  public void processWithRetry(List<OrderRequestDTO> orderDTOList, int maxRetries) {
+    for (int i = 0; i < maxRetries; i++) {
+      try {
+        processAndSaveOrder(orderDTOList); // Tente de traiter les commandes
+        return; // Succès, sortir de la boucle
+      } catch (Exception e) {
+        if (i == maxRetries - 1 || !(e.getCause() instanceof org.hibernate.exception.LockAcquisitionException)) {
+          throw e; // Échec ou autre exception, lever l'exception
+        }
+        // Attendre avant de réessayer
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException ex) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
+  }
+
 }

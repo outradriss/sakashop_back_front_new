@@ -1,7 +1,7 @@
 import { Product } from "./product.model";
 
 export interface Credit {
-    id: number;              
+    id?: number;              
     nameClient: string;      
     quantity: number;        
     totale: number;          

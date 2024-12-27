@@ -32,8 +32,8 @@ public class SaveOrdersController {
         throw new IllegalArgumentException("La liste des commandes est vide.");
       }
 
-      // Processer et sauvegarder les commandes
-      caisseService.processAndSaveOrder(orders);
+      // Appeler la méthode avec retry
+      caisseService.processWithRetry(orders, 3);
 
       return ResponseEntity.ok(Map.of(
         "status", "success",

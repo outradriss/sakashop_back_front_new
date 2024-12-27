@@ -81,7 +81,7 @@ payCredit(): void {
   this.sharedService.notifyReloadProducts();
   this.sharedService.notifyReloadCaisse();
 }
-  // Charger les produits depuis le backend
+  // Charger les credits depuis le backend
   loadProducts(): void {
     this.creditService.getAllInCredit().subscribe(
       (data: Product[]) => {
@@ -177,7 +177,6 @@ payCredit(): void {
   
   saveCredit(): void {
     const newCredit: Credit = {
-      id: 0,
       nameClient: this.clientName,
       quantity: this.quantity,
       totale: this.total,
@@ -185,7 +184,7 @@ payCredit(): void {
       datePayCredit: this.dueDate,
       comment: this.comment,
       productName: this.productName,
-      product: { id: 0 } as Product,
+      product: { id: this.selectedProduct!.id } as Product, 
     };
   
     this.creditService.postCredit(newCredit).subscribe({
@@ -215,6 +214,17 @@ payCredit(): void {
   }
 
   deletCredit(credit: Credit): void {
+    // Vérification si l'ID est défini avant de procéder
+    if (!credit.id) {
+      Swal.fire({
+        title: 'Erreur',
+        text: 'Impossible de supprimer le crédit : identifiant manquant.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+  
     Swal.fire({
       title: 'Êtes-vous sûr ?',
       text: 'Voulez-vous vraiment annuler ce crédit ? Cette action est irréversible.',
@@ -227,7 +237,7 @@ payCredit(): void {
     }).then((result) => {
       if (result.isConfirmed) {
         // Appeler le service pour supprimer le crédit
-        this.creditService.deleteCredit(credit.id).subscribe({
+        this.creditService.deleteCredit(credit.id!).subscribe({
           next: () => {
             Swal.fire({
               title: 'Supprimé !',
@@ -236,7 +246,7 @@ payCredit(): void {
               confirmButtonText: 'OK'
             });
             this.loadProductsCredit();
-            this.loadProducts(); 
+            this.loadProducts();
             this.sharedService.notifyReloadProducts();
             this.sharedService.notifyReloadCaisse();
           },
@@ -253,6 +263,7 @@ payCredit(): void {
       }
     });
   }
+  
   
 
 

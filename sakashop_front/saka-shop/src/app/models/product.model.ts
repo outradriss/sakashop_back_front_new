@@ -20,6 +20,8 @@ export class Product {
     quantityInCart?: number;
     negoPrice:number;
     totalePrice:number;
+    tva: string;
+    code: string;
   
     constructor(
       id: number= 0,
@@ -36,7 +38,9 @@ export class Product {
       expiredDate : Date = new Date(),
       quantityInCart:number=0,
       negoPrice:number=0,
-      totalePrice:number=0
+      totalePrice:number=0,
+      tva: string = '',
+      code: string = '',
     ) {
       this.id=id;
       this.itemCode = itemCode;
@@ -53,6 +57,8 @@ export class Product {
       this.quantityInCart=quantityInCart;
       this.negoPrice=negoPrice;
       this.totalePrice=totalePrice;
+      this.tva = tva;
+      this.code=code;
     }
   
     /**

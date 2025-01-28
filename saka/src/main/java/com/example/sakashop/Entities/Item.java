@@ -36,6 +36,9 @@ public class Item {
   private double salesPrice;
   @Column(name = "Supplier")
   private String supplier;
+  @Column(name = "TVA")
+  private String tva;
+  private String code;
   @Version
   private int version;
   @ManyToOne(fetch = FetchType.EAGER)
@@ -56,9 +59,32 @@ public class Item {
   private LocalDateTime productAddedDate;
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Credit> credits = new ArrayList<>();
+  @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<CaisseItems> caisseItems = new ArrayList<>();
 
+  public List<CaisseItems> getCaisseItems() {
+    return caisseItems;
+  }
 
+  public void setCaisseItems(List<CaisseItems> caisseItems) {
+    this.caisseItems = caisseItems;
+  }
 
+  public String getCode() {
+    return code;
+  }
+
+  public void setCode(String code) {
+    this.code = code;
+  }
+
+  public String getTva() {
+    return tva;
+  }
+
+  public void setTva(String tva) {
+    this.tva = tva;
+  }
 
   public LocalDateTime getProductAddedDate() {
     return productAddedDate;

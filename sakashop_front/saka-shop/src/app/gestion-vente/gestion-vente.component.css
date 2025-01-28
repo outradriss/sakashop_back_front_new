@@ -16,6 +16,19 @@
   padding: 20px;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
+.btn-export-csv {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.btn-export-csv:hover {
+  background-color: #218838;
+}
 
 .sidebar ul {
   list-style: none;

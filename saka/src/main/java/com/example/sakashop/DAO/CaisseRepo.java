@@ -23,6 +23,7 @@ public interface CaisseRepo extends JpaRepository<Item,Long> {
   Page<Item> findByNameContainingIgnoreCase(@Param("searchQuery") String searchQuery, Pageable pageable);
 
 
-  @Query("SELECT i FROM Item i JOIN FETCH i.categories")
+  @Query("SELECT i FROM Item i WHERE i.quantity > 0")
   List<Item> findAllWithCategoryForCaisse();
+
 }

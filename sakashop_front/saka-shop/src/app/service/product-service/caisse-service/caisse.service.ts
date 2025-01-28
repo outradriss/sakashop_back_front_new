@@ -21,5 +21,7 @@ export class CaisseService {
     return this.http.post(`${this.apiUrl}/cancel`, cancellationInfo);
   }
   
-  
+  verifyPassword(password: string): Observable<boolean> {
+    return this.http.post<boolean>(`${this.apiUrl}/verify-password`, { password });
+  }
 }

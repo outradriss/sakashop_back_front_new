@@ -16,6 +16,9 @@ public class Order {
   private LocalDateTime dateOrder;
   private LocalDateTime lastUpdated;
   private double totalePrice ;
+  @ManyToOne(fetch = FetchType.LAZY) // Relation avec Caisse
+  @JoinColumn(name = "caisse_id", nullable = true) // Colonne pour la clé étrangère
+  private Caisse CaisseId;
 
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ItemsOrders> itemsOrders = new ArrayList<>();

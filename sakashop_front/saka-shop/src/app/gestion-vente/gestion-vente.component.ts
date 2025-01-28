@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { HistoryService } from '../service/product-service/history-service/history.service';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { Vente } from '../models/vente.model';
 
 @Component({
   selector: 'app-gestion-vente',
@@ -18,6 +19,7 @@ export class GestionVenteComponent {
   profitMarginAmount: number = 0;
   totalQuantity: number = 0;
   profitMarginPercentage: number = 0;
+  products: Vente[] = [];
 
   // Date Range sélectionné
   dateRangeForm!: FormGroup;
@@ -38,7 +40,44 @@ export class GestionVenteComponent {
       end: [today],   // Contrôle pour la date de fin
     });
   }
+  exportToCSV(): void {
+    const csvData = this.generateCSVData();
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
 
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'produits.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+  private generateCSVData(): string {
+    // En-têtes avec format clair
+    const headers = [
+      'Produits Vendus',
+      'Quantité Vendus',
+      'Prix d\'Achat',
+      'Prix de Vente',
+      'Date'
+    ];
+  
+    // Ajouter les lignes des produits
+    const rows = this.filteredSales.map((sale) => [
+      `"${sale.nameProduct}"`,           // Produits Vendus (entre guillemets pour éviter les problèmes avec des virgules)
+      sale.quantity,                    // Quantité Vendus
+      sale.buyPrice.toFixed(2),         // Prix d'Achat (formaté à 2 décimales)
+      sale.salesPrice.toFixed(2),       // Prix de Vente (formaté à 2 décimales)
+      `"${sale.dateOrder}"`             // Date (entre guillemets pour éviter les problèmes avec les formats)
+    ]);
+  
+    // Générer le CSV final avec les en-têtes et les lignes
+    const csvContent = [headers, ...rows].map((line) => line.join(',')).join('\n');
+  
+    return csvContent;
+  }
+  
   // Charger les données depuis le backend
   loadSalesData(): void {
     this.salesService.getSalesData().subscribe(
@@ -135,8 +174,10 @@ export class GestionVenteComponent {
     this.router.navigate([`/${route}`]);
   }
 
-  logout(): void {
-    console.log('Logging out...');
+  logout() {
+    localStorage.removeItem('token');
+    // Redirige l'utilisateur vers la page de login
+    this.router.navigate(['/login']);
   }
-
+  
 }

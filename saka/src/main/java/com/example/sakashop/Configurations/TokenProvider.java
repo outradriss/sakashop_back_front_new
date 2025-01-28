@@ -1,5 +1,6 @@
 package com.example.sakashop.Configurations;
 
+import com.example.sakashop.Entities.User;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +14,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,21 +55,27 @@ public class TokenProvider implements Serializable {
         return expiration.before(new Date());
     }
 
-    public String generateToken(Authentication authentication) {
-        String authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
+  public String generateToken(Authentication authentication) {
+    // Utiliser authentication.getName() pour obtenir l'email
+    String email = authentication.getName();
 
-        return Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim(AUTHORITIES_KEY, authorities)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY*1000))
-                .signWith(SignatureAlgorithm.HS256, SIGNING_KEY)
-                .compact();
-    }
+    // Obtenir les rôles à partir des autorités
+    List<String> roles = authentication.getAuthorities().stream()
+      .map(authority -> authority.getAuthority())
+      .collect(Collectors.toList());
 
-    public Boolean validateToken(String token, UserDetails userDetails) {
+    // Générer le token JWT
+    return Jwts.builder()
+      .setSubject(email) // Le sujet est l'email
+      .claim("roles", roles) // Ajouter les rôles comme claim
+      .setIssuedAt(new Date(System.currentTimeMillis())) // Date d'émission
+      .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY * 1000)) // Expiration
+      .signWith(SignatureAlgorithm.HS256, SIGNING_KEY) // Signature avec la clé privée
+      .compact();
+  }
+
+
+  public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }

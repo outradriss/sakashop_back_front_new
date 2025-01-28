@@ -42,18 +42,18 @@ public class UserController {
      */
     @PostMapping(value = "/authenticate")
     public ResponseEntity<?> generateToken(@RequestBody LoginUser loginUser) throws AuthenticationException {
-        final Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginUser.getEmail(),
-                        loginUser.getPassword()
-                )
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        final String token = jwtTokenUtil.generateToken(authentication);
-        return ResponseEntity.ok(new AuthToken(token));
+      final Authentication authentication = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+          loginUser.getEmail(),
+          loginUser.getPassword()
+        )
+      );
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+      final String token = jwtTokenUtil.generateToken(authentication);
+      return ResponseEntity.ok(new AuthToken(token));
     }
 
-    /**
+  /**
      * Saves a new user.
      *
      * @param user The user to be saved.
@@ -109,10 +109,11 @@ public class UserController {
     public ResponseEntity <User> getAllList(@RequestParam String username){
         User user= userService.findOne(username);
       if (user != null) {
-        return ResponseEntity.ok(user);  // Retourne un code HTTP 200 avec l'utilisateur
+        return ResponseEntity.ok(user);
       } else {
-        return ResponseEntity.notFound().build();  // Si l'utilisateur n'est pas trouvé, retourne HTTP 404
+        return ResponseEntity.notFound().build();
       }
     }
+
 
 }

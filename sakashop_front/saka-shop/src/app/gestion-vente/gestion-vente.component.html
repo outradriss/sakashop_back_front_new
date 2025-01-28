@@ -36,6 +36,7 @@
         <button mat-raised-button color="primary" (click)="applyDateFilter()">Appliquer</button>
         <button mat-raised-button color="warn" (click)="resetDateFilter()">Réinitialiser</button>
       </div>
+      <button (click)="exportToCSV()" class="btn-export-csv">Exporter en CSV</button>
     </div>
 
     <div class="table-container">
@@ -45,28 +46,26 @@
           <tr>
             <th>Produits Vendus</th>
             <th>Quantité Vendus</th>
-            <th>Prix d'Achat</th>
-            <th>Prix de Vente</th>
+            <th>Prix de Vente TTC</th>
             <th>Date</th>
           </tr>
         </thead>
       </table>
     
-      <!-- Corps avec scroll vertical -->
-      <div class="table-body-scroll">
-        <table class="sales-table">
-          <tbody>
-            <tr *ngFor="let sale of filteredSales">
-              <td>{{ sale.nameProduct }}</td>
-              <td>{{ sale.quantity }}</td>
-              <td>{{ sale.buyPrice | currency: 'MAD ':'symbol':'1.2-2' }}</td>
-              <td>{{ sale.salesPrice | currency: 'MAD ':'symbol':'1.2-2' }}</td>
-              <td>{{ sale.dateOrder }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>   
+<!-- Corps avec scroll vertical -->
+<div class="table-body-scroll">
+  <table class="sales-table">
+    <tbody>
+      <tr *ngFor="let sale of filteredSales">
+        <td>{{ sale.nameProduct }}</td>
+        <td>{{ sale.quantity }}</td>
+        <td>{{ sale.salesPrice | currency: 'MAD ':'symbol':'1.2-2' }}</td>
+        <td>{{ sale.dateOrder }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+  
     <!-- Barre des totaux -->
     <div class="totals-bar">
       <div class="total-item">
@@ -78,16 +77,8 @@
         <span>{{ totalQuantity }}</span>
       </div>
       <div class="total-item">
-        <span>Total Prix d'Achat :</span>
-        <span>{{ totalBuyPrice | currency: 'MAD ':'symbol':'1.2-2' }}</span>
-      </div>
-      <div class="total-item">
         <span>Total Prix de Vente :</span>
         <span>{{ totalSellPrice | currency: 'MAD ':'symbol':'1.2-2' }}</span>
-      </div>
-      <div class="total-item">
-        <span>Marge :</span>
-        <span>{{ profitMarginAmount | currency: 'MAD ':'symbol':'1.2-2' }} ({{ profitMarginPercentage | number:'1.0-2' }}%)</span>
       </div>
     </div>
   </div>
@@ -96,7 +87,7 @@
 <div class="navigation-buttons">
   <button (click)="navigateTo('gestion-product/list')">Gestion de STOCK</button>
   <button (click)="navigateTo('turnover')">Chiffre d'Affaire</button>
-  <button (click)="navigateTo('caisse/list')">caisee</button>
+
   <button (click)="navigateTo('credit-client')">Crédit Client</button>
   <button (click)="navigateTo('consumer')">Frais Admin </button>
   <button class="btn-logout" (click)="logout()">Quitter</button>

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -32,6 +33,8 @@ public class User {
     @Column
     private String name;
 
+    private String cPassword;
+
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "USER_ROLES",
             joinColumns = {
@@ -39,9 +42,17 @@ public class User {
             },
             inverseJoinColumns = {
                     @JoinColumn(name = "ROLE_ID") })
-    private Set<Role> roles;
+    private Set<Role> roles = new HashSet<>();
 
-    public long getId() {
+  public String getcPassword() {
+    return cPassword;
+  }
+
+  public void setcPassword(String cPassword) {
+    this.cPassword = cPassword;
+  }
+
+  public long getId() {
         return id;
     }
 

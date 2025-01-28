@@ -3,23 +3,22 @@
         <button (click)="navigateTo('credit-client')">Crédit Client</button>
         <button (click)="navigateTo('gestion-vente')">Gesion de  Vente</button>
         <button (click)="navigateTo('turnover')">chiffre d'affaire</button>
-        <button (click)="navigateTo('caisse/list')">Caisse</button>
         <button class="btn-logout" (click)="logout()">Quitter</button>
       </div>
     <h2>Gestion des Produits</h2>
   
     <!-- Barre de Recherche -->
     <div class="search-bar">
-        <input
-        type="text"
-        placeholder="Rechercher un produit..."
-        [(ngModel)]="searchQuery"
-        (input)="onSearch()"
-    />
-      <button (click)="showAddProductPopup()" class="btn-add-product">+ Ajouter Produit</button>
-      <button (click)="showAddDiscountPopup()" class="btn-add-discount">
-        <i class="fa fa-tags"></i> Ajouter une Remise
-    </button>
+      <input
+      type="text"
+      placeholder="Rechercher un produit..."
+      [(ngModel)]="searchQuery"
+      (input)="onSearch()"
+  />
+    <button (click)="showAddProductPopup()" class="btn-add-product">+ Ajouter Produit</button>
+    <button (click)="showAddDiscountPopup()" class="btn-add-discount">
+      <i class="fa fa-tags"></i> Ajouter une Remise
+  </button>
       <button (click)="exportToCSV()" class="btn-export-csv">Exporter en CSV</button>
     </div>
     <!-- Tableau des Produits -->
@@ -27,24 +26,26 @@
       <table>
         <thead>
           <tr>
-            <th>Item Code</th>
-            <th>Nom du Produit</th>
+            <th>Code</th>
+            <th>Désignation</th>
+            <th>Code Barre</th>
             <th>Quantité</th>
-            <th>Prix d'Achat</th>
-            <th>Prix de Vente</th>
-            <th>Catégorie</th>
+            <th>Prix de vente HT</th>
+            <th>Prix de vente TTC</th>
+            <th>Familles</th>
             <th>Fournisseur</th>
             <th>produit en promo</th>
              <th>prix promo</th>
+             <th>TVA</th>
              <th>Date d'Ajout</th> 
-             <th>Date d'expiration</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let product of filteredProducts">
-            <td>{{ product.itemCode }}</td>
+            <td>{{ product.code }}</td>
             <td>{{ product.name }}</td>
+            <td>{{ product.itemCode }}</td>
             <td>{{ product.quantity }}</td>
             <td>{{ product.buyPrice | currency: 'MAD ':'symbol':'1.2-2'  }}</td>
             <td>{{ product.salesPrice | currency: 'MAD ':'symbol':'1.2-2'  }}</td>
@@ -52,8 +53,8 @@
             <td>{{ product.supplier }}</td>
             <td>{{ product.isPromo  ? 'Oui' : 'Non'  }}</td>
             <td>{{ product.pricePromo }}</td>
+            <td>{{ product.tva }}</td>
             <td>{{ product.productAddedDate | date: 'dd/MM/yyyy HH:mm'}}  </td>
-            <td>{{ product.expiredDate | date: 'dd/MM/yyyy HH:mm' }}</td>
             <td>
               <button (click)="editProduct(product)" class="btn-edit">Modifier</button>
               <button (click)="openConfirmDeletePopup(product)" class="btn-delete">Supprimer</button>
@@ -113,6 +114,21 @@
           <h3>{{ editingProduct ? 'Modifier Produit' : 'Ajouter Produit' }}</h3>
           <form #productForm="ngForm" (ngSubmit)="saveProduct()" novalidate>
             
+        <!--  Code -->
+            <div class="form-group">
+              <label for="code">Code :</label>
+              <input
+                type="text"
+                id="code"
+                [(ngModel)]="productForms.code"
+                name="code"
+                required
+                #itemCode="ngModel"
+                (input)="onItemCodeChange()" 
+                (blur)="onItemCodeBlur()"
+                placeholder="Entrez le code"
+              />
+            </div>      
      <!-- Item Code -->
      <div class="form-group">
       <label for="itemCode">Item Code :</label>
@@ -125,6 +141,7 @@
         #itemCode="ngModel"
         (input)="onItemCodeChange()" 
         (blur)="onItemCodeBlur()"
+        placeholder="Entrez ou scannez le code-barres"
       />
       <div *ngIf="itemCode.invalid && itemCode.touched && !isDuplicateItemCode && !editingProduct" class="error">
         Item Code est requis.
@@ -186,9 +203,10 @@
               </div>
             </div>
       
-           <!-- Prix d'Achat -->
-<div class="form-group">
-    <label for="buyPrice">Prix d'Achat :</label>
+
+  <!-- Prix de Vente HT -->
+  <div class="form-group">
+    <label for="buyPrice">Prix de Vente HT:</label>
     <input
       type="number"
       id="buyPrice"
@@ -196,16 +214,18 @@
       name="buyPrice"
       min="0.01"
       required
-      #buyPrice="ngModel"
+      [disabled]="productForms.isPromo"
+      #salesPrice="ngModel"
     />
     <div *ngIf="(productForm.submitted || buyPrice.touched) && buyPrice.invalid" class="error">
-      Prix d'Achat est requis et doit être supérieur à 0.
+      Prix de Vente est requis et doit être supérieur à 0.
     </div>
   </div>
+
   
   <!-- Prix de Vente -->
-  <div class="form-group">
-    <label for="salesPrice">Prix de Vente :</label>
+    <div class="form-group">
+    <label for="salesPrice">Prix de Vente TTC:</label>
     <input
       type="number"
       id="salesPrice"
@@ -219,6 +239,20 @@
     <div *ngIf="(productForm.submitted || salesPrice.touched) && salesPrice.invalid" class="error">
       Prix de Vente est requis et doit être supérieur à 0.
     </div>
+  </div>
+           <!-- TVA -->
+           <div class="form-group">
+            <label for="buyPrice">TVA:</label>
+            <input
+              type="text"
+              id="TVA"
+              [(ngModel)]="productForms.tva"
+              name="tva"
+              required
+              #buyPrice="ngModel"
+            />
+            </div>
+            <!-- Prix Promo -->
   
     <div *ngIf="productForms.isPromo" class="promo-warning">
       <strong>Attention :</strong> Le produit est en promotion. Désactivez la promotion pour modifier le prix de vente.
@@ -228,14 +262,11 @@
     <!-- Vérification si le prix de vente est inférieur au prix d'achat -->
     <div *ngIf="productForms.salesPrice < productForms.buyPrice && salesPrice.touched" class="error">
       <strong>Erreur :</strong> Le Prix de Vente ne peut pas être inférieur au Prix d'Achat.
-    </div>
-  </div>
-  
-              
+    </div>     
       
             <!-- Catégorie -->
             <div class="form-group">
-                    <label for="category">Catégorie :</label>
+                    <label for="category">Familles :</label>
                     <div class="category-container">
                       <!-- Menu déroulant -->
                       <select
@@ -245,7 +276,7 @@
                         required
                         #category="ngModel"
                       >
-                        <option value="" disabled>-- Sélectionner une catégorie --</option>
+                        <option value="" disabled>-- Sélectionner une famille --</option>
                         <option *ngFor="let category of categories" [value]="category.id">
                           {{ category.name }}
                         </option>
@@ -304,21 +335,6 @@
                 name="supplier"
               />
             </div>
-            <div class="form-group">
-                <label for="productAddedDate">Date d'expiration :</label>
-                <input
-    type="datetime-local"
-    id="expiredDate"
-    [(ngModel)]="productForms.expiredDate"
-    name="expiredDate"
-    required
-    #expiredDate="ngModel"
-  />
-  <div *ngIf="(productForm.submitted || expiredDate.touched) && expiredDate.invalid" class="error">
-                  La date d'expiration sont requises.
-                </div>
-              </div>
-      
             <!-- Actions -->
             <div class="popup-actions">
                 <button
@@ -334,6 +350,8 @@
           </form>
         </div>
       </div>
+
+      
       <!-- Popup d'Ajout de Remise -->
   <div class="popup-overlay" *ngIf="showDiscountPopup">
     <div class="popup discount-popup">

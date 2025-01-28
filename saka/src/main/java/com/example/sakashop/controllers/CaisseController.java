@@ -2,8 +2,10 @@ package com.example.sakashop.controllers;
 
 import com.example.sakashop.DTO.CancelRequestDTO;
 import com.example.sakashop.DTO.OrderRequestDTO;
+import com.example.sakashop.DTO.PasswordDTO;
 import com.example.sakashop.Entities.Cancel;
 import com.example.sakashop.Entities.Item;
+import com.example.sakashop.Entities.PasswordLockCaisse;
 import com.example.sakashop.services.CancelService;
 import com.example.sakashop.services.implServices.CaisseServiceImpl;
 import com.example.sakashop.services.implServices.CancelServiceImpl;
@@ -12,7 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -32,8 +36,15 @@ public class CaisseController {
     return caisseService.getAllProducts();
   }
 
-
-
+  @PostMapping("/verify-password")
+  public ResponseEntity<Boolean> verifyPassword(@RequestBody @Valid PasswordDTO passwordDTO) {
+    try {
+      caisseService.verifyPassword(passwordDTO.getPassword()); // Si le mot de passe est valide, aucun problème
+      return ResponseEntity.ok(true);
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false); // Mot de passe incorrect
+    }
+  }
   @PostMapping("/cancel")
   public ResponseEntity<?> createCancel(@RequestBody CancelRequestDTO dto) {
     if (dto.getItemId() != null && !dto.getItemId().isEmpty()) {

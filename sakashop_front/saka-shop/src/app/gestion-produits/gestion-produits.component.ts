@@ -346,15 +346,15 @@ calculatePagination(): void {
 
   onItemCodeChange(): void {
     // Réinitialiser les erreurs et champs liés
-    this.isDuplicateItemCode = false; // Supprimer le message d'erreur
+    this.isDuplicateItemCode = false;
     this.productForms.name = ''; // Réinitialiser le champ name
-    this.isNameReadOnly = false; // Rendre modifiable
-  }
+    this.isNameReadOnly = false;
   
-  onItemCodeBlur(): void {
-    if (!this.editingProduct) { // Vérifier uniquement en mode ajout
+    // Si un code-barres complet est scanné (supposons que le scanner transmet tout d'un coup)
+    const scannedCode = this.productForms.itemCode?.trim();
+    if (scannedCode) {
       const existingProduct = this.products.find(
-        (product) => product.itemCode === this.productForms.itemCode
+        (product) => product.itemCode === scannedCode
       );
   
       if (existingProduct) {
@@ -362,13 +362,33 @@ calculatePagination(): void {
         this.isDuplicateItemCode = true;
         this.productForms.name = existingProduct.name; // Remplir le champ name
         this.isNameReadOnly = true; // Rendre le champ non modifiable
-      } else {
-        // Pas de doublon, réinitialiser les erreurs et champs
-        this.isDuplicateItemCode = false;
-        this.isNameReadOnly = false;
       }
     }
   }
+  
+  
+  onItemCodeBlur(): void {
+    if (!this.editingProduct) { // Vérifier uniquement en mode ajout
+      const scannedCode = this.productForms.itemCode?.trim();
+      if (scannedCode) {
+        const existingProduct = this.products.find(
+          (product) => product.itemCode === scannedCode
+        );
+  
+        if (existingProduct) {
+          // Si un doublon est trouvé
+          this.isDuplicateItemCode = true;
+          this.productForms.name = existingProduct.name; // Remplir le champ name
+          this.isNameReadOnly = true; // Rendre le champ non modifiable
+        } else {
+          // Pas de doublon, réinitialiser les erreurs et champs
+          this.isDuplicateItemCode = false;
+          this.isNameReadOnly = false;
+        }
+      }
+    }
+  }
+  
   
   
   
@@ -567,7 +587,9 @@ hideApplyDiscountPopup(): void {
       productAddedDate:new Date(),
       expiredDate:new Date(),
       negoPrice:0,
-      totalePrice:0
+      totalePrice:0,
+      tva: '',
+      code: '',
     };
   }
 
@@ -692,11 +714,6 @@ addCategory(): void {
   viewHistory(productId: number): void {
     this.router.navigate(['/history'], { queryParams: { id: productId } });
   }
-
-
-
-
-
 
   logout() {
     localStorage.removeItem('token');

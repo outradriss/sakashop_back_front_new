@@ -21,9 +21,20 @@ public class Categories {
   @Column(name = "creation_date")
   private LocalDateTime createdDate = LocalDateTime.now();
 
+  @OneToMany(mappedBy = "categorie", cascade = CascadeType.ALL, orphanRemoval = true) // Relation avec CaisseItems
+  private List<CaisseItems> caisseitem;
+
   @OneToMany(mappedBy = "categories", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @JsonBackReference
   private List<Item> items; // Liste des items liés à cette catégorie
+
+  public List<CaisseItems> getCaisseitem() {
+    return caisseitem;
+  }
+
+  public void setCaisseitem(List<CaisseItems> caisseitem) {
+    this.caisseitem = caisseitem;
+  }
 
   public Categories(Long id, String name, LocalDateTime createdDate, List<Item> items) {
     this.id = id;

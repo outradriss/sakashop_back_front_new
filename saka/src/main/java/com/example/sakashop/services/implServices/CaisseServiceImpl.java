@@ -1,13 +1,11 @@
 package com.example.sakashop.services.implServices;
 
-import com.example.sakashop.DAO.CaisseOrderRepo;
-import com.example.sakashop.DAO.CaisseRepo;
-import com.example.sakashop.DAO.ItemsOrdersREpo;
-import com.example.sakashop.DAO.ProductRepository;
+import com.example.sakashop.DAO.*;
 import com.example.sakashop.DTO.OrderRequestDTO;
 import com.example.sakashop.Entities.Item;
 import com.example.sakashop.Entities.ItemsOrders;
 import com.example.sakashop.Entities.Order;
+import com.example.sakashop.Entities.PasswordLockCaisse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +35,22 @@ public class CaisseServiceImpl {
   @Autowired
   ItemsOrdersREpo itemsOrdersREpo;
 
+  @Autowired
+  PasswordLockCaisseRepo passwordLockCaisseRepo;
+
   @Cacheable(value = "products", key = "'allProducts'")
   @Transactional(readOnly = true)
   public List<Item> getAllProducts() {
     return caisseRepo.findAllWithCategoryForCaisse();
   }
 
+  public PasswordLockCaisse verifyPassword(String password) {
+    PasswordLockCaisse lockCaisse = passwordLockCaisseRepo.findByPassword(password);
+    if (lockCaisse == null) {
+      throw new RuntimeException("Mot de passe incorrect !");
+    }
+    return lockCaisse;
+  }
   @Transactional
   @CacheEvict(value = "products",  key = "'allProducts'",allEntries = true)
   public void processAndSaveOrder(List<OrderRequestDTO> orderDTOList) {

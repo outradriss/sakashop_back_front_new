@@ -4,6 +4,7 @@ import com.example.sakashop.Entities.User;
 
 import javax.persistence.Column;
 
+
 public class UserDTO {
 
     private String username;
@@ -14,8 +15,15 @@ public class UserDTO {
     @Column(name = "c_password")
     private String cPassword;
 
+  public String getcPassword() {
+    return cPassword;
+  }
 
-    public String getUsername() {
+  public void setcPassword(String cPassword) {
+    this.cPassword = cPassword;
+  }
+
+  public String getUsername() {
         return username;
     }
 

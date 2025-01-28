@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -19,6 +20,9 @@ public class Role {
 
     @Column
     private String description;
+
+  @ManyToMany(mappedBy = "roles")
+  private Set<User> users;
 
 
     public long getId() {

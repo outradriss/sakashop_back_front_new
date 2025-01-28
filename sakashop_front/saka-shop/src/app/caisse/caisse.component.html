@@ -1,156 +1,216 @@
 <div class="pos-container">
-    <!-- Liste des Produits -->
-    <div class="product-list">
-      <h3>Produits Disponibles</h3>
-      <!-- Barre de Recherche -->
-      <div class="search-bar">
-        <input 
-          type="text" 
-          placeholder="Rechercher un produit..." 
-          [(ngModel)]="searchQuery" 
-          (input)="filterProducts()" 
-        />
-      </div>
-      <div class="products">
-        <div 
-          class="product-card" 
-          *ngFor="let product of filteredProducts" 
-          (click)="addToCart(product)"
-        >
-          <div class="product-details">
-            <h4>
-              {{ product.name }}
-              <span *ngIf="product.isPromo" class="promo-star">⭐</span>
-            </h4>
-            <div *ngIf="product.isPromo; else regularPrice">
-              <!-- Prix avec promotion -->
-              <h6>Prix sans promo</h6>
-              <p>{{ product.salesPrice | currency : 'MAD ':'symbol':'1.2-2' }}</p>
-              <h5>Prix avec promo</h5>
-              <p class="promo-price">{{ product.pricePromo | currency : 'MAD ':'symbol':'1.2-2' }}</p>
-            </div>
-            <!-- Prix sans promotion -->
-            <ng-template #regularPrice>
-              <p>{{ product.salesPrice | currency : 'MAD ':'symbol':'1.2-2' }}</p>
-            </ng-template>
-          </div>
-        </div>
-      </div>      
-      <div class="navigation-buttons">
-        <button (click)="navigateTo('gestion-product/list')">Gestion de STOCK</button>
-        <button (click)="navigateTo('turnover')">chiffre d'affaire</button>
-        <button (click)="navigateTo('gestion-vente')">Gestion de vente</button>
-        <button (click)="navigateTo('credit-client')">Crédit Client</button>
-        <button (click)="navigateTo('consumer')">Frais Admin </button>
-        <button class="btn-logout" (click)="logout()">Quitter</button>
-      </div>
-    </div>  
-    <!-- Panier -->
-    <div class="cart">
-        <h3>Panier</h3>
-        <div class="cart-items">
-            <div class="cart-item" *ngFor="let product of cart">
-              <div class="cart-details">
-                <p class="product-name">{{ product.name }}</p>
-                <p *ngIf="product.isPromo; else normalPrice">
-                  Prix avec promo : <input
-                  type="number"
-                  [(ngModel)]="product.negoPrice"
-                  [ngModel]="product.negoPrice || product.pricePromo" 
-                  (input)="validateCartPrice(product)"
-                  [class.invalid]="product.negoPrice < product.pricePromo"
-                  min="0.01"
-                />
-                </p>
-                <ng-template #normalPrice>
-                    Prix :
-                    <input
-                      type="number"
-                      [(ngModel)]="product.negoPrice"
-                      [ngModel]="product.negoPrice || product.salesPrice || product.pricePromo" 
-                      (input)="validateCartPrice(product)"
-                      [class.invalid]="product.negoPrice <= product.buyPrice"
-                      min="0.01"
-                    />
-                    <span *ngIf="product.negoPrice <= product.buyPrice" class="error">
-                        <br>
-                      <strong >Erreur :</strong> Le prix ne peut pas être inférieur au prix d'achat
-                    </span>
-                </ng-template>
-                <p class="stock-info">Stock disponible : {{ product.quantity }}</p>
-                <p>Quantité : <strong>{{ product.quantityInCart }}</strong></p>
-              </div>
-              <div class="cart-actions">
-                <button (click)="increaseQuantity(product)" class="btn-action">➕</button>
-                <button (click)="decreaseQuantity(product)" class="btn-action">➖</button>
-                <button (click)="removeFromCart(product)" class="btn-action btn-remove">❌</button>
-              </div>
-            </div>
-          </div>          
-        <div class="totals">
-          <h4>Total : {{ calculateTotal() | currency: 'MAD ':'symbol':'1.2-2' }}</h4>
-        </div>
-       
-          <div class="actions">
-            <button 
-    class="btn-pay" 
-    (click)="pay()" 
-    [disabled]="cart.length === 0 || isPayButtonDisabled()" > Payer</button>
-            <button 
-            class="btn-cancel" 
-            (click)="cancel()"
-            [disabled]="cart.length===0">Annuler</button>
-          </div>
-        </div>
-<!-- Popup alert -->
-<div *ngIf="isPopupVisibledelete" class="cancel-popup-overlay">
-  <div class="cancel-popup-content">
-    <label for="cancelReason">Pourquoi voulez-vous annuler la commande ?</label>
-    <input type="text" id="cancelReason" [(ngModel)]="cancelReason" placeholder="Entrez votre raison ici..." />
-    <div class="cancel-popup-actions">
-      <button class="btn-submit" (click)="submitCancel()">Soumettre</button>
-      <button class="btn-cancel" (click)="closeCancelPopupDelete()">Fermer</button>
+ 
+<!-- Liste des Produits -->
+<div class="product-list">
+  <h3>Produits Disponibles</h3>
+  <!-- Barre de Recherche -->
+  <div class="search-bar">
+    <input 
+      type="text" 
+      placeholder="Rechercher un produit ou scanner un code-barres..." 
+      [(ngModel)]="searchQuery" 
+      (input)="filterProducts()" 
+    />
+  </div>
+  <div class="products">
+    <div 
+      class="product-card" 
+      *ngFor="let product of filteredProducts; let i = index" 
+      (click)="addToCart(product)"
+    >
+      <div class="product-details">
+        <h4>
+          {{ product.name }}
+          <span *ngIf="product.isPromo" class="promo-star">⭐</span>
+        </h4>
+        <div *ngIf="product.isPromo; else regularPrice">
+
+             <!-- Prix avec promotion -->
+             <h6>Prix sans promo</h6>
+             <p>{{ product.salesPrice | currency : 'MAD ':'symbol':'1.2-2' }}</p>
+             <h5>Prix avec promo</h5>
+             <p class="promo-price">{{ product.pricePromo | currency : 'MAD ':'symbol':'1.2-2' }}</p>
+           </div>
+           <!-- Prix sans promotion -->
+           <ng-template #regularPrice>
+             <p>{{ product.salesPrice | currency : 'MAD ':'symbol':'1.2-2' }}</p>
+           </ng-template>
+         </div>
+       </div>
+     </div>      
+     <div class="navigation-buttons">
+      <button class="btn-logout" (click)="lockCaisse()">Lock caisse</button>
+      <button class="btn-logout-f" (click)="closeCaisse()">Fermeture de caisse</button>
     </div>
-  </div>
-</div>
-      
-<!-- Alerte globale en haut de la page -->
-<div *ngIf="alerts.length > 0" class="global-alert">
-  <div class="alert-content">
-    <span>{{ alerts[0].message }}</span>
-    <button class="alert-btn" (click)="showPopup()">En savoir +</button>
-    <button class="close-btn" (click)="dismissAlert(alerts[0])">X</button>
-  </div>
-</div>
-
-
-
-<!-- Popup alert -->
-<div *ngIf="isPopupVisible" class="popup-overlay">
-  <div class="popup-content">
-    <button class="close-btn" (click)="closePopup()">X</button>
-    <h3>Produits proches de l'expiration</h3>
-    <ul>
-      <li *ngFor="let product of expiringProducts">
-        <strong>{{ product.name }}</strong> - Expire le {{ product.expiredDate }}
-      </li>
-    </ul>
-    <button class="action-btn" (click)="closePopup()">Fermer</button>
-  </div>
-</div>
-
-
-
-    <!-- Modal de Confirmation -->
-    <div class="modal" *ngIf="isModalOpen">
-      <div class="modal-content">
-        <h3>Confirmer le Paiement</h3>
-        <p>Voulez-vous confirmer et imprimer le bon ?</p>
-        <div class="modal-actions">
-          <button class="btn-confirm" (click)="confirmPayment()">Oui</button>
-          <button class="btn-cancel" (click)="closeModal()">Non</button>
-        </div>
-      </div>
-    </div>
+    
+    
   </div>
   
+<!-- Overlay -->
+<div *ngIf="isLocked" class="overlay">
+  <div class="unlock-container">
+    <!-- Bouton Unlock caisse -->
+    <button *ngIf="!showPasswordInput" (click)="showPasswordInput = true">
+      Unlock caisse
+    </button>
+    
+    <!-- Formulaire de saisie du mot de passe -->
+ <div *ngIf="showPasswordInput">
+  <input 
+    type="password" 
+    placeholder="Entrer le mot de passe" 
+    [(ngModel)]="password"
+  />
+  <button (click)="unlockCaisse()" [disabled]="!password">Valider</button>
+  <!-- Message d'erreur -->
+  <p *ngIf="errorMessage" style="color: red; margin-top: 10px;">
+    {{ errorMessage }}
+  </p>
+</div>
+  </div>
+</div>
+   
+   <!-- Panier -->
+   <div class="cart">
+       <h3>Panier</h3>
+       <div class="cart-items">
+           <div class="cart-item" *ngFor="let product of cart">
+             <div class="cart-details">
+               <p class="product-name">{{ product.name }}</p>
+               <p *ngIf="product.isPromo; else normalPrice">
+                 Prix avec promo : <input
+                 type="number"
+                 readonly
+                 [(ngModel)]="product.negoPrice"
+                 [ngModel]="product.negoPrice || product.pricePromo" 
+                 (input)="validateCartPrice(product)"
+                 [class.invalid]="product.negoPrice < product.pricePromo"
+                 min="0.01"
+               />
+               </p>
+               <ng-template #normalPrice>
+                   Prix :
+                   <input
+                     type="number"
+                     readonly
+                     [(ngModel)]="product.negoPrice"
+                     [ngModel]="product.negoPrice || product.salesPrice || product.pricePromo" 
+                     (input)="validateCartPrice(product)"
+                     [class.invalid]="product.negoPrice <= product.buyPrice"
+                     min="0.01"
+                   />
+                   <span *ngIf="product.negoPrice <= product.buyPrice" class="error">
+                       <br>
+                     <strong >Erreur :</strong> Le prix ne peut pas être inférieur au prix d'achat
+                   </span>
+               </ng-template>
+               <p class="stock-info">Stock disponible : {{ product.quantity }}</p>
+               <p>Quantité : <strong>{{ product.quantityInCart }}</strong></p>
+             </div>
+             <div class="cart-actions">
+               <button (click)="increaseQuantity(product)" class="btn-action">➕</button>
+               <button (click)="decreaseQuantity(product)" class="btn-action">➖</button>
+               <button (click)="removeFromCart(product)" class="btn-action btn-remove">❌</button>
+             </div>
+           </div>
+         </div>          
+       <div class="totals">
+         <h4>Total : {{ calculateTotal() | currency: 'MAD ':'symbol':'1.2-2' }}</h4>
+       </div>
+      
+       <div class="actions">
+        <button 
+          class="btn-pay" 
+          (click)="showPaymentPopup()" 
+          [disabled]="cart.length === 0 || isPayButtonDisabled()">Payer</button>
+        <button 
+          class="btn-cancel" 
+          (click)="cancel()"
+          [disabled]="cart.length === 0">Annuler</button>
+      </div>
+       </div>
+     <!-- Popup de sélection du mode de paiement -->
+<div *ngIf="isPaymentPopupVisible" class="custom-payment-popup-overlay">
+  <div class="custom-payment-popup-content">
+    <h3>Sélectionner le Mode de Paiement</h3>
+    <div class="custom-payment-options">
+      <label class="custom-payment-option custom-payment-cash">
+        Espèces
+        <input 
+          type="radio" 
+          name="paymentMethod" 
+          value="cash" 
+          [(ngModel)]="selectedPaymentMethod" />
+      </label>
+      <label class="custom-payment-option custom-payment-card">
+        Carte
+        <input 
+          type="radio" 
+          name="paymentMethod" 
+          value="card" 
+          [(ngModel)]="selectedPaymentMethod" />
+      </label>
+      <label class="custom-payment-option custom-payment-cheque">
+        Chèque
+        <input 
+          type="radio" 
+          name="paymentMethod" 
+          value="cheque" 
+          [(ngModel)]="selectedPaymentMethod" />
+      </label>
+    </div>
+    <div class="custom-popup-actions">
+      <button class="custom-btn-confirm" (click)="confirmPayment()">Continuer</button>
+      <button class="custom-btn-cancel" (click)="closePaymentPopup()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+      
+<!-- Popup alert -->
+<div *ngIf="isPopupVisibledelete" class="cancel-popup-overlay">
+ <div class="cancel-popup-content">
+   <label for="cancelReason">Pourquoi voulez-vous annuler la commande ?</label>
+   <input type="text" id="cancelReason" [(ngModel)]="cancelReason" placeholder="Entrez votre raison ici..." />
+   <div class="cancel-popup-actions">
+     <button class="btn-submit" (click)="submitCancel()">Soumettre</button>
+     <button class="btn-cancel" (click)="closeCancelPopupDelete()">Fermer</button>
+   </div>
+ </div>
+</div>
+     
+<!-- Alerte globale en haut de la page
+<div *ngIf="alerts.length > 0" class="global-alert">
+ <div class="alert-content">
+   <span>{{ alerts[0].message }}</span>
+   <button class="alert-btn" (click)="showPopup()">En savoir +</button>
+   <button class="close-btn" (click)="dismissAlert(alerts[0])">X</button>
+ </div>
+</div>-->
+
+<!-- Popup alert 
+<div *ngIf="isPopupVisible" class="popup-overlay">
+ <div class="popup-content">
+   <button class="close-btn" (click)="closePopup()">X</button>
+   <h3>Produits proches de l'expiration</h3>
+   <ul>
+     <li *ngFor="let product of expiringProducts">
+       <strong>{{ product.name }}</strong> - Expire le {{ product.expiredDate }}
+     </li>
+   </ul>
+   <button class="action-btn" (click)="closePopup()">Fermer</button>
+ </div>
+</div>-->
+
+<!-- Modal de Confirmation -->
+<div class="modal" *ngIf="isModalOpen">
+ <div class="modal-content">
+   <h3>Confirmer le Paiement</h3>
+   <p>Voulez-vous confirmer et imprimer le bon ?</p>
+   <div class="modal-actions">
+     <button class="btn-confirm" (click)="confirmPayment()">Oui</button>
+     <button class="btn-cancel" (click)="closeModal()">Non</button>
+   </div>
+ </div>
+</div>
+</div>

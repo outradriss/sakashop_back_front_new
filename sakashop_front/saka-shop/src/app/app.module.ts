@@ -24,6 +24,10 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgApexchartsModule } from "ng-apexcharts";
 import { ConsumerComponent } from './consumer/consumer.component';
 import { ToastrModule } from 'ngx-toastr';
+import { GestionCaisseComponent } from './gestion-caisse/gestion-caisse.component';
+import { StockCaisseComponent } from './stock-caisse/stock-caisse.component';
+import { FlushCaisseComponent } from './flush-caisse/flush-caisse.component';
+import { OpenCaisseComponent } from './open-caisse/open-caisse.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -37,7 +41,11 @@ import { ToastrModule } from 'ngx-toastr';
    HistoryComponent,
    TurnoverComponent,
    VenteComponent,
-   ConsumerComponent
+   ConsumerComponent,
+   GestionCaisseComponent,
+   StockCaisseComponent,
+   FlushCaisseComponent,
+   OpenCaisseComponent,
   ],
   imports: [
     BrowserModule,

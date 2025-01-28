@@ -631,12 +631,128 @@ button:hover {
 }
 
 /* Style spécifique pour le popup d'Ajout/Modification de Produit */
+/* Conteneur général du popup */
 .popup.product-popup {
-  width: 80%; /* Largeur à 80% */
-  max-width: 1200px; /* Limite de largeur */
-  height: 80%; /* Hauteur à 80% */
+  width: 80%;
+  max-width: 1200px;
+  height: auto;
   max-height: 90%;
-  overflow-y: auto; /* Ajout du défilement vertical si le contenu dépasse */
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+/* Titre du popup */
+.popup.product-popup h3 {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
+}
+
+/* Style des groupes de formulaire */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+/* Labels des champs */
+.form-group label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+/* Champs d'entrée */
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  background-color: #f9f9f9;
+}
+
+/* Focus sur les champs d'entrée */
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  outline: none;
+  background-color: #fff;
+}
+
+/* Messages d'erreur */
+.error {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 5px;
+}
+
+/* Zone des actions */
+.popup-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+/* Boutons d'action */
+.popup-actions .btn-submit {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.popup-actions .btn-submit:hover {
+  background-color: #218838;
+}
+
+.popup-actions .btn-cancel {
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.popup-actions .btn-cancel:hover {
+  background-color: #c82333;
+}
+
+/* Style spécifique pour les listes déroulantes */
+.category-container select {
+  appearance: none;
+  background: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M2%205L0%200h4z%22/%3E%3C/svg%3E') no-repeat right 10px center;
+  background-size: 12px;
+  padding-right: 30px;
+}
+
+/* Promotion Warning */
+.promo-warning {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 10px;
+  border: 1px solid #ffeeba;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
 }
 
 /* Style spécifique pour le popup de Confirmation */

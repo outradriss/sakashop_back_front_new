@@ -3,13 +3,13 @@ import { Router } from '@angular/router';
 import { Product } from '../models/product.model';
 import { CaisseService } from '../service/product-service/caisse-service/caisse.service';
 import Swal from 'sweetalert2';
-import { DisplayProduct } from '../models/DisplayProductInCaisse.model.service';
 import { SharedService } from '../service/shared.service';
-
+import {jwtDecode} from 'jwt-decode';
+import { LockService } from '../lock.service';
+import { HistoryService } from '../service/product-service/history-service/history.service';
 @Component({
   selector: 'app-caisse',
   standalone: false,
-  
   templateUrl: './caisse.component.html',
   styleUrl: './caisse.component.css'
 })
@@ -26,15 +26,94 @@ export class CaisseComponent {
   expiringProducts: { name: string; expiredDate: string; id: number }[] = []; // Liste des produits proches de l'expiration
   cancelReason = '';
   isPopupVisibledelete=false;
+  disableAllButtons: boolean = false;
+  showButtons: boolean = true;
+  userName:String = '';
+  isPaymentPopupVisible: boolean = false;
+ selectedPaymentMethod: string | null = null;
+ isLocked: boolean = false;
+  showPasswordInput: boolean = false;
+  errorMessage: string = ''; 
+  password: string = '';
+  filteredSales: any[] = []; // Initialisation des ventes filtrées
+  sales: any[] = [];
+  totalSales: number = 0;
 
-  constructor(private router: Router , private caisseService : CaisseService , private cdr: ChangeDetectorRef , private sharedService : SharedService) {}
+
+  constructor(private salesService: HistoryService,private lockService:LockService,private router: Router , private caisseService : CaisseService , private cdr: ChangeDetectorRef , private sharedService : SharedService) {}
 
   ngOnInit(): void {
+    this.checkUserRole(); 
+  this.loadProducts();
+  this.retrieveUserInfo();
+
+  // Vérifiez si la caisse est verrouillée
+  const isLocked = localStorage.getItem('isLocked');
+  this.isLocked = isLocked === 'true';
+
+  this.sharedService.reloadCaisse$.subscribe(() => {
     this.loadProducts();
-    this.checkProductExpiration();
-    this.sharedService.reloadCaisse$.subscribe(() => {
-      this.loadProducts(); // Recharge les produits de la caisse lorsque notifié
-    });
+  });
+  }
+
+  lockCaisse(): void {
+    this.isLocked = true;
+    localStorage.setItem('isLocked', 'true'); // Sauvegarde l'état verrouillé; // Bloque l'accès
+    
+  }
+
+  unlockCaisse(): void {
+    this.caisseService.verifyPassword(this.password).subscribe(
+      (isValid) => {
+        if (isValid) {
+          this.isLocked = false;
+          this.showPasswordInput = false;
+          this.password = '';
+          this.errorMessage = '';
+          localStorage.removeItem('isLocked'); // Supprime l'état verrouillé
+        } else {
+          this.errorMessage = 'Mot de passe incorrect';
+        }
+      },
+      (error) => {
+        console.error('Erreur lors de la vérification du mot de passe :', error);
+        this.errorMessage = 'Mot de passe incorrect';
+      }
+    );
+  }
+  
+
+  retrieveUserInfo(): void {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken: any = jwtDecode(token);
+        this.userName = decodedToken.sub || 'Utilisateur'; // Récupère le nom d'utilisateur depuis le token
+      } catch (error) {
+        console.error('Erreur lors du décodage du token JWT:', error);
+        this.userName = 'Utilisateur'; // Nom par défaut en cas d'erreur
+      }
+    } else {
+      this.userName = 'Utilisateur'; // Nom par défaut si aucun token n'est trouvé
+    }
+  }
+
+  checkUserRole(): void {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken: any = jwtDecode(token);
+        const roles: string[] = decodedToken.roles || [];
+        this.showButtons = !roles.includes('ROLE_EMPLOYEE'); // Cache les boutons si rôle "ROLE_EMPLOYEE"
+      } catch (error) {
+        console.error('Erreur lors du décodage du token JWT:', error);
+      }
+    }
+  }
+
+  // Exemple d'utilisation pour désactiver les boutons
+  isButtonDisabled(): boolean {
+    return this.disableAllButtons;
   }
 
   // Ajouter au panier
@@ -119,8 +198,8 @@ export class CaisseComponent {
     this.caisseService.getAllInCaisse().subscribe(
       (data) => {
         this.cachedProducts = data; // Stocke toutes les données des produits
-        this.products = this.cachedProducts.slice(0, 32);
-        this.checkProductExpiration(); // Limite à 32 produits
+        this.products = this.cachedProducts.slice(0, 27);
+       // this.checkProductExpiration(); // Limite à 32 produits
         this.filteredProducts = this.products.map((product) => ({
           ...product, // Conserve toutes les propriétés
           isPromo: product.isPromo, // Assure la copie de la propriété isPromo
@@ -133,18 +212,38 @@ export class CaisseComponent {
     );
   }
 
-
   // Filtrer les produits
+  // Filtrer les produits ou ajouter au panier par code-barres
   filterProducts(): void {
     const query = this.searchQuery.toLowerCase().trim();
+  
     if (query) {
-      this.filteredProducts = this.cachedProducts.filter((product) =>
-        product.name.toLowerCase().includes(query)
-      );
+      // Recherche par code-barres
+      const foundProduct = this.cachedProducts.find((product) => product.itemCode === query);
+  
+      if (foundProduct) {
+        // Ajouter directement au panier si le code-barres correspond
+        this.addToCart(foundProduct);
+        this.searchQuery = ''; // Réinitialiser le champ après ajout au panier
+      } else {
+        // Filtrer par nom si aucun produit ne correspond au code-barres
+        this.filteredProducts = this.cachedProducts.filter((product) =>
+          product.name.toLowerCase().includes(query)
+        );
+      }
     } else {
-      this.filteredProducts = this.cachedProducts.slice(0, 32);
+      // Réinitialiser la liste affichée si la recherche est vide
+      this.filteredProducts = this.cachedProducts.slice(0, 27); // Affiche 27 produits
+    }
+  
+    // Toujours afficher les 27 premiers produits si aucun produit n'est trouvé
+    if (!this.filteredProducts.length) {
+      this.filteredProducts = this.cachedProducts.slice(0, 27);
     }
   }
+  
+  
+
   
   validateCartPrice(product: any): void {
     // Vérifie si le prix dans le panier est valide selon la promo ou le prix de vente
@@ -205,6 +304,22 @@ export class CaisseComponent {
     });
   }
   
+  openPaymentPopup(): void {
+    this.isPaymentPopupVisible = true;
+  }
+  
+  closePaymentPopup(): void {
+    this.isPaymentPopupVisible = false;
+    this.selectedPaymentMethod = null;
+  }
+  
+  proceedPayment(): void {
+    if (this.selectedPaymentMethod) {
+      console.log('Méthode de paiement choisie :', this.selectedPaymentMethod);
+      this.isPaymentPopupVisible = false;
+      this.pay(); // Appelle la méthode de paiement principale
+    }
+  }
 
   pay(): void {
     // Mise à jour des totaux dans le panier
@@ -233,9 +348,9 @@ export class CaisseComponent {
           Swal.fire('Erreur', response.message || 'Une erreur est survenue.', 'error');
         } else {
           Swal.fire('Succès', 'Votre commande a été enregistrée avec succès.', 'success');
+          this.printReceipt();
           this.cart = []; // Réinitialisez le panier après la commande
           this.cachedProducts = [];
-          this.printReceipt();
           this.loadProducts();
         }
       },
@@ -329,52 +444,6 @@ closeCancelPopup() {
     this.router.navigate([`/${route}`]);
   }
 
-  checkProductExpiration(): void {
-    const today = new Date(); // Aujourd'hui
-    const thresholdDate = new Date(); // Date limite (14 jours)
-    thresholdDate.setDate(today.getDate() + 14);
-  
-    // Liste des produits concernés
-    const expiringProducts: { name: string; expiredDate: string; id: number }[] = [];
-  
-    this.cachedProducts.forEach((product) => {
-      if (product.expiredDate) {
-        const expiredDate = new Date(product.expiredDate);
-  
-        // Vérifie si la date est valide et tombe dans l'intervalle
-        if (expiredDate > today && expiredDate <= thresholdDate) {
-          // Vérifie si une alerte pour ce produit a déjà été ignorée
-          if (!this.dismissedAlerts.has(product.id)) {
-            expiringProducts.push({
-              name: product.name,
-              expiredDate: expiredDate.toLocaleDateString(),
-              id: product.id,
-            });
-          }
-        }
-      }
-    });
-  
-    // Génère un message global uniquement si des produits expirants sont trouvés
-    if (expiringProducts.length > 0) {
-      const count = expiringProducts.length;
-  
-      // Génère une alerte globale sans inclure directement les produits (évite l'erreur de typage)
-      this.alerts = [
-        {
-          message: `Attention, il y a ${count} produit${count > 1 ? 's' : ''} dont la date d'expiration est proche. Cliquez sur "En savoir +" pour voir la liste complète.`,
-          productId: -1, // Utilisez une valeur fictive si nécessaire
-        },
-      ];
-  
-      // Conservez les produits expirants pour les afficher dans un popup ou autre
-      this.expiringProducts = expiringProducts; // Assurez-vous que `expiringProducts` existe dans la classe
-    } else {
-      this.alerts = []; // Pas d'alertes si aucun produit concerné
-    }
-  
-    this.cdr.detectChanges(); // Forcer la mise à jour de l'affichage
-  }
   
   
   // Fermer l'alerte
@@ -397,35 +466,51 @@ openModal(): void {
 closeModal(): void {
   this.isModalOpen = false;
 }
+showPaymentPopup(): void {
+  this.isPaymentPopupVisible = true;
+}
+
 
 confirmPayment(): void {
-  this.printReceipt(); // Imprime le bon
-  this.isModalOpen = false;
-  this.cart = []; // Vide le panier après le paiement
-  alert('Paiement confirmé et bon imprimé !');
+  if (!this.selectedPaymentMethod) {
+    Swal.fire('Erreur', 'Veuillez sélectionner un mode de paiement.', 'error');
+    return;
+  }
+
+  // Appeler la méthode pay pour effectuer le paiement
+  this.pay();
+
+  // Afficher un message de confirmation
+  Swal.fire({
+    title: 'Paiement confirmé',
+    text: `Paiement effectué avec succès en ${this.selectedPaymentMethod === 'cash' ? 'Espèces' : this.selectedPaymentMethod === 'card' ? 'Carte' : 'Chèque'}.`,
+    icon: 'success',
+    confirmButtonText: 'OK'
+  });
+
+  // Réinitialiser l'état du popup
+  this.isPaymentPopupVisible = false;
+  this.selectedPaymentMethod = '';
 }
 
 printReceipt(): void {
   const receiptContent = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center; color: #000; border: 1px solid #000; width: 80%; margin: auto;">
-      <!-- Logo -->
-      <div style="margin-bottom: 20px;">
-        <img src="/logos/logo.png" alt="SAKA SHOP Logo" style="max-width: 100px; margin: 0 auto;" />
+    <div style="font-family: 'Courier New', monospace; width: 100%; margin: 0; padding: 0; text-align: left;">
+      <!-- Entête -->
+      <div style="text-align: center; margin-bottom: 10px;">
+        <h2 style="margin: 0; font-size: 16px;">BAGGAGIO</h2>
+        <p style="margin: 0; font-size: 12px;">Anfa Place</p>
+        <p style="margin: 0; font-size: 12px;">Merci pour votre visite !</p>
+        <hr style="border: 1px dashed #000; margin: 10px 0;">
       </div>
-      <!-- Titre principal -->
-      <h1 style="margin-bottom: 10px; font-size: 24px; text-transform: uppercase;">SAKA SHOP</h1>
-      <h3 style="margin-bottom: 20px; font-size: 18px;">Bon de Commande</h3>
-      
-      <!-- Ligne séparatrice -->
-      <hr style="border: 1px solid #000; margin: 10px 0;" />
       
       <!-- Tableau des produits -->
-      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
         <thead>
-          <tr style="background: #f0f0f0;">
-            <th style="border: 1px solid #000; padding: 10px; text-align: left;">Produit</th>
-            <th style="border: 1px solid #000; padding: 10px; text-align: center;">Quantité</th>
-            <th style="border: 1px solid #000; padding: 10px; text-align: right;">Prix (€)</th>
+          <tr>
+            <th style="text-align: left;">Produit</th>
+            <th style="text-align: center;">Qté</th>
+            <th style="text-align: right;">Prix (MAD)</th>
           </tr>
         </thead>
         <tbody>
@@ -433,21 +518,24 @@ printReceipt(): void {
             .map(
               (item) => `
               <tr>
-                <td style="border: 1px solid #000; padding: 8px; text-align: left;">${item.name}</td>
-                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${item.quantity}</td>
-                <td style="border: 1px solid #000; padding: 8px; text-align: right;">${item.salesPrice.toFixed(2)}</td>
+                <td style="text-align: left;">${item.name}</td>
+                <td style="text-align: center;">${item.quantityInCart}</td>
+                <td style="text-align: right;">${item.salesPrice.toFixed(2)}</td>
               </tr>`
             )
             .join('')}
         </tbody>
       </table>
-
+      
       <!-- Total -->
-      <h3 style="margin-top: 20px; text-align: right; font-size: 18px;">Total : ${this.calculateTotal().toFixed(2)} €</h3>
-
+      <hr style="border: 1px dashed #000; margin: 10px 10px;">
+      <p style="font-size: 12px; text-align: right;">Total : <strong>${this.calculateTotal().toFixed(2)} MAD</strong></p>
+      
       <!-- Message de fin -->
-      <p style="margin-top: 20px; font-size: 14px;">Merci de votre visite !</p>
-      <p style="font-size: 12px;">À bientôt chez <strong>SAKA SHOP</strong>.</p>
+      <div style="text-align: center; margin-top: 10px; font-size: 12px;">
+        <p>Merci de votre achat !</p>
+        <p>À bientôt chez BAGGAGIO.</p>
+      </div>
     </div>
   `;
 
@@ -458,6 +546,14 @@ printReceipt(): void {
       <html>
         <head>
           <title>Bon de Commande</title>
+          <style>
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: 'Courier New', monospace;
+              font-size: 12px;
+            }
+          </style>
         </head>
         <body onload="window.print(); window.close();">
           ${receiptContent}
@@ -468,7 +564,76 @@ printReceipt(): void {
   }
 }
 
- 
+
+closeCaisse(): void {
+  this.loadSalesData(() => {
+    const now = new Date();
+    const openingDate = localStorage.getItem('caisseOpeningDate') || 'N/A';
+
+    const ticketContent = `
+      <div style="font-family: 'Courier New', monospace; text-align: left; padding: 10px; width: 100%;">
+        <h2 style="text-align: center;">Caisse : BAGGAGIO</h2>
+        <p style="text-align: center;">Dépot : BAGGAGIO</p>
+        <hr style="border: 1px dashed #000;">
+        <p>Fermée le : ${now.toLocaleString()}</p>
+        <p>fond de caisse : ${this.totalSales.toFixed(2)} MAD</p>
+        <hr style="border: 1px dashed #000;">
+        <p style="text-align: center;">Merci et à bientôt !</p>
+      </div>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Fermeture de caisse</title>
+            <style>
+              body { font-family: 'Courier New', monospace; font-size: 12px; margin: 0; padding: 0; }
+            </style>
+          </head>
+          <body onload="window.print(); window.close();">
+            ${ticketContent}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    localStorage.removeItem('caisseOpeningDate');
+    this.router.navigate(['/open-caisse']);
+  });
+}
+
+
+
+    // Charger les données depuis le backend
+    loadSalesData(callback?: () => void): void {
+      this.salesService.getSalesData().subscribe(
+        (data) => {
+          this.sales = data;
+          const today = new Date();
+          this.filteredSales = this.sales.filter((sale) => {
+            const lastUpdated = new Date(sale.dateOrder);
+            return (
+              lastUpdated.getDate() === today.getDate() &&
+              lastUpdated.getMonth() === today.getMonth() &&
+              lastUpdated.getFullYear() === today.getFullYear()
+            );
+          });
+  
+          this.totalSales = this.filteredSales.reduce((sum, sale) => sum + sale.salesPrice, 0);
+  
+          if (callback) callback();
+        },
+        (error) => {
+          console.error('Erreur lors du chargement des données :', error);
+        }
+      );
+    }
+
+
 }
 
 

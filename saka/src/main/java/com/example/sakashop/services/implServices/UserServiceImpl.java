@@ -1,9 +1,7 @@
 package com.example.sakashop.services.implServices;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.example.sakashop.DAO.UserDAO;
 import com.example.sakashop.DTO.UserDTO;
@@ -12,6 +10,7 @@ import com.example.sakashop.Entities.User;
 import com.example.sakashop.services.userService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -48,12 +47,10 @@ public class UserServiceImpl implements UserDetailsService, userService {
   }
 
   // Get user authorities
-  private Set<SimpleGrantedAuthority> getAuthority(User user) {
-    Set<SimpleGrantedAuthority> authorities = new HashSet<>();
-    user.getRoles().forEach(role -> {
-      authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
-    });
-    return authorities;
+  private Collection<? extends GrantedAuthority> getAuthority(User user) {
+    return user.getRoles().stream()
+      .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+      .collect(Collectors.toList());
   }
 
 

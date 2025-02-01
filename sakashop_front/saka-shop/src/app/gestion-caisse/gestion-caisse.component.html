@@ -1,0 +1,91 @@
+<div class="caisse-container">
+    <div class="caisse-header">
+      <h1>Gestion des Caisses</h1>
+      <button class="btn-add-caisse" (click)="openAddCaissePopup()">Ajouter Caisse</button>
+    </div>
+  
+    <!-- Tableau des caisses -->
+    <table class="caisse-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nom de la Caisse</th>
+          <th>Utilisateur</th>
+          <th>Date de Création</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let caisse of caisses">
+          <td>{{ caisse.id }}</td>
+          <td>{{ caisse.nom }}</td>
+          <td>{{ caisse.utilisateur }}</td>
+          <td>{{ caisse.dateCreation }}</td>
+          <td>
+            <button class="btn-action btn-edit" (click)="editCaisse(caisse)">Modifier</button>
+            <button class="btn-action btn-delete" (click)="deleteCaisse(caisse)">Supprimer</button>
+          </td>
+        </tr>
+        <tr *ngIf="caisses.length === 0">
+          <td colspan="7" class="text-center">Aucune caisse disponible</td>
+        </tr>
+      </tbody>
+    </table>
+  
+   <!-- Popup d'ajout de caisse -->
+<div *ngIf="isAddCaissePopupVisible" class="add-caisse-popup-overlay">
+  <div class="add-caisse-popup-content">
+    <h2>Ajouter une Nouvelle Caisse</h2>
+    <form [formGroup]="addCaisseForm" (ngSubmit)="submitAddCaisse()">
+      <div class="form-group">
+        <label for="nom">Nom de la Caisse</label>
+        <input id="nom" formControlName="nom" type="text" placeholder="Entrez le nom de la caisse" required />
+      </div>
+      <div class="form-group">
+        <label for="pays">Pays</label>
+        <input id="pays" formControlName="pays" type="text" placeholder="Entrez le nom du pays" required />
+      </div>
+      <div class="form-group">
+        <label for="ville">Ville</label>
+        <input id="ville" formControlName="ville" type="text" placeholder="Entrez le nom de la ville" required />
+      </div>
+      <div class="form-group">
+        <label for="utilisateur">Utilisateur</label>
+        <input id="utilisateur" formControlName="utilisateur" type="text" placeholder="Entrez l'utilisateur" required />
+      </div>
+      <div class="form-group">
+        <label for="password">Mot de Passe</label>
+        <input id="password" formControlName="password" type="password" placeholder="Entrez le mot de passe" required />
+      </div>
+      <div class="form-group">
+        <label for="role">Role</label>
+        <input id="role" type="text" value="CAISSIER" readonly />
+      </div>
+      <div class="form-group form-inline">
+        <button type="button" class="btn-add-stock" (click)="navigateToStock(addCaisseForm.get('nom')?.value)">
+          Ajouter Stock
+        </button>
+        
+        <!-- Phrase affichant le nombre de produits ajoutés -->
+        <span *ngIf="cachedProducts.length > 0" class="products-added">
+          {{ cachedProducts.length }} produits ajoutés
+        </span>
+   
+      </div>
+      <div class="popup-actions">
+        <button type="submit" class="btn-confirm" [disabled]="isSubmitting">Enregistrer caisse</button>
+        <button type="button" class="btn-cancel" (click)="closeAddCaissePopup()">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="navigation-buttons">
+  <button (click)="navigateTo('gestion-product/list')">Gestion de STOCK</button>
+  <button (click)="navigateTo('turnover')">Chiffre d'Affaire</button>
+
+  <button (click)="navigateTo('credit-client')">Crédit Client</button>
+  <button (click)="navigateTo('consumer')">Frais Admin </button>
+  <button class="btn-logout" (click)="logout()">Quitter</button>
+</div>
+  </div>
+  

@@ -1,0 +1,261 @@
+/* Conteneur principal */
+.gestion-vente-container {
+  display: flex;
+  font-family: 'Roboto', sans-serif;
+  height: 100vh;
+  background-color: #f4f7f9;
+}
+
+/* Menu latéral */
+.sidebar {
+  width: 250px;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+.btn-export-csv {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.btn-export-csv:hover {
+  background-color: #218838;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar li {
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.sidebar li:hover {
+  background-color: #34495e;
+}
+
+/* Contenu principal */
+.main-content {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Titre de la page */
+.header {
+  text-align: center;
+  margin-bottom: 10px;
+  background-color: #1abc9c;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  color: #fff;
+}
+
+/* Date range */
+.date-range-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.date-range-field {
+  width: 90%;
+}
+
+.date-range-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Tableau des ventes */
+/* Tableau des ventes */
+.table-container {
+  overflow-x: hidden; /* Désactiver le scroll horizontal */
+  margin-top: 80px; /* Ajuster la position du tableau */
+  margin-bottom: 50px; /* Espacement inférieur */
+}
+
+/* Activer le défilement uniquement pour le corps du tableau */
+.table-body-scroll {
+  max-height: 400px; /* Limiter la hauteur visible */
+  overflow-y: auto; /* Activer le défilement vertical */
+}
+
+/* Tableau des ventes */
+.sales-table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.sales-table th,
+.sales-table td {
+  padding: 15px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.sales-table thead th {
+  background-color: #3498db; /* Couleur d'entête */
+  color: #fff;
+  font-size: 1rem;
+}
+
+.sales-table tbody tr:nth-child(even) {
+  background-color: #f5f5f5;
+}
+
+.sales-table tbody tr:hover {
+  background-color: #e0e0e0;
+}
+
+/* Largeurs spécifiques pour l'alignement */
+.sales-table th:nth-child(1),
+.sales-table td:nth-child(1) {
+  width: 25%; /* Produits Vendus */
+}
+
+.sales-table th:nth-child(2),
+.sales-table td:nth-child(2) {
+  width: 15%; /* Quantité Vendus */
+}
+
+.sales-table th:nth-child(3),
+.sales-table td:nth-child(3) {
+  width: 20%; /* Prix d'Achat */
+}
+
+.sales-table th:nth-child(4),
+.sales-table td:nth-child(4) {
+  width: 20%; /* Prix de Vente */
+}
+
+.sales-table th:nth-child(5),
+.sales-table td:nth-child(5) {
+  width: 20%; /* Date */
+}
+
+/* Barre des totaux */
+.totals-bar {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  align-items: center;
+  background-color: #1abc9c;
+  color: #ccfa00;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 20px;
+  border-radius: 30px;
+}
+
+
+.total-item {
+  text-align: center; /* Centrer le contenu de chaque cellule */
+  padding: 0;
+  border-right: 1px solid #ffffff; /* Ajouter une bordure droite entre les colonnes */
+}
+
+.total-item:last-child {
+  border-right: none; /* Supprime la bordure pour le dernier élément */
+}
+
+.total-item span:first-child {
+  font-weight: normal;
+  color: #ffffff;
+}
+
+
+.navigation-buttons {
+  position: fixed;
+  bottom: 30px; /* Espace par rapport au bas de la page */
+  left: 40%; /* Centre horizontalement */
+  transform: translateX(-30%); /* Ajustement pour centrer */
+  display: flex;
+  gap: 20px; /* Espace entre les boutons */
+}
+
+/* Style pour les boutons */
+.navigation-buttons button {
+  padding: 15px 30px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+  
+  .navigation-buttons button:hover {
+    background-color: #0056b3;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(1) {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(2) {
+    background-color: #17a2b8;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(3) {
+    background-color: #ffc107;
+    color: #fff;
+  }
+  .navigation-buttons button:nth-child(4) {
+    background-color: #579fcf;
+    color: #fff;
+   
+  }
+  .navigation-buttons button:nth-child(5) {
+    background-color: #ff0783;
+    color: #fff;
+  }
+  .navigation-buttons button:nth-child(6) {
+    background-color: #ff0707;
+    color: #fff;
+    transform: translateX(150%);
+  }
+  
+  .date-range-container {
+    display: flex;
+    align-items: center;
+    gap: 800px;
+    margin-bottom: -90px;
+  }
+  
+  .date-range-field {
+    flex: 1;
+  }
+  
+  .date-range-actions {
+    display: flex;
+    gap: 10px;
+    transform: translateX(-320%);
+  }
+  
+  
+  

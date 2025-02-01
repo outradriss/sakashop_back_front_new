@@ -1,0 +1,102 @@
+/* Style global */
+body {
+  margin: 0;
+  font-family: 'Roboto', Arial, sans-serif;
+  background: linear-gradient(to bottom, #f8f9fa, #e8ebf0);
+  color: #333;
+}
+
+/* Conteneur principal */
+.dashboard-home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+/* En-tête */
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.dashboard-header h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.dashboard-header p {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Conteneur des tuiles */
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* Tuiles */
+.tile {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  text-align: center;
+}
+
+.tile:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
+}
+
+.tile i {
+  font-size: 3rem;
+  color: #007bff;
+  margin-bottom: 15px;
+}
+
+.tile span {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Animation */
+.tile:hover i {
+  color: #0056b3;
+}
+
+.tile:hover span {
+  color: #0056b3;
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .tile {
+    padding: 20px;
+  }
+
+  .tile i {
+    font-size: 2.5rem;
+  }
+
+  .tile span {
+    font-size: 1rem;
+  }
+}

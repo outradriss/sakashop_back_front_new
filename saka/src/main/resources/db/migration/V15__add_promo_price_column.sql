@@ -1,0 +1,1 @@
+ALTER TABLE items_orders ADD COLUMN promo_price BIGINT NOT NULL DEFAULT 0;

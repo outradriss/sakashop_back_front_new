@@ -1,0 +1,32 @@
+<div class="dashboard-home">
+  <div class="dashboard-header">
+    <h1>Bienvenue dans le Système de Gestion</h1>
+    <p>Gérez facilement vos produits, ventes et caisses.</p>
+  </div>
+  <div class="dashboard">
+    <div class="tile" (click)="navigateTo('gestion-product/list')">
+      <i class="fas fa-boxes"></i>
+      <span>Gestion Produit</span>
+    </div>
+    <div class="tile" (click)="navigateTo('gestion-vente')">
+      <i class="fas fa-chart-line"></i>
+      <span>Gestion de Vente</span>
+    </div>
+    <div class="tile" (click)="navigateTo('gestion-caisse')">
+      <i class="fas fa-user-friends"></i>
+      <span>Gestion des Caisses</span>
+    </div>
+    <div class="tile" (click)="navigateTo('turnover')">
+      <i class="fas fa-coins"></i>
+      <span>Chiffre d'Affaire</span>
+    </div>
+    <div class="tile" (click)="navigateTo('flush-caisse')">
+      <i class="fas fa-coins"></i>
+      <span>Flush Caisse</span>
+    </div>
+    <div class="tile" (click)="navigateTo('support')">
+      <i class="fas fa-life-ring"></i>
+      <span>Support</span>
+    </div>
+  </div>
+</div>

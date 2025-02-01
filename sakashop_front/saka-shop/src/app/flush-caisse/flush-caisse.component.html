@@ -1,0 +1,59 @@
+<div class="flush-caisse-title">
+    FLUSH CAISSE
+  </div>
+  <div class="caisse-table-container">
+    <div class="caisse-table-title">
+      Choisir la Caisse
+    </div>
+    <table class="caisse-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nom de la Caisse</th>
+          <th>Pays</th>
+          <th>Ville</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let caisse of caisses">
+          <td>{{ caisse.id }}</td>
+          <td>{{ caisse.nom }}</td>
+          <td>{{ caisse.pays }}</td>
+          <td>{{ caisse.ville }}</td>
+          <td>
+            <button class="btn-view-sales" (click)="loadSalesData(caisse.id)">
+              Voir les ventes
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="popup-overlay" *ngIf="showPopup">
+    <div class="popup">
+      <h3>Ventes de la Caisse : {{ selectedCaisseName }}</h3>
+      <table class="sales-popup-table">
+        <thead>
+          <tr>
+            <th>Article</th>
+            <th>Code</th>
+            <th>Prix</th>
+            <th>Remise</th>
+            <th>Catégorie</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let sale of filteredSales">
+            <td>{{ sale.name }}</td>
+            <td>{{ sale.itemCode }}</td>
+            <td>{{ sale.salesPrice | currency: 'MAD':'symbol':'1.2-2' }}</td>
+            <td>{{ sale.pricePromo || 'N/A' }}</td>
+            <td>{{ sale.categories }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn-close-popup" (click)="closePopup()">Fermer</button>
+    </div>
+  </div>
+  

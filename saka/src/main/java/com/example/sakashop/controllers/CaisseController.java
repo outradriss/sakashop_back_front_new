@@ -1,0 +1,95 @@
+package com.example.sakashop.controllers;
+
+import com.example.sakashop.DTO.CancelRequestDTO;
+import com.example.sakashop.DTO.OrderRequestDTO;
+import com.example.sakashop.DTO.PasswordDTO;
+import com.example.sakashop.Entities.Cancel;
+import com.example.sakashop.Entities.Item;
+import com.example.sakashop.Entities.Order;
+import com.example.sakashop.Entities.PasswordLockCaisse;
+import com.example.sakashop.services.CancelService;
+import com.example.sakashop.services.implServices.CaisseServiceImpl;
+import com.example.sakashop.services.implServices.CancelServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+
+@RestController
+@RequestMapping("/api/caisse")
+@CrossOrigin(origins = "*")
+public class CaisseController {
+
+  @Autowired
+  CaisseServiceImpl caisseService;
+
+  @Autowired
+  private CancelServiceImpl cancelService;
+
+  @GetMapping("/list")
+  public List<Item> getAllProducts() {
+    return caisseService.getAllProducts();
+  }
+
+  @PostMapping("/verify-password")
+  public ResponseEntity<Boolean> verifyPassword(@RequestBody @Valid PasswordDTO passwordDTO) {
+    try {
+      caisseService.verifyPassword(passwordDTO.getPassword()); // Si le mot de passe est valide, aucun problème
+      return ResponseEntity.ok(true);
+    } catch (RuntimeException e) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false); // Mot de passe incorrect
+    }
+  }
+
+  @PostMapping("/cancel")
+  public ResponseEntity<?> createCancel(@RequestBody CancelRequestDTO dto) {
+    if (dto.getItemId() != null && !dto.getItemId().isEmpty()) {
+      for (Long id : dto.getItemId()) {
+        Cancel cancel = new Cancel();
+        Item item = new Item();
+        item.setId(id); // Rattacher l'item existant
+        cancel.setItem(item);
+        cancel.setReason(dto.getReason());
+
+        cancelService.saveCancel(cancel);
+      }
+      return ResponseEntity.ok("Cancel saved successfully for all items");
+    }
+    return ResponseEntity.badRequest().body("No item IDs found in request");
+  }
+
+
+  @GetMapping("/cancel/{itemId}")
+  public ResponseEntity<List<Cancel>> getCancelsByItemId(@PathVariable Long itemId) {
+    List<Cancel> cancels = cancelService.getCancelByItemId(itemId);
+    return ResponseEntity.ok(cancels);
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<?> getOrderById(@PathVariable String id) {
+    Optional<Order> orderOptional = caisseService.findByIdOrder(id);
+
+    if (orderOptional.isPresent()) {
+      Order order = orderOptional.get();
+
+      return ResponseEntity.ok(Map.of(
+        "status", "success",
+        "order", order,
+        "dateOrder", order.getDateOrder(),
+        "idOrderChange", order.getIdOrderChange() // ✅ Ajout des champs demandés
+      ));
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+        "status", "error",
+        "message", "Commande introuvable."
+      ));
+    }
+  }
+
+}

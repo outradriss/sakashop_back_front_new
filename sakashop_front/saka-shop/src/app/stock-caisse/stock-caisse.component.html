@@ -1,0 +1,84 @@
+<div class="product-table-container">
+  <h2>Gestion Stocks pour la caisse : {{ caisseName }}</h2>
+
+  <!-- Barre de Recherche -->
+  <div class="search-bar">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Rechercher un produit..."
+      [(ngModel)]="discountSearchQuery"
+      (input)="filterDiscountProducts()"
+    />
+    <ul class="dropdown-list" *ngIf="discountFilteredProducts.length > 0">
+      <li
+        class="dropdown-item"
+        *ngFor="let product of discountFilteredProducts.slice(0, 4)"
+        (click)="selectProduct(product)"
+      >
+        {{ product.name }} - {{ product.salesPrice | currency: 'MAD' }}
+      </li>
+    </ul>
+  </div>
+   
+
+  <!-- Tableau des produits ajoutés -->
+  <div class="table-scrollable-container">
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>Code Barre</th>
+          <th>Désignation</th>
+          <th>Quantité</th>
+          <th>Prix de Vente TTC</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of selectedProducts">
+          <td>
+            <input
+              type="text"
+              [(ngModel)]="product.itemCode"
+              readonly
+              class="read-only-input"
+            />
+          </td>
+          <td>
+            <input
+              type="text"
+              [(ngModel)]="product.name"
+              readonly
+              class="read-only-input"
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              [(ngModel)]="product.quantity"
+              readonly
+              class="read-only-input"
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              [(ngModel)]="product.sellPrice"
+              readonly
+              class="read-only-input"
+            />
+          </td>
+          <td>
+            <button (click)="removeProduct(product)">Supprimer</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Boutons d'action -->
+  <div class="actions">
+    <button class="btn-save" (click)="saveStock()">Enregistrer</button>
+    <button class="btn-cancel" (click)="cancel()">Annuler</button>
+  </div>
+</div>

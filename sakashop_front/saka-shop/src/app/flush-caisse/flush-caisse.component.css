@@ -1,0 +1,150 @@
+/* Titre principal */
+.flush-caisse-title {
+    font-size: 3rem;
+    text-align: center;
+    font-weight: bold;
+    margin: 20px auto;
+    border: 3px solid #4CAF50; /* Couleur moderne */
+    color: #4CAF50; /* Vert élégant */
+    padding: 15px;
+    border-radius: 8px;
+    background: #f9f9f9;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+    width: 50%;
+  }
+  
+  /* Conteneur du tableau des caisses */
+  .caisse-table-container {
+    margin-top: 40px;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Titre du tableau */
+  .caisse-table-title {
+    font-size: 1.8rem;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+    padding: 10px;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+  }
+  
+  /* Tableau principal */
+  .caisse-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    color: #333;
+  }
+  
+  /* En-têtes du tableau */
+  .caisse-table th {
+    background-color: #4CAF50; /* Couleur moderne */
+    color: white;
+    font-weight: bold;
+    padding: 12px 10px;
+    text-align: center;
+    text-transform: uppercase;
+    border: 1px solid #ddd;
+  }
+  
+  /* Corps du tableau */
+  .caisse-table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+  }
+  
+  /* Hover sur les lignes */
+  .caisse-table tr:hover {
+    background-color: #f5f5f5;
+  }
+  
+  /* Bouton d'action */
+  .btn-view-sales {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-view-sales:hover {
+    background-color: #45a049;
+  }
+  
+  /* Style du popup */
+  .popup {
+    width: 60%;
+    margin: 0 auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+  }
+  
+  /* Table dans le popup */
+  .sales-popup-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .sales-popup-table th,
+  .sales-popup-table td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+  }
+  
+  .sales-popup-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+  }
+  
+  .sales-popup-table tr:hover {
+    background-color: #f5f5f5;
+  }
+  
+  /* Bouton de fermeture */
+  .btn-close-popup {
+    margin-top: 20px;
+    display: block;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-close-popup:hover {
+    background-color: #c82333;
+  }
+  
+  /* Overlay du popup */
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  

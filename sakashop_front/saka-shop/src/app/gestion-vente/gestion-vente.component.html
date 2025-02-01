@@ -1,0 +1,94 @@
+<div class="gestion-vente-container">
+  <!-- Menu latéral -->
+  <div class="sidebar">
+    <ul>
+      <li (click)="navigateTo('meilleur-vente')">Meilleure Vente</li>
+      <li (click)="navigateTo('statistique')">Statistique</li>
+      <li (click)="navigateTo('gestion-vente')">Gestion de Vente</li>
+      <li>Vide</li>
+      <li>Vide</li>
+      <li>Vide</li>
+      <li>Vide</li>
+    </ul>
+  </div>
+
+  <!-- Contenu principal -->
+  <div class="main-content">
+    <!-- Titre de la page -->
+    <div class="header">
+      <h1>Gestion de Vente</h1>
+    </div>
+
+    <!-- Sélection de la période -->
+    <div class="date-range-container">
+      <form [formGroup]="dateRangeForm">
+        <mat-form-field appearance="outline" class="date-range-field">
+          <mat-label>Sélectionner une période</mat-label>
+          <mat-date-range-input [rangePicker]="picker">
+            <input matStartDate formControlName="start" placeholder="Date de début" />
+            <input matEndDate formControlName="end" placeholder="Date de fin" />
+          </mat-date-range-input>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-date-range-picker #picker></mat-date-range-picker>
+        </mat-form-field>
+      </form>
+      <div class="date-range-actions">
+        <button mat-raised-button color="primary" (click)="applyDateFilter()">Appliquer</button>
+        <button mat-raised-button color="warn" (click)="resetDateFilter()">Réinitialiser</button>
+      </div>
+      <button (click)="exportToCSV()" class="btn-export-csv">Exporter en CSV</button>
+    </div>
+
+    <div class="table-container">
+      <!-- En-tête du tableau -->
+      <table class="sales-table">
+        <thead>
+          <tr>
+            <th>Produits Vendus</th>
+            <th>Quantité Vendus</th>
+            <th>Prix de Vente TTC</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+      </table>
+    
+<!-- Corps avec scroll vertical -->
+<div class="table-body-scroll">
+  <table class="sales-table">
+    <tbody>
+      <tr *ngFor="let sale of filteredSales">
+        <td>{{ sale.nameProduct }}</td>
+        <td>{{ sale.quantity }}</td>
+        <td>{{ sale.salesPrice | currency: 'MAD ':'symbol':'1.2-2' }}</td>
+        <td>{{ sale.dateOrder }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+  
+    <!-- Barre des totaux -->
+    <div class="totals-bar">
+      <div class="total-item">
+        <span>Total Produits :</span>
+        <span>{{ totalProducts }}</span>
+      </div>
+      <div class="total-item">
+        <span>Total quantité :</span>
+        <span>{{ totalQuantity }}</span>
+      </div>
+      <div class="total-item">
+        <span>Total Prix de Vente :</span>
+        <span>{{ totalSellPrice | currency: 'MAD ':'symbol':'1.2-2' }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="navigation-buttons">
+  <button (click)="navigateTo('gestion-product/list')">Gestion de STOCK</button>
+  <button (click)="navigateTo('turnover')">Chiffre d'Affaire</button>
+
+  <button (click)="navigateTo('credit-client')">Crédit Client</button>
+  <button (click)="navigateTo('consumer')">Frais Admin </button>
+  <button class="btn-logout" (click)="logout()">Quitter</button>
+</div>

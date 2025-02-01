@@ -1,0 +1,927 @@
+.gestion-produit-container {
+    padding: 200px;
+    background-color: #f8f9fa;
+  }
+  
+  h2 {
+    text-align: center;
+    color: #333;
+  }
+  
+  .search-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  .search-bar input {
+    width: 70%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .search-bar .btn-add-product {
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn-add-discount {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f39c12; /* Couleur vive pour attirer l'attention */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 1em;
+}
+
+.pagination button {
+  margin: 0 5px;
+  padding: 0.5em 1em;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.pagination button.active {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+}
+
+.pagination button:hover {
+  background-color: #0056b3;
+  color: white;
+}
+.action-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-disable-promo.disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+
+
+.btn-add-discount i {
+    margin-right: 8px; /* Espacement entre l'icône et le texte */
+    font-size: 20px; /* Taille de l'icône */
+}
+
+.btn-add-discount:hover {
+    transform: scale(1.05); /* Légère mise en avant au survol */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-add-discount:active {
+    transform: scale(0.95); /* Réaction au clic */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+  
+  
+  .search-bar .btn-add-product:hover {
+    background-color: #0056b3;
+  }
+  
+  .product-list table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+  }
+  
+  .product-list th, .product-list td {
+    text-align: left;
+    padding: 10px;
+    border: 1px solid #ddd;
+    color: #333;
+  }
+  .error {
+    color: red;
+    font-size: 0.85em;
+    margin-top: 5px;
+  }
+  
+  
+  .product-list th {
+    background-color: #f1f1f1;
+  }
+  
+  .product-list .btn-edit {
+    color: white;
+    background-color: #28a745;
+    border: none;
+    padding: 10px 30px;
+    cursor: pointer;
+    border-radius: 20px;
+    gap: 10px;
+  }
+  
+  .product-list .btn-delete {
+    color: white;
+    background-color: #dc3545;
+    border: none;
+    padding: 10px 30px;
+    cursor: pointer;
+    border-radius: 20px;
+    margin-right: 10px;
+  }
+  .product-list .btn-history {
+    color: white;
+    background-color: #220dc8;
+    border: none;
+    padding: 10px 30px;
+    cursor: pointer;
+    border-radius: 20px;
+    gap: 10px;
+    margin-right: 30px;
+  }
+  .action-buttons {
+    display: flex;
+    gap: 50px;
+  }
+  .btn-disable-promo.disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+
+  }
+  /* Styles généraux des boutons */
+button {
+  font-size: 14px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  gap: 10px;
+}
+
+/* Bouton Désactiver Promo actif */
+.btn-active {
+  background-color: #ffcc00; /* Jaune pour attirer l'attention */
+  color: #000; /* Texte noir pour un contraste clair */
+  padding: 10px 30px;
+  cursor: pointer;
+  border-radius: 50px;
+}
+
+.btn-active:hover {
+  background-color: #e6b800; /* Couleur légèrement plus foncée au survol */
+}
+
+/* Bouton Désactiver Promo désactivé */
+.btn-disable {
+  background-color: #e0e0e0; /* Gris clair */
+  color: #888; /* Gris foncé pour le texte */
+  cursor: not-allowed; /* Curseur non cliquable */
+  box-shadow: none; /* Supprimer les ombres */
+  padding: 10px 30px;
+    cursor: pointer;
+  border-radius: 20px;
+}
+
+/* Transitions douces */
+button:hover {
+  opacity: 0.9;
+}
+
+  
+
+  
+  .popup {
+    background: white;
+    padding: 20px;
+    width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .popup h3 {
+    color: #333;
+  }
+  
+  .popup .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .popup label {
+    color: #333;
+    font-weight: bold;
+  }
+  
+  .popup input, .popup textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .popup .popup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  .popup .btn-submit {
+    padding: 10px 20px;
+    color: white;
+    background-color: #28a745;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .popup .btn-cancel {
+    padding: 10px 20px;
+    color: white;
+    background-color: #dc3545;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+ /* Conteneur pour les boutons de navigation */
+ .navigation-buttons {
+  position: fixed;
+  top: 0; /* Positionné en haut */
+  left: 50%; /* Centre horizontalement */
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  background-color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+  
+  /* Style pour les boutons */
+  .navigation-buttons button {
+    padding: 20px 30px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .navigation-buttons button:hover {
+    background-color: #0056b3;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(1) {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(2) {
+    background-color: #17a2b8;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(3) {
+    background-color: #ffc107;
+    color: #000;
+  }
+  .navigation-buttons button:nth-child(4) {
+    background-color: #a8dd98;
+    color: #000;
+  }
+  .navigation-buttons button:nth-child(5) {
+    background-color: #ff0783;
+    color: #000;
+  }
+  .navigation-buttons button:nth-child(6) {
+    background-color: #ff0707;
+    color: #000;
+  }
+  
+  .input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .input-with-icon input {
+    padding-right: 35px; /* Espace pour l'icône */
+    width: 100%;
+  }
+  
+  .input-with-icon .promo-icon {
+    position: absolute;
+    right: 10px; /* Position de l'icône à droite du champ */
+    font-size: 16px;
+    color: #999;
+    pointer-events: none; /* Désactive les clics sur l'icône */
+  }
+  
+  .promo-icon::before {
+    content: "\1F381"; /* Exemple: Icône emoji cadeau 🎁 */
+  }
+  .popup-discount-search {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.popup-discount-search .popup {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.popup-discount-search h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.popup-discount-search h3 i {
+  font-size: 24px;
+  color: #17a2b8;
+}
+
+.popup-discount-search .search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.popup-discount-search input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.popup-discount-search button {
+  padding: 10px 15px;
+  font-size: 16px;
+  border: none;
+  background-color: #28a745;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.popup-discount-search button:hover {
+  background-color: #218838;
+}
+
+.popup {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.popup h3 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #333;
+}
+
+.popup input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.popup ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.popup ul li {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #ddd;
+}
+
+.popup ul li:hover {
+  background-color: #f1f1f1;
+}
+
+.popup button {
+  padding: 10px 15px;
+  font-size: 16px;
+  border: none;
+  background-color: #dc3545;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.popup button:hover {
+  background-color: #c82333;
+}
+.overlay-delete-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+
+.popup form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Espacement entre les champs */
+}
+
+.popup-actions {
+  display: flex;
+  justify-content: flex-end; /* Alignement des boutons à droite */
+  gap: 10px; /* Espacement entre les boutons */
+}
+
+@media screen and (max-width: 768px) {
+  .popup {
+    width: 95%; /* Ajustement pour les écrans plus petits */
+    height: auto; /* Hauteur dynamique */
+    max-height: 90%;
+  }
+}
+
+
+.popup.delete-confirm-popup {
+  background: #fff;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  position: relative;
+  animation: scaleUp 0.3s ease-in-out;
+  margin: 0 auto; /* Supprime les marges blanches autour */
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.popup h3 {
+  font-size: 24px;
+  color: #d9534f;
+  margin-bottom: 15px;
+}
+
+.popup .warning-icon {
+  font-size: 40px;
+  color: #d9534f;
+  margin-bottom: 10px;
+}
+
+.popup p {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.popup .warning-text {
+  font-size: 14px;
+  color: #d9534f;
+  margin-top: -10px;
+}
+
+.popup .popup-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 15px;
+}
+
+.btn-confirm {
+  background-color: #d9534f;
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-confirm:hover {
+  background-color: #c9302c;
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
+}
+.btn-export-csv {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.btn-export-csv:hover {
+  background-color: #218838;
+}
+
+
+
+
+
+
+/* Style générique pour tous les popups */
+.popup {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Style spécifique pour le popup d'Ajout/Modification de Produit */
+/* Conteneur général du popup */
+.popup.product-popup {
+  width: 80%;
+  max-width: 1200px;
+  height: auto;
+  max-height: 90%;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+/* Titre du popup */
+.popup.product-popup h3 {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
+}
+
+/* Style des groupes de formulaire */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+/* Labels des champs */
+.form-group label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+/* Champs d'entrée */
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  background-color: #f9f9f9;
+}
+
+/* Focus sur les champs d'entrée */
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  outline: none;
+  background-color: #fff;
+}
+
+/* Messages d'erreur */
+.error {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 5px;
+}
+
+/* Zone des actions */
+.popup-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+/* Boutons d'action */
+.popup-actions .btn-submit {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.popup-actions .btn-submit:hover {
+  background-color: #218838;
+}
+
+.popup-actions .btn-cancel {
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.popup-actions .btn-cancel:hover {
+  background-color: #c82333;
+}
+
+/* Style spécifique pour les listes déroulantes */
+.category-container select {
+  appearance: none;
+  background: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M2%205L0%200h4z%22/%3E%3C/svg%3E') no-repeat right 10px center;
+  background-size: 12px;
+  padding-right: 30px;
+}
+
+/* Promotion Warning */
+.promo-warning {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 10px;
+  border: 1px solid #ffeeba;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+/* Style spécifique pour le popup de Confirmation */
+.popup.delete-confirm-popup {
+  width: 400px; /* Largeur spécifique pour le popup de confirmation */
+  max-width: 90%;
+  padding: 20px;
+  text-align: center; /* Centrer le texte */
+  animation: scaleUp 0.3s ease-in-out;
+}
+
+/* Style spécifique pour le popup d'Ajout de Remise */
+.popup.discount-popup {
+  width: 60%; /* Largeur spécifique */
+  max-width: 800px;
+  height: auto;
+  max-height: 70%;
+  overflow-y: auto;
+}
+.error-message {
+  color: #d32f2f;
+  background-color: #fdecea;
+  padding: 10px;
+  border: 1px solid #f5c6cb;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Conteneur global pour le message de succès */
+.global-success-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px 20px;
+  border: 1px solid #c3e6cb;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  z-index: 9999;
+  text-align: center;
+  animation: fadeOut 2s linear 1s forwards; /* Animation de disparition */
+}
+
+/* Animation de disparition */
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.popup form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Ajoute un espacement uniforme entre les champs */
+}
+
+.form-group {
+  width: 100%;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.popup-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+
+.checkbox-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.checkbox-label input {
+  margin-top: 8px;
+}
+
+.form-group.checkbox-container.align-left {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+.form-group.checkbox-container.align-left input[type="checkbox"] {
+  margin-right: 8px !important;
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.popup h3 {
+  margin-bottom: 15px;
+  font-size: 20px;
+  color: #333;
+}
+
+.popup label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #333;
+}
+
+.popup input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.popup-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.popup-actions .btn-submit {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.popup-actions .btn-cancel {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.popup-actions .btn-submit:hover,
+.popup-actions .btn-cancel:hover {
+  opacity: 0.9;
+}

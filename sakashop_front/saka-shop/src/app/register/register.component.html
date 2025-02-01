@@ -1,0 +1,81 @@
+<div class="row">
+  <div class="col-md-4 offset-md-4 col-sm-6 offset-sm-3">
+    <div class="card auth">
+      <div class="card-body auth-card">
+        <div class="auth-avatar">
+          <img
+          src="/logos/logo.png"
+          alt="user"
+          class="user-image"
+        /> 
+        </div>
+        <form [formGroup]="signupForm" (ngSubmit)="signUp()">
+          <div class="form-group">
+            <label for="name">Name: </label>
+            <input
+              type="text"
+              id="name"
+              class="form-control"
+              formControlName="name"
+              placeholder="Name"
+            />
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone: </label>
+            <input
+              type="text"
+              id="phone"
+              class="form-control"
+              formControlName="phone"
+              placeholder="Phone"
+            />
+          </div>
+          <div class="form-group">
+            <label for="email">Email: </label>
+            <input
+              type="email"
+              id="email"
+              class="form-control"
+              formControlName="email"
+              placeholder="Email"
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">Password: </label>
+            <input
+              type="password"
+              id="password"
+              class="form-control"
+              formControlName="password"
+              placeholder="********"
+            />
+          </div>
+          <div class="form-group">
+            <label for="c_password">Confirm Password: </label>
+            <input
+              type="password"
+              id="c_password"
+              class="form-control"
+              formControlName="c_password"
+              placeholder="********"
+            />
+          </div>
+          <div *ngIf="successMessage" class="alert alert-success">
+            {{ successMessage }}
+          </div>
+          <div *ngIf="errorMessage" class="alert alert-danger">
+            {{ errorMessage }}
+          </div>
+          <div class="text-center">
+            <button type="submit" class="btn btn-my" [disabled]="signupForm.invalid">
+              Sign Up
+            </button>
+          </div>
+          <div class="text-center login">
+            Already have an account? <a routerLink="/login">Login</a> here.
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,79 @@
+<div class="page-container">
+    <!-- Résumé des indicateurs clés -->
+    <section class="kpi-section">
+      <div class="kpi-card">
+        <h3>Chiffre d'Affaires (Aujourd'hui)</h3>
+        <p class="kpi-value">{{ kpi.todayRevenue | currency }}</p>
+      </div>
+      <div class="kpi-card">
+        <h3>Chiffre d'Affaires (Période)</h3>
+        <p class="kpi-value">{{ kpi.periodRevenue | currency }}</p>
+      </div>
+      <div class="kpi-card">
+        <h3>Moyenne Journalière</h3>
+        <p class="kpi-value">{{ kpi.averageDailyRevenue | currency }}</p>
+      </div>
+      <div class="kpi-card">
+        <h3>Top Jour</h3>
+        <p class="kpi-value">{{ kpi.topDay | date }}</p>
+      </div>
+    </section>
+  
+    <!-- Filtres -->
+    <section class="filters-section">
+      <mat-form-field appearance="outline">
+        <mat-label>Date de début</mat-label>
+        <input matInput [matDatepicker]="startDatePicker" [(ngModel)]="filters.startDate">
+        <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
+        <mat-datepicker #startDatePicker></mat-datepicker>
+      </mat-form-field>
+  
+      <mat-form-field appearance="outline">
+        <mat-label>Date de fin</mat-label>
+        <input matInput [matDatepicker]="endDatePicker" [(ngModel)]="filters.endDate">
+        <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
+        <mat-datepicker #endDatePicker></mat-datepicker>
+      </mat-form-field>
+  
+      <button mat-raised-button color="primary" (click)="applyFilters()">Appliquer</button>
+      <button mat-raised-button color="warn" (click)="resetFilters()">Réinitialiser</button>
+    </section>
+  
+    <!-- Graphique des tendances -->
+    <section class="charts-section">
+      <h3>Évolution du Chiffre d'Affaires</h3>
+      <div class="chart-container">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </section>
+  
+    <!-- Tableau des données -->
+    <section class="data-table-section">
+      <h3>Détails des Transactions</h3>
+      <table mat-table [dataSource]="transactions" class="mat-elevation-z8">
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let transaction">{{ transaction.date | date }}</td>
+        </ng-container>
+  
+        <ng-container matColumnDef="product">
+          <th mat-header-cell *matHeaderCellDef>Produit</th>
+          <td mat-cell *matCellDef="let transaction">{{ transaction.product }}</td>
+        </ng-container>
+  
+        <ng-container matColumnDef="category">
+          <th mat-header-cell *matHeaderCellDef>Catégorie</th>
+          <td mat-cell *matCellDef="let transaction">{{ transaction.category }}</td>
+        </ng-container>
+  
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Montant</th>
+          <td mat-cell *matCellDef="let transaction">{{ transaction.amount | currency }}</td>
+        </ng-container>
+  
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </section>
+  </div>
+  

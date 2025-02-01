@@ -1,0 +1,87 @@
+/* 🌟 Conteneur Principal */
+.open-caisse-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(to right, #f8f9fa, #e3f2fd);
+  padding: 20px;
+  border-radius: 15px;
+}
+
+/* 🌟 Bouton Principal */
+.btn-open-caisse {
+  font-size: 28px;
+  padding: 20px 40px;
+  border: none;
+  border-radius: 15px;
+  background: linear-gradient(to right, #4caf50, #66bb6a);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  font-weight: bold;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.btn-open-caisse:hover {
+  background: linear-gradient(to right, #388e3c, #43a047);
+  transform: scale(1.05);
+}
+
+/* 🌟 Conteneur de l'input */
+.cash-input-container {
+  margin-top: 20px;
+  padding: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+/* 🌟 Label de l'input */
+.cash-input-container label {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* 🌟 Input du montant */
+.cash-input-container input {
+  padding: 15px;
+  width: 100%;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 18px;
+  text-align: center;
+  outline: none;
+  transition: border 0.3s;
+}
+
+.cash-input-container input:focus {
+  border: 2px solid #4caf50;
+}
+
+/* 🌟 Bouton d'enregistrement */
+.cash-input-container button {
+  margin-top: 15px;
+  background: linear-gradient(to right, #ff9800, #ffa726);
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+}
+
+.cash-input-container button:hover {
+  background: linear-gradient(to right, #f57c00, #ff9800);
+  transform: scale(1.05);
+}

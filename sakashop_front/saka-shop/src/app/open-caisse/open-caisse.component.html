@@ -1,0 +1,10 @@
+<div class="open-caisse-container">
+  <button class="btn-open-caisse" (click)="showInput()">💰 Ouverture de Caisse</button>
+
+  <!-- Input pour entrer le montant du fond de caisse -->
+  <div *ngIf="isInputVisible" class="cash-input-container">
+    <label for="cashAmount">💵 Entrez le montant du fond de caisse :</label>
+    <input type="number" id="cashAmount" [(ngModel)]="cashAmount" placeholder="Montant en MAD">
+    <button (click)="saveCashAmount()"> Enregistrer</button>
+  </div>
+</div>

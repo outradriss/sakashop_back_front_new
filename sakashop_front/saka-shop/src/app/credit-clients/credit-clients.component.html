@@ -1,0 +1,274 @@
+<div class="credit-container">
+
+  <!-- Bouton Ajouter Crédit -->
+  <button class="btn-add-credit" (click)="showSearchBar(false)">Ajouter Crédit</button>
+  
+  <!-- Barre de recherche pour les clients -->
+  <div class="search-client-bar" >
+    <input
+      type="text"
+      placeholder="Rechercher un client..."
+      [(ngModel)]="searchQuery"
+      (input)="filterClientByName()"
+      class="search-client-input"
+    />
+  </div>
+  <!-- Tableau -->
+  <div class="credit-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Nom de Client</th>
+          <th>Quantité</th>
+          <th>Totale</th>
+          <th>Date Crédit</th>
+          <th>Date Prévue</th>
+          <th>Commentaire</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let credit of paginatedCredits; let i = index">
+          <td>{{ credit.nameClient }}</td>
+          <td>{{ credit.quantity }}</td>
+          <td>{{ credit.totale | currency: 'MAD ':'symbol':'1.2-2' }}</td>
+          <td>{{ credit.localDateTime }}</td>
+          <td>{{ credit.datePayCredit }}</td>
+          <td>{{ credit.comment }}</td>
+          <td class="table-actions">
+            <button class="btn-action btn-edit" (click)="openEditPopup(credit)">Edit</button>
+            <button class="btn-action btn-pay" (click)="openPayPopup(credit)">Payé</button>
+            <button class="btn-action btn-delete" (click)="deletCredit(credit)">Annuler</button>
+            <button class="btn-action btn-view" (click)="viewDetails(credit)">Afficher les Détails</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- Popup de Paiement -->
+<div class="popup-overlay-payement" *ngIf="showPayPopup">
+  <div class="popup horizontal-popup-payement">
+    <h3>Payer le Crédit</h3>
+    <div class="popup-content">
+      <div class="form-group">
+        <label for="payAmount">Montant à payer :</label>
+        <input
+          type="number"
+          id="payAmount"
+          [(ngModel)]="payAmount"
+          [max]="selectedCredit?.totale"
+          min="1"
+          class="form-control"
+          required
+        />
+      </div>
+    </div>
+    <div class="popup-actions">
+      <button class="btn-cancel" (click)="closePayPopup()">Annuler</button>
+      <button class="btn-confirm" (click)="confirmPayment()">Payer</button>
+    </div>
+  </div>
+</div>
+
+  <!-- Popup Détails -->
+<div class="popup-overlay" *ngIf="showDetailsPopup">
+  <div class="popup horizontal-popup">
+    <h3>Détails du Crédit</h3>
+    <div class="details-table-container">
+      <table class="details-table">
+        <thead>
+          <tr>
+            <th>Nom du Client</th>
+            <th>Nom du Produit</th>
+            <th>Quantité</th>
+            <th>Totale</th>
+            <th>Date Crédit</th>
+            <th>Date Prévue</th>
+            <th>Commentaire</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ selectedCredit?.nameClient }}</td>
+            <td>{{ selectedCredit?.product.name }}</td>
+            <td>{{ selectedCredit?.quantity }}</td>
+            <td>{{ selectedCredit?.totale | currency: 'MAD ':'symbol':'1.2-2' }}</td>
+            <td>{{ selectedCredit?.localDateTime }}</td>
+            <td>{{ selectedCredit?.datePayCredit }}</td>
+            <td>{{ selectedCredit?.comment }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="popup-actions">
+      <button class="btn-cancel" (click)="closeDetailsPopup()">Annuler</button>
+      <button class="btn-add-credit" (click)="addAnotherCredit(selectedCredit?.nameClient)">Ajouter un autre crédit</button>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <button 
+      *ngFor="let page of totalPages" 
+      [class.active]="currentPage === page" 
+      (click)="changePage(page)">
+      {{ page }}
+    </button>
+  </div>
+
+   <!-- Barre de recherche au centre -->
+   <div class="search-overlay" *ngIf="showSearch">
+    <div class="search-container">
+      <div class="search-bar">
+        <input
+          type="text"
+          placeholder="Rechercher un produit..."
+          [(ngModel)]="searchProductQuery"
+          (input)="filterProducts()"
+          class="search-input"
+        />
+        <ul class="results-list" *ngIf="filteredProducts.length > 0">
+          <li
+            class="result-item"
+            *ngFor="let product of filteredProducts"
+            (click)="selectProduct(product)">
+            {{ product.name }}
+          </li>
+        </ul>
+      </div>
+      <button class="btn-cancel-search" (click)="cancelSearch()">Annuler</button>
+    </div>
+  </div>
+
+  <!-- Popup Ajouter Crédit -->
+  <div class="popup-overlay" *ngIf="showPopup">
+    <div class="popup">
+      <h3>{{ selectedCredit ? 'Modifier un Crédit' : 'Ajouter un Crédit' }}</h3>
+      <form (ngSubmit)="selectedCredit ? updateCredit() : saveCredit()" #creditForm="ngForm">
+        <!-- Nom Produit -->
+        <div class="form-group">
+          <label for="productName">Nom du Produit :</label>
+          <input
+            type="text"
+            id="productName"
+            [(ngModel)]="productName"
+            name="productName"
+            readonly
+            required
+          />
+        </div>
+  
+        <!-- Nom Client -->
+        <div class="form-group">
+          <label for="clientName">Nom de Client :</label>
+          <input
+            type="text"
+            id="clientName"
+            [(ngModel)]="clientName"
+            name="clientName"
+            required
+          />
+        </div>
+  
+        <!-- Prix de Produit -->
+        <div class="form-group">
+          <label for="productPrice">Prix de Produit :</label>
+          <input
+            type="number"
+            id="productPrice"
+            [(ngModel)]="productPrice"
+            name="productPrice"
+            readonly
+            required
+          />
+        </div>
+  
+        <!-- Quantité -->
+        <div class="form-group">
+          <label for="quantity">Quantité :</label>
+          <input
+            type="number"
+            id="quantity"
+            [(ngModel)]="quantity"
+            name="quantity"
+            (input)="calculateTotal()"
+            min="1"
+            required
+          />
+        </div>
+  
+        <!-- Totale -->
+        <div class="form-group">
+          <label for="total">Totale :</label>
+          <input
+            type="number"
+            id="total"
+            [(ngModel)]="total"
+            name="total"
+            readonly
+            required
+          />
+        </div>
+  
+        <!-- Date de Crédit -->
+        <div class="form-group">
+          <label for="creditDate">Date de Crédit :</label>
+          <input
+            type="date"
+            id="creditDate"
+            [(ngModel)]="creditDate"
+            name="creditDate"
+            required
+          />
+        </div>
+  
+        <!-- Date Prévue -->
+        <div class="form-group">
+          <label for="dueDate">Date Prévue pour Payer :</label>
+          <input
+            type="date"
+            id="dueDate"
+            [(ngModel)]="dueDate"
+            name="dueDate"
+            required
+          />
+        </div>
+  
+        <!-- Commentaire -->
+        <div class="form-group">
+          <label for="comment">Commentaire :</label>
+          <input
+            type="text"
+            id="comment"
+            [(ngModel)]="comment"
+            name="comment"
+            required
+          />
+        </div>
+  
+        <!-- Actions -->
+        <div class="popup-actions">
+          <button
+            type="submit"
+            class="btn-submit"
+            [disabled]="!creditForm.form.valid"
+          >
+            {{ selectedCredit ? 'Mettre à jour' : 'Enregistrer' }}
+          </button>
+          <button type="button" class="btn-cancel" (click)="closePopup()">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+  
+  <div class="navigation-buttons">
+    <button (click)="navigateTo('gestion-product/list')">Gestion de STOCK</button>
+    <button (click)="navigateTo('turnover')">chiffre d'affaire</button>
+    <button (click)="navigateTo('gestion-vente')">Gestion de vente</button>
+    <button (click)="navigateTo('credit-client')">Crédit Client</button>
+    <button (click)="navigateTo('consumer')">Frais Admin </button>
+    <button class="btn-logout" (click)="logout()">Quitter</button>
+  </div>

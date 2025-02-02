@@ -1,6 +1,7 @@
 package com.example.sakashop.services.implServices;
 
 import com.example.sakashop.DAO.*;
+import com.example.sakashop.DTO.OrderItemDTO;
 import com.example.sakashop.DTO.OrderRequestDTO;
 import com.example.sakashop.Entities.Item;
 import com.example.sakashop.Entities.ItemsOrders;
@@ -135,6 +136,7 @@ public class CaisseServiceImpl {
       itemsOrders.setNegoPrice(orderDTO.getNegoPrice());
       itemsOrders.setDateIntegration(LocalDateTime.now());
       itemsOrders.setName(item.getName());
+      itemsOrders.setIdOrderChange(orderDTO.getIdOrderChange());
 
       order.setItemsOrders(List.of(itemsOrders));
 
@@ -150,9 +152,16 @@ public class CaisseServiceImpl {
     }
   }
 
-  public Optional<Order> findByIdOrder(String idOrder) {
-    return caisseOrderRepo.findByIdOrderChange(idOrder);
+  public List<OrderItemDTO> findByIdOrder(String idOrderChange) {
+    // Récupérer tous les items ayant le même idOrderChange
+    List<ItemsOrders> itemsOrders = caisseOrderRepo.findByIdOrderChange(idOrderChange);
+
+    // Mapper les résultats en DTO contenant uniquement `idOrderChange`, `item_name`, et `salesPrice`
+    return itemsOrders.stream()
+      .map(item -> new OrderItemDTO(item.getIdOrderChange(), item.getName(), item.getSalesPrice(),item.getDateIntegration()))
+      .collect(Collectors.toList());
   }
+
 
   private void updateProductStock(Item item, int cartQuantity) {
     int updatedStock = item.getQuantity() - cartQuantity;

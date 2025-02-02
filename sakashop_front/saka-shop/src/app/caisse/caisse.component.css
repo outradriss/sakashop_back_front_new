@@ -422,7 +422,7 @@ body {
   /* Style pour les boutons */
   .navigation-buttons button {
     padding: 20px 30px;
-    font-size: 2rem;
+    font-size: 1.5rem;
     border: none;
     border-radius: 50px;
     cursor: pointer;
@@ -459,13 +459,103 @@ body {
     color: #000;
 
   }
+  /* Overlay de la modale */
+.orders-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+/* Conteneur de la modale */
+.orders-popup {
+  background: white;
+  width: 45%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+/* En-tête de la modale */
+.orders-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 10px;
+}
+
+.orders-popup-header h3 {
+  margin: 0;
+}
+
+/* Bouton de fermeture */
+.orders-btn-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* Contenu de la modale */
+.orders-popup-body {
+  padding: 20px 0;
+}
+
+/* Cartes de commande */
+.orders-card {
+  background: #f9f9f9;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Bouton imprimer */
+.orders-btn-print {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  display: block;
+}
+
+.orders-btn-print:hover {
+  background: #0056b3;
+}
+
+/* message d'erreur si le produit n'est pas dans la commande */
+.error-message {
+  color: red;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+
 /* Style pour le bouton Quitter */
 .navigation-buttons button.btn-logout {
   background-color: #34be27; /* Style spécifique pour le bouton Quitter */
   color: #000;
   transform: translateX(100%);
 }
-
+.navigation-buttons button.btn-orders {
+  background-color: #be2784; /* Style spécifique pour le bouton Quitter */
+  color: #000;
+  transform: translateX(100%);
+}
   .btn-pay:disabled {
     background-color: #ccc;
     cursor: not-allowed;
@@ -939,13 +1029,14 @@ body {
 }
 
 /* Style général du popup */
-/* Agrandir le popup et simplifier le design */
 .change-product-popup {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 700px; /* ✅ Plus large */
+  width: 700px; /* ✅ Largeur inchangée */
+  height: 85vh; /* 🔥 Augmenter la hauteur à 85% de la fenêtre */
+  max-height: 90vh; /* 🔥 Limite maximale */
   background: white;
   border-radius: 8px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
@@ -954,13 +1045,177 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-y: auto; /* ✅ Permet le scroll si nécessaire */
 }
+/* ✅ Overlay du popup */
+/* ✅ Popup Overlay */
+.close-caisse-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* ✅ Popup Content */
+.close-caisse-popup {
+  background: white;
+  width: 80%;
+  max-width: 1200px;
+  max-height: 80vh;
+  border-radius: 8px;
+  padding: 5px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden; /* Empêcher les débordements */
+}
+/* ✅ Total */
+.total-label {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+/* ✅ Header */
+.close-caisse-header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+  padding: 10px 0; /* Espacement autour du titre */
+  background: white;
+  position: sticky; /* Fixe le titre en haut */
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #ddd;
+}
+
+.close-caisse-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.close-caisse-btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #555;
+  transition: color 0.3s;
+}
+
+.close-caisse-btn-close:hover {
+  color: #000;
+}
+
+/* ✅ Tableau des ventes */
+.sales-table {
+  width: 100%;
+  max-width: 1200px;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  table-layout: fixed;
+}
+
+.sales-table th,
+.sales-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+  word-wrap: break-word;
+}
+
+.sales-table th {
+  background: #f1f1f1;
+  font-weight: bold;
+  text-transform: uppercase;
+  position: sticky; /* Fixe l'en-tête du tableau */
+  top: 50px; /* Aligne avec le bas du titre */
+  z-index: 5;
+}
+
+/* ✅ Alternance des lignes */
+.sales-table tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.sales-table tr:hover {
+  background: #f5f5f5;
+}
+
+/* ✅ Conteneur pour le footer */
+.close-caisse-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px 20px;
+  background: white;
+  border-top: 2px solid #ddd; /* ✅ Bordure du haut */
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* ✅ Ombre pour séparer */
+  position: sticky; /* ✅ Fixe en bas */
+  bottom: 0;
+  z-index: 10;
+}
+
+/* ✅ Champ Total */
+.total-label {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+/* ✅ Boutons */
+.action-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-print {
+  background: green;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.btn-cancel {
+  background: red;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
 
 /* Contenu structuré */
 .change-product-popup-content {
   width: 100%;
   text-align: left;
+  flex-grow: 1; /* ✅ Prend toute la hauteur disponible */
 }
+
+/* ✅ Ajout d'un espace entre les éléments */
+.change-product-section,
+.change-order-search-section,
+.change-search-section,
+.change-difference-section,
+.change-popup-actions {
+  margin-bottom: 20px;
+}
+
 
 /* Produit à remplacer */
 .change-product-section {

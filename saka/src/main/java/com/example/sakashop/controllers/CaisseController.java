@@ -1,6 +1,7 @@
 package com.example.sakashop.controllers;
 
 import com.example.sakashop.DTO.CancelRequestDTO;
+import com.example.sakashop.DTO.OrderItemDTO;
 import com.example.sakashop.DTO.OrderRequestDTO;
 import com.example.sakashop.DTO.PasswordDTO;
 import com.example.sakashop.Entities.Cancel;
@@ -73,21 +74,17 @@ public class CaisseController {
 
   @GetMapping("/{id}")
   public ResponseEntity<?> getOrderById(@PathVariable String id) {
-    Optional<Order> orderOptional = caisseService.findByIdOrder(id);
+    List<OrderItemDTO> orderItems = caisseService.findByIdOrder(id);
 
-    if (orderOptional.isPresent()) {
-      Order order = orderOptional.get();
-
+    if (!orderItems.isEmpty()) {
       return ResponseEntity.ok(Map.of(
         "status", "success",
-        "order", order,
-        "dateOrder", order.getDateOrder(),
-        "idOrderChange", order.getIdOrderChange() // ✅ Ajout des champs demandés
+        "items", orderItems
       ));
     } else {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
         "status", "error",
-        "message", "Commande introuvable."
+        "message", "Aucun produit trouvé pour cette commande."
       ));
     }
   }

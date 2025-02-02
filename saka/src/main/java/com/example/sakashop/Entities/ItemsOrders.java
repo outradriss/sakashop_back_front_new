@@ -46,6 +46,28 @@ public class ItemsOrders {
   @Column(name = "promo_price")
   private double promoPrice;
 
+  @Column(name = "id_order_change")
+  private String idOrderChange;
+  @Column(name = "totale_price")
+  private double totalePrice;
+
+  public double getTotalePrice() {
+    return totalePrice;
+  }
+
+  public void setTotalePrice(double totalePrice) {
+    this.totalePrice = totalePrice;
+  }
+
+
+  public String getIdOrderChange() {
+    return idOrderChange;
+  }
+
+  public void setIdOrderChange(String idOrderChange) {
+    this.idOrderChange = idOrderChange;
+  }
+
   public ItemsOrders(Long id, Order order, Item item, String name, LocalDateTime dateIntegration, double salesPrice, LocalDateTime dateUpdate, int stockQuantity, int cartQuantity, double negoPrice, double promoPrice) {
     this.id = id;
     this.order = order;

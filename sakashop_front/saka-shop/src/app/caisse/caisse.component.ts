@@ -9,6 +9,8 @@ import { LockService } from '../lock.service';
 import { HistoryService } from '../service/product-service/history-service/history.service';
 import { switchMap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { SaleItem } from '../models/ItemSales.model';
+import { OrderItem } from '../models/OrderItem.model';
 @Component({
   selector: 'app-caisse',
   standalone: false,
@@ -40,11 +42,12 @@ export class CaisseComponent {
   filteredSales: any[] = []; // Initialisation des ventes filtrées
   sales: any[] = [];
   totalSales: number = 0;
+  productNotFound: boolean = false;
   // Variables pour gérer le changement de produit
 isChangeProductPopupOpen = false;
 selectedProductToChange!: Product;
 isOtherPaymentPopupOpen = false;
-
+isCloseCaissePopupOpen: boolean = false;
 // Variables pour Changer Produit
 oldProductSearchQuery = '';
 discountSearchQuery: string = '';
@@ -79,32 +82,77 @@ cardAmount = 0;
     this.loadProducts();
   });
   }
-  getOrder(): void {
-    if (!this.orderId.trim()) {
-      alert("Veuillez entrer un ID de commande.");
-      return;
-    }
-  
-    this.caisseService.getOrder(this.orderId).subscribe(
-      (data) => {
-        this.foundOrder = data;
-  
-        // Vérifie si la commande date de plus de 3 jours
-        const now = new Date();
-        const orderDate = new Date(this.foundOrder.dateOrder);
-        const diffInDays = (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
-  
-        this.isOrderExpired = diffInDays > 3;
-      },
-      (error) => {
-        console.error("Erreur lors de la récupération de la commande :", error);
-        alert("Commande introuvable.");
-        this.foundOrder = null;
-        this.isOrderExpired = false;
+ // Ouvrir la liste des commandes
+openSalesPopup(): void {
+  this.loadSalesData();
+  this.isPopupVisible = true;
+}
+
+// Fermer la liste des commandes
+closeSalesPopup(): void {
+  this.isPopupVisible = false;
+}
+// ✅ Ouvrir le popup avec les ventes
+openCloseCaissePopup(): void {
+  this.loadSalesData(() => {
+    this.sales = [];
+
+    // ✅ Décompacter les produits des commandes
+    this.filteredSales.forEach(sale => {
+      if (sale.items && sale.items.length > 0) {
+        sale.items.forEach((item: { nameProduct: string; quantity: number; salesPrice: number }) => {
+          this.sales.push({
+            itemName: item.nameProduct,
+            quantity: item.quantity,
+            salesPrice: item.salesPrice
+          });
+        });
       }
-    );
+    });
+
+    this.isCloseCaissePopupOpen = true; // ✅ Afficher le popup
+  });
+}
+calculateTotalSales(): number {
+  return this.sales.reduce((sum, sale) => sum + (sale.salesPrice * sale.quantity), 0);
+}
+
+
+getOrder(): void {
+  if (!this.orderId.trim()) {
+    alert("Veuillez entrer un ID de commande.");
+    return;
   }
-  
+
+  this.caisseService.getOrder(this.orderId).subscribe(
+    (data) => {
+      this.foundOrder = data;
+
+      if (this.foundOrder.items.length > 0) {
+        const orderDate = new Date(this.foundOrder.items[0].dateCommande);
+        const now = new Date();
+        const diffInDays = (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
+
+        this.isOrderExpired = diffInDays > 3;
+
+        // ✅ Vérification si le produit existe dans la commande
+        this.productNotFound = !this.foundOrder.items.some(
+          (item: OrderItem) => item.itemName === this.selectedProductToChange.name
+        );
+      }
+    },
+    (error) => {
+      console.error("❌ Erreur lors de la récupération de la commande :", error);
+      alert("Commande introuvable.");
+      this.foundOrder = null;
+      this.isOrderExpired = false;
+      this.productNotFound = false;
+    }
+  );
+}
+
+
+
   
   lockCaisse(): void {
     this.isLocked = true;
@@ -642,61 +690,138 @@ Merci de votre achat !
 }
 
 
+printSaleReceipt(sale: any): void {
+  if (!sale || !sale.items || sale.items.length === 0) {
+    alert("❌ Aucune donnée de commande à imprimer !");
+    return;
+  }
+
+  const receiptContent = `
+==============================
+🏪 BAGGAGIO - Anfa Place
+Merci pour votre visite !
+------------------------------
+🛒 Code Commande : ${sale.idOrderChange}
+📅 Date : ${new Date(sale.dateOrder).toLocaleString()}
+------------------------------
+Produit            Qté   Prix
+------------------------------
+${sale.items
+  .map((item: SaleItem) =>
+      `${item.nameProduct.padEnd(15)} ${(item.quantity || 0).toString().padStart(3)}  ${item.salesPrice.toFixed(2).padStart(6)}`
+  )
+  .join("\n")}
+------------------------------
+💰 Total : ${sale.totalePrice.toFixed(2)} MAD
+------------------------------
+Merci de votre achat !
+À bientôt chez BAGGAGIO.
+==============================
+  `;
+
+  if (!this.isPrinting) {
+    this.isPrinting = true;
+
+    // ✅ Envoie le reçu au backend et attend la réponse avant de rediriger
+    this.http.post('http://localhost:8090/api/print/ticket', receiptContent, { responseType: 'text' })
+      .subscribe({
+        next: (response) => {
+          console.log("✅ Reçu imprimé avec succès :", response);
+
+          setTimeout(() => {
+            this.isPrinting = false;
+            alert("✅ Reçu imprimé !");
+          }, 2000);
+        },
+        error: (error) => {
+          console.error("❌ Erreur d'impression :", error);
+          alert("Erreur d'impression. Vérifiez votre connexion au backend.");
+          this.isPrinting = false;
+        }
+      });
+  }
+}
 
 
 closeCaisse(): void {
-  this.loadSalesData(() => {
-    const now = new Date();
-    const openingDate = localStorage.getItem('caisseOpeningDate') || 'N/A';
+  // Calculer le total des ventes à partir des produits
+  this.totalSales = this.sales.reduce((total, sale) => total + sale.salesPrice * sale.quantity, 0);
 
-    const storedCashAmount = localStorage.getItem('cashAmount');
-    const cashAmount = storedCashAmount ? parseFloat(storedCashAmount) : 0;
-    const finalTotal = cashAmount + this.totalSales;
+  const now = new Date();
+  const openingDate = localStorage.getItem('caisseOpeningDate') || 'N/A';
 
-    const ticketContent = `
+  const storedCashAmount = localStorage.getItem('cashAmount');
+  const cashAmount = storedCashAmount ? parseFloat(storedCashAmount) : 0;
+  const finalTotal = cashAmount + this.totalSales;
+
+  // Construire la liste des produits vendus
+  const productList = this.sales
+    .map(
+      (sale) =>
+        `${sale.itemName.padEnd(20)} ${sale.quantity
+          .toString()
+          .padStart(3)}  ${sale.salesPrice.toFixed(2).padStart(8)} MAD`
+    )
+    .join('\n');
+
+  // Ajouter la liste des produits au ticket
+  const ticketContent = `
 ==============================
 🏪 CAISSE : BAGGAGIO
 📍 Dépot : BAGGAGIO
 ------------------------------
 📅 Ouvert : ${openingDate}
 📅 Fermé  : ${now.toLocaleString()}
+------------------------------
 💰 Fond initial : ${cashAmount.toFixed(2)} MAD
 💵 Total ventes : ${this.totalSales.toFixed(2)} MAD
+------------------------------
+🔹 Liste des produits vendus :
+Produit              Qté   Prix
+------------------------------
+${productList}
 ------------------------------
 🔹 Total final : ${finalTotal.toFixed(2)} MAD
 ------------------------------
 Merci et à bientôt !
 ==============================
-    `;
+  `;
 
-    if (!this.isPrinting) {
-      this.isPrinting = true;
+  if (!this.isPrinting) {
+    this.isPrinting = true;
 
-      // ✅ Envoie le ticket au backend et attend la réponse avant de rediriger
-      this.http.post('http://localhost:8090/api/print/ticket', ticketContent, { responseType: 'text' })
-        .subscribe({
-          next: (response) => {
-            console.log("✅ Fermeture de caisse imprimée :", response);
+    // ✅ Envoie le ticket au backend et attend la réponse avant de rediriger
+    this.http
+      .post('http://localhost:8090/api/print/ticket', ticketContent, {
+        responseType: 'text',
+      })
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Fermeture de caisse imprimée :', response);
 
-            // ✅ Suppression des données locales après impression
-            localStorage.removeItem('caisseOpeningDate');
-            localStorage.removeItem('cashAmount');
+          // ✅ Suppression des données locales après impression
+          localStorage.removeItem('caisseOpeningDate');
+          localStorage.removeItem('cashAmount');
 
-            // ✅ Redirection après impression terminée
-            setTimeout(() => {
-              this.isPrinting = false;
-              this.router.navigate(['/open-caisse']);
-            }, 2000);
-          },
-          error: (error) => {
-            console.error("❌ Erreur lors de l'impression :", error);
-            alert("Erreur lors de l'impression. Vérifiez votre connexion au backend.");
+          // ✅ Redirection après impression terminée
+          setTimeout(() => {
             this.isPrinting = false;
-          }
-        });
-    }
-  });
+            this.router.navigate(['/open-caisse']);
+          }, 2000);
+        },
+        error: (error) => {
+          console.error('❌ Erreur lors de l\'impression :', error);
+          alert(
+            'Erreur lors de l\'impression. Vérifiez votre connexion au backend.'
+          );
+          this.isPrinting = false;
+        },
+      });
+  }
 }
+
+
+
 
 
 
@@ -822,8 +947,6 @@ confirmProductChange(): void {
   );
 }
 
-
-
 calculateRemainingCardPayment(): void {
   const total = this.calculateTotal();
   this.cardAmount = total - this.cashAmount;
@@ -831,6 +954,7 @@ calculateRemainingCardPayment(): void {
     this.cardAmount = 0;
   }
 }
+
 
 confirmOtherPayment(): void {
   if (this.cashAmount + this.cardAmount !== this.calculateTotal()) {

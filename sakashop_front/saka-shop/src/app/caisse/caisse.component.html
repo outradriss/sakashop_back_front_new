@@ -40,12 +40,65 @@
      </div>      
      <div class="navigation-buttons">
       <button class="btn-logout" (click)="lockCaisse()">Lock caisse</button>
-      <button class="btn-logout" (click)="closeCaisse()">Fermeture de caisse</button>
+      <button class="btn-logout" (click)="openCloseCaissePopup()">Fermeture de caisse</button>
+      <button class="btn-orders" (click)="openSalesPopup()">Liste des commandes</button>
     </div>
-    
-    
+    <!-- ✅ Popup de fermeture de caisse -->
+<div class="close-caisse-popup-overlay" *ngIf="isCloseCaissePopupOpen">
+  <div class="close-caisse-popup">
+    <div class="close-caisse-header">
+      <h3>🛒 Résumé des ventes</h3>
+      <button class="close-caisse-btn-close" (click)="isCloseCaissePopupOpen = false">✖</button>
+    </div>
+
+    <!-- ✅ Tableau des ventes -->
+    <div class="close-caisse-body">
+      <table class="sales-table">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Prix</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let sale of sales">
+            <td>{{ sale.itemName }}</td>
+            <td>{{ sale.quantity }}</td>
+            <td>{{ sale.salesPrice | currency:'MAD' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ✅ Actions -->
+    <div class="close-caisse-footer">
+      <p class="total-label">💰 Total: {{ calculateTotalSales() | currency:'MAD' }}</p>
+      <button class="btn-print" (click)="closeCaisse()">🖨️ Imprimer Ticket</button>
+      <button class="btn-cancel" (click)="isCloseCaissePopupOpen = false">❌ Annuler</button>
+    </div>
   </div>
-  
+</div>
+<!-- Modale personnalisée pour la liste des commandes -->
+<div class="orders-popup-overlay" *ngIf="isPopupVisible">
+  <div class="orders-popup">
+    <div class="orders-popup-header">
+      <h3>Commandes du jour</h3>
+      <button class="orders-btn-close" (click)="closeSalesPopup()">✖</button>
+    </div>
+
+    <div class="orders-popup-body">
+      <div class="orders-card" *ngFor="let sale of filteredSales">
+        <p><strong>ID :</strong> {{ sale.idOrderChange }}</p>
+        <p><strong>Date :</strong> {{ sale.dateOrder | date: 'dd/MM/yyyy HH:mm' }}</p>
+        <button class="orders-btn-print" (click)="printSaleReceipt(sale)">Imprimer</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
 <!-- Overlay -->
 <div *ngIf="isLocked" class="overlay">
   <div class="unlock-container">
@@ -152,35 +205,42 @@
         <button class="change-search-btn" (click)="getOrder()">Rechercher</button>
       </div>
     </div>
+<!-- Affichage du message d'erreur si le produit n'existe pas dans la commande -->
+<p class="error-message" *ngIf="productNotFound">
+  ⚠️ Le produit à remplacer n'est pas trouvé dans la commande.
+</p>
 
     <!-- Affichage des détails de la commande -->
-    <div *ngIf="foundOrder" class="change-order-details">
-      <p><strong>Date de la commande :</strong> {{ foundOrder.dateOrder | date: 'dd/MM/yyyy HH:mm' }}</p>
+    <div *ngIf="foundOrder && foundOrder.items.length > 0" class="change-order-details">
+      <p><strong>Date de la commande :</strong> {{ foundOrder.items[0].dateCommande | date: 'dd/MM/yyyy HH:mm' }}</p>
 
       <!-- Alerte si la commande dépasse 3 jours -->
       <p class="change-alert" *ngIf="isOrderExpired">⚠️ Cette commande date de plus de 3 jours.</p>
     </div>
 
-    <!-- Sélection du nouveau produit -->
-    <div class="change-search-section">
-      <h4>Rechercher un nouveau produit</h4>
-      <input 
-        type="text" 
-        class="change-search-input"
-        placeholder="Saisir un nom ou scanner un code-barres..." 
-        [(ngModel)]="discountSearchQuery" 
-        (input)="filterProductsChange()" 
-      />
-      <ul class="change-dropdown-list" *ngIf="discountFilteredProducts.length > 0">
-        <li
-          class="change-dropdown-item"
-          *ngFor="let product of discountFilteredProducts.slice(0, 4)"
-          (click)="selectProduct(product)"
-        >
-          {{ product.name }} - {{ product.salesPrice | currency: 'MAD' }}
-        </li>
-      </ul>
-    </div>
+  <!-- Sélection du nouveau produit (désactivée si productNotFound = true) -->
+<div class="change-search-section">
+  <h4>Rechercher un nouveau produit</h4>
+  <input 
+    type="text" 
+    class="change-search-input"
+    placeholder="Saisir un nom ou scanner un code-barres..." 
+    [(ngModel)]="discountSearchQuery" 
+    (input)="filterProductsChange()" 
+    [disabled]="productNotFound"  
+  />
+
+  <!-- Masquer la liste des produits si `productNotFound === true` -->
+  <ul class="change-dropdown-list" *ngIf="discountFilteredProducts.length > 0 && !productNotFound">
+    <li
+      class="change-dropdown-item"
+      *ngFor="let product of discountFilteredProducts.slice(0, 4)"
+      (click)="selectProduct(product)"
+    >
+      {{ product.name }} - {{ product.salesPrice | currency: 'MAD' }}
+    </li>
+  </ul>
+</div>
 
     <!-- Détails du produit sélectionné et différence de prix -->
     <div *ngIf="selectedNewProduct" class="change-difference-section">

@@ -35,4 +35,7 @@ export class CaisseService {
   verifyPassword(password: string): Observable<boolean> {
     return this.http.post<boolean>(`${this.apiUrl}/verify-password`, { password });
   }
+  printSale(saleId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/print`, { saleId });
+  }
 }

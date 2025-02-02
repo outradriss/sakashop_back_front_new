@@ -12,8 +12,10 @@ import com.example.sakashop.Entities.Order;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -100,47 +102,55 @@ import java.util.stream.Collectors;
       // Récupérer toutes les données de ItemsOrders avec Items inclus
       List<ItemsOrders> itemsOrders = itemsOrdersRepository.findAllWithItems();
 
-      // Mapper chaque ItemsOrders vers un DTO OrderRequestDTO
-      return itemsOrders.stream().map(itemsOrder -> {
-        // Récupérer le buyPrice depuis Items
-        double buyPrice = itemsOrder.getItem() != null && itemsOrder.getItem().getBuyPrice() > 0
-          ? itemsOrder.getItem().getBuyPrice()
-          : 0; // Si buyPrice est indisponible, définir 0 ou lever une exception personnalisée.
+      // Regrouper les items par idOrderChange
+      Map<String, List<ItemsOrders>> groupedOrders = itemsOrders.stream()
+        .collect(Collectors.groupingBy(ItemsOrders::getIdOrderChange));
+
+      // Convertir chaque groupe en une commande unique
+      return groupedOrders.entrySet().stream().map(entry -> {
+        String idOrderChange = entry.getKey();
+        List<ItemsOrders> ordersList = entry.getValue();
+
+        // Déterminer les valeurs communes pour la commande
+        LocalDateTime dateOrder = ordersList.get(0).getDateIntegration();
+        LocalDateTime lastUpdated = ordersList.get(0).getDateUpdate();
+        double totalePrice = ordersList.stream().mapToDouble(ItemsOrders::getTotalePrice).sum();
 
         // Créer la liste des items (ItemRequestDTO)
-        List<OrderRequestDTO.ItemRequestDTO> itemDTOList = new ArrayList<>();
-        if (itemsOrder.getItem() != null) {
+        List<OrderRequestDTO.ItemRequestDTO> itemDTOList = ordersList.stream().map(itemsOrder -> {
+          double buyPrice = (itemsOrder.getItem() != null && itemsOrder.getItem().getBuyPrice() > 0)
+            ? itemsOrder.getItem().getBuyPrice()
+            : 0;
+
           OrderRequestDTO.ItemRequestDTO itemRequestDTO = new OrderRequestDTO.ItemRequestDTO();
           itemRequestDTO.setNameProduct(itemsOrder.getName());
           itemRequestDTO.setQuantity(itemsOrder.getCartQuantity());
           itemRequestDTO.setSalesPrice(itemsOrder.getSalesPrice());
           itemRequestDTO.setTotalePrice(buyPrice * itemsOrder.getCartQuantity());
-          itemRequestDTO.setItemId(itemsOrder.getItem().getId());
-          itemDTOList.add(itemRequestDTO);
-        }
+          itemRequestDTO.setItemId(itemsOrder.getItem() != null ? itemsOrder.getItem().getId() : null);
+          return itemRequestDTO;
+        }).collect(Collectors.toList());
 
         return new OrderRequestDTO.Builder(
-          itemsOrder.getId(),
-          itemsOrder.getName(),
-          itemsOrder.getCartQuantity(),
-          itemsOrder.getStockQuantity(),
-          itemsOrder.getPromoPrice() > 0, // Promo ?
-          itemsOrder.getPromoPrice(),
-          itemsOrder.getSalesPrice(),
-          itemsOrder.getDateIntegration(),
-          itemsOrder.getDateUpdate(),
-          itemsOrder.getItem() != null ? itemsOrder.getItem().getId() : null,
-          itemsOrder.getId(),
-          buyPrice * itemsOrder.getCartQuantity(), // Totale Price basé sur buyPrice
-          itemsOrder.getNegoPrice(),
-          buyPrice,
+          null, // ID de commande (optionnel si non stocké)
+          null, // Nom produit (optionnel car regroupé)
+          0, // Quantité totale pas utile ici
+          0, // Quantité ajoutée
+          false, // Promo (optionnel si pas commun)
+          0.0, // Prix promo
+          0.0, // Sales Price (optionnel si pas commun)
+          dateOrder,
+          lastUpdated,
+          null, // itemId (optionnel)
+          null, // itemsOrders (optionnel)
+          totalePrice, // Total Price de la commande groupée
+          0.0, // negoPrice (optionnel)
+          0.0, // buyPrice
           itemDTOList,
-          "CMD-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase() // Générat// Fournir la liste des items ici
-        )
-          .buildOrder();
+          idOrderChange // 🔥 ID Order Change
+        ).buildOrder();
       }).collect(Collectors.toList());
     }
-
 
 
 

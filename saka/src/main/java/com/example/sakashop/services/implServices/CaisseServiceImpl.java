@@ -1,17 +1,17 @@
 package com.example.sakashop.services.implServices;
 
 import com.example.sakashop.DAO.*;
+import com.example.sakashop.DTO.OrderChangeRequestDTO;
 import com.example.sakashop.DTO.OrderItemDTO;
 import com.example.sakashop.DTO.OrderRequestDTO;
-import com.example.sakashop.Entities.Item;
-import com.example.sakashop.Entities.ItemsOrders;
-import com.example.sakashop.Entities.Order;
-import com.example.sakashop.Entities.PasswordLockCaisse;
+import com.example.sakashop.Entities.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +38,9 @@ public class CaisseServiceImpl {
 
   @Autowired
   PasswordLockCaisseRepo passwordLockCaisseRepo;
+
+  @Autowired
+  JdbcTemplate jdbcTemplate;
 
   //@Cacheable(value = "products", key = "'allProducts'")
   @Transactional(readOnly = true)
@@ -164,7 +167,7 @@ public class CaisseServiceImpl {
   }
 
 
-  private void updateProductStock(Item item, int cartQuantity) {
+  public void updateProductStock(Item item, int cartQuantity) {
     int updatedStock = item.getQuantity() - cartQuantity;
     if (updatedStock < 0) {
       throw new IllegalStateException("Stock insuffisant après décrémentation pour l'article : " + item.getId());
@@ -172,6 +175,104 @@ public class CaisseServiceImpl {
     item.setQuantity(updatedStock);
     productRepository.save(item); // Mettre à jour la quantité en stock
   }
+
+
+
+  public String updateOrderChange(OrderChangeRequestDTO orderChangeRequest) {
+    // ✅ 1. Vérifier si la commande existe
+    String sqlCheck = "SELECT COUNT(*) FROM items_orders WHERE id_order_change = ?";
+    Integer count = jdbcTemplate.queryForObject(sqlCheck, Integer.class, orderChangeRequest.getIdOrderChange());
+
+    if (count == null || count == 0) {
+      return "❌ Erreur : La commande avec ID " + orderChangeRequest.getIdOrderChange() + " est introuvable.";
+    }
+
+    // ✅ 2. Récupérer `item_id` correspondant à `oldItemCode`
+    String sqlFindItemId = "SELECT id FROM items WHERE item_code = ?";
+    Long oldItemId;
+    try {
+      oldItemId = jdbcTemplate.queryForObject(sqlFindItemId, Long.class, orderChangeRequest.getOldItemCode());
+    } catch (EmptyResultDataAccessException e) {
+      return "❌ Erreur : L'ancien produit avec le code " + orderChangeRequest.getOldItemCode() + " n'existe pas.";
+    }
+
+    // ✅ 3. Vérifier si `oldItemId` existe dans `items_orders`
+    String sqlFindItemOrder = "SELECT id, cart_quantity FROM items_orders WHERE id_order_change = ? AND item_id = ?";
+    Map<String, Object> itemOrderData;
+    try {
+      itemOrderData = jdbcTemplate.queryForMap(sqlFindItemOrder, orderChangeRequest.getIdOrderChange(), oldItemId);
+    } catch (EmptyResultDataAccessException e) {
+      return "❌ Erreur : L'ancien produit n'existe pas dans cette commande.";
+    }
+
+    Long itemOrderId = (Long) itemOrderData.get("id");
+    Integer oldQuantity = (Integer) itemOrderData.get("cart_quantity");
+
+    // ✅ 4. Récupérer les détails du nouveau produit
+    String sqlNewProduct = "SELECT id, item_name, sales_price FROM items WHERE item_code = ?";
+    Map<String, Object> newProduct;
+    try {
+      newProduct = jdbcTemplate.queryForMap(sqlNewProduct, orderChangeRequest.getNewItemCode());
+    } catch (EmptyResultDataAccessException e) {
+      return "❌ Erreur : Le nouveau produit avec le code " + orderChangeRequest.getNewItemCode() + " n'existe pas.";
+    }
+
+    Long newItemId = (Long) newProduct.get("id");
+    String newNameProduct = (String) newProduct.get("item_name");
+    Double newSalesPrice = (Double) newProduct.get("sales_price");
+
+    // ✅ 5. Vérifier et ajuster la quantité de `oldItemId`
+    if (oldQuantity > 1) {
+      String sqlUpdateOldQuantity = "UPDATE items_orders SET cart_quantity = cart_quantity - 1 WHERE id = ?";
+      jdbcTemplate.update(sqlUpdateOldQuantity, itemOrderId);
+    } else {
+      String sqlDeleteOldItem = "DELETE FROM items_orders WHERE id = ?";
+      jdbcTemplate.update(sqlDeleteOldItem, itemOrderId);
+    }
+
+    // ✅ 6. Ajouter `newItemId` en tant que nouveau produit
+    String sqlInsertNewItem = "INSERT INTO items_orders (order_id, item_id, name, cart_quantity, sales_price, date_integration, id_order_change) " +
+      "VALUES (?, ?, ?, 1, ?, NOW(), ?)";
+    jdbcTemplate.update(sqlInsertNewItem, orderChangeRequest.getIdOrderChange(), newItemId, newNameProduct, newSalesPrice, orderChangeRequest.getIdOrderChange());
+
+    // ✅ 7. Mettre à jour les stocks dans `items`
+    String sqlIncreaseOldStock = "UPDATE items SET quantity = quantity + 1 WHERE id = ?";
+    jdbcTemplate.update(sqlIncreaseOldStock, oldItemId);
+
+    String sqlDecreaseNewStock = "UPDATE items SET quantity = quantity - 1 WHERE id = ?";
+    jdbcTemplate.update(sqlDecreaseNewStock, newItemId);
+
+    // ✅ 8. Recalculer le total après modification
+    String sqlTotalBefore = "SELECT SUM(sales_price * cart_quantity) FROM items_orders WHERE id_order_change = ?";
+    Double oldTotal;
+    try {
+      oldTotal = jdbcTemplate.queryForObject(sqlTotalBefore, Double.class, orderChangeRequest.getIdOrderChange());
+    } catch (EmptyResultDataAccessException e) {
+      return "❌ Erreur : Impossible de récupérer l'ancien total de la commande.";
+    }
+
+    String sqlTotalAfter = "SELECT SUM(sales_price * cart_quantity) FROM items_orders WHERE id_order_change = ?";
+    Double newTotal;
+    try {
+      newTotal = jdbcTemplate.queryForObject(sqlTotalAfter, Double.class, orderChangeRequest.getIdOrderChange());
+    } catch (EmptyResultDataAccessException e) {
+      return "❌ Erreur : Impossible de recalculer le total de la commande après modification.";
+    }
+
+    // ✅ 9. Insérer dans `diffItemsPrice` uniquement si la différence est positive
+    if (newTotal > oldTotal) {
+      Long diffPayClient = Math.round(newTotal - oldTotal);
+      String sqlInsertDiff = "INSERT INTO diffItemsPrice (id_order_change, diffPayClient, date_created) VALUES (?, ?, NOW())";
+      jdbcTemplate.update(sqlInsertDiff, orderChangeRequest.getIdOrderChange(), diffPayClient);
+    }
+
+    // ✅ 10. Mettre à jour `orders`
+    String sqlUpdateTotal = "UPDATE orders SET totale_price = ?, last_updated = NOW() WHERE id_order_change = ?";
+    jdbcTemplate.update(sqlUpdateTotal, newTotal, orderChangeRequest.getIdOrderChange());
+
+    return "✅ Commande mise à jour avec succès.";
+  }
+
 
 
   public void processWithRetry(List<OrderRequestDTO> orderDTOList, int maxRetries) {

@@ -1,6 +1,7 @@
 package com.example.sakashop.controllers;
 
 
+import com.example.sakashop.DTO.OrderChangeRequestDTO;
 import com.example.sakashop.DTO.OrderRequestDTO;
 import com.example.sakashop.services.implServices.CaisseServiceImpl;
 import com.example.sakashop.services.implServices.ProductServiceImpl;
@@ -51,6 +52,17 @@ public class SaveOrdersController {
       ));
     }
   }
+
+  @PostMapping("/saveOrderChange")
+  public ResponseEntity<String> saveOrderChange(@RequestBody OrderChangeRequestDTO orderChangeRequest) {
+    try {
+      String result = caisseService.updateOrderChange(orderChangeRequest);
+      return ResponseEntity.ok(result);
+    } catch (Exception e) {
+      return ResponseEntity.badRequest().body("Erreur lors de l'enregistrement de la commande : " + e.getMessage());
+    }
+  }
+
 
 }
 

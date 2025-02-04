@@ -26,6 +26,9 @@ export class CaisseService {
       })
     );
   }
+  saveOrderChange(orderChangeData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/saveOrderChange`, orderChangeData, { responseType: 'text' });
+  }
   
 
   sendCancellationInfo(cancellationInfo: { reason: string; itemId: number[] }): Observable<any> {

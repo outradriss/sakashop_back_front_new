@@ -131,12 +131,20 @@ getOrder(): void {
     (data) => {
       this.foundOrder = data;
 
-      if (this.foundOrder.items.length > 0) {
+      if (this.foundOrder.items && this.foundOrder.items.length > 0) {
         const orderDate = new Date(this.foundOrder.items[0].dateCommande);
         const now = new Date();
         const diffInDays = (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
 
         this.isOrderExpired = diffInDays > 3;
+
+        // ✅ Stocke l'ID de commande principal (assure qu'il est bien défini)
+        this.foundOrder.idOrderChange = this.foundOrder.idOrderChange 
+          || (this.foundOrder.items.length > 0 ? this.foundOrder.items[0].idOrderChange : null);
+
+        if (!this.foundOrder.idOrderChange) {
+          console.warn("⚠️ Aucun idOrderChange trouvé dans la commande.");
+        }
 
         // ✅ Vérification si le produit existe dans la commande
         this.productNotFound = !this.foundOrder.items.some(
@@ -156,7 +164,7 @@ getOrder(): void {
 
 
 
-  
+
   lockCaisse(): void {
     this.isLocked = true;
     localStorage.setItem('isLocked', 'true'); // Sauvegarde l'état verrouillé; // Bloque l'accès
@@ -953,58 +961,69 @@ filterNewProducts(): void {
 
 
 
+
+
 confirmProductChange(): void {
-  if (!this.selectedNewProduct) {
+  if (!this.selectedNewProduct || !this.selectedProductToChange) {
     Swal.fire('Erreur', 'Veuillez sélectionner un produit valide.', 'error');
     return;
   }
 
-  const orderCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+  console.log("🛠️ selectedNewProduct :", this.selectedNewProduct);
+  console.log("🛠️ selectedProductToChange :", this.selectedProductToChange);
 
-  // ✅ Ne pas inclure `id`, uniquement `itemId`
-  const newOrder = {
-    nameProduct: this.selectedNewProduct.name,
-    quantity: this.selectedProductToChange.quantityInCart ?? 0,
-    isPromo: this.selectedNewProduct.isPromo,
-    salesPrice: this.selectedNewProduct.salesPrice,
-    pricePromo: this.selectedNewProduct.pricePromo,
-    negoPrice: this.selectedNewProduct.negoPrice,
-    totalePrice: this.selectedNewProduct.totalePrice,
-    dateOrder: new Date().toISOString(),
-    lastUpdated: new Date().toISOString(),
-    itemId: this.selectedNewProduct.id,
-    id_order_change: orderCode,
-    comment: "Produit changé"
+  // ✅ Vérifier que `itemCode` existe bien pour `selectedNewProduct`
+  if (!this.selectedNewProduct.itemCode) {
+    console.error("❌ ERREUR : `itemCode` du nouvel article est NULL ou UNDEFINED !");
+    Swal.fire('Erreur', 'Le code du nouvel article est introuvable.', 'error');
+    return;
+  }
+
+  // ✅ Vérifier que `itemCode` existe bien pour `selectedProductToChange`
+  if (!this.selectedProductToChange.itemCode) {
+    console.error("❌ ERREUR : `itemCode` de l'article à remplacer est NULL ou UNDEFINED !");
+    Swal.fire('Erreur', 'Le code de l\'article à remplacer est introuvable.', 'error');
+    return;
+  }
+
+  // ✅ Récupération de `idOrderChange`
+  const orderCode = this.foundOrder?.idOrderChange 
+    || (this.selectedNewProduct.items && this.selectedNewProduct.items.length > 0 
+        ? this.selectedNewProduct.items[0].idOrderChange 
+        : null);
+
+  if (!orderCode) {
+    Swal.fire('Erreur', 'Impossible de récupérer l\'ID de la commande.', 'error');
+    return;
+  }
+
+  // ✅ Création de l'objet à envoyer au backend
+  const productChangeData = {
+    idOrderChange: orderCode, // ID de la commande
+    newItemCode: this.selectedNewProduct.itemCode, // Code du nouvel article
+    newNameProduct: this.selectedNewProduct.name, // Nom du nouveau produit
+    oldItemCode: this.selectedProductToChange.itemCode, // Code de l'ancien article
+    oldNameProduct: this.selectedProductToChange.name // Nom de l'ancien produit
   };
 
-  // ✅ Ne pas inclure `id`, uniquement `itemId`
-  const restoredProduct = {
-    nameProduct: this.selectedProductToChange.name,
-    quantity: 1, // Ajouté en stock
-    isPromo: this.selectedProductToChange.isPromo,
-    salesPrice: this.selectedProductToChange.salesPrice,
-    pricePromo: this.selectedProductToChange.pricePromo,
-    negoPrice: this.selectedProductToChange.negoPrice,
-    totalePrice: this.selectedProductToChange.totalePrice,
-    dateOrder: new Date().toISOString(),
-    lastUpdated: new Date().toISOString(),
-    itemId: this.selectedProductToChange.id,
-    id_order_change: orderCode,
-    comment: "Produit restocké après changement"
-  };
+  console.log("📤 Données envoyées au backend :", productChangeData);
 
-  this.caisseService.saveOrders([newOrder, restoredProduct]).subscribe(
+  // ✅ Envoi au backend (corrigé : suppression du tableau `[]`)
+  this.caisseService.saveOrderChange(productChangeData).subscribe(
     () => {
       Swal.fire('Succès', `Le produit a été changé avec succès.\n\nCode commande : **${orderCode}**`, 'success');
       this.isChangeProductPopupOpen = false;
       this.loadProducts(); // Recharge les stocks en base
     },
     (error) => {
-      console.error('Erreur lors du changement de produit :', error);
+      console.error('❌ Erreur lors du changement de produit :', error);
       Swal.fire('Erreur', 'Une erreur est survenue lors du changement de produit.', 'error');
     }
   );
 }
+
+
+
 
 calculateRemainingCardPayment(): void {
   const total = this.calculateTotal();

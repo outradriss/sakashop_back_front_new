@@ -50,6 +50,16 @@ public class ItemsOrders {
   private String idOrderChange;
   @Column(name = "totale_price")
   private double totalePrice;
+  private String typePaiement;
+  public String getTypePaiement() {
+    return typePaiement;
+  }
+
+  public void setTypePaiement(String typePaiement) {
+    this.typePaiement = typePaiement;
+  }
+
+
 
   public double getTotalePrice() {
     return totalePrice;

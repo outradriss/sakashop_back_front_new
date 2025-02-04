@@ -137,6 +137,7 @@ public class CaisseServiceImpl {
       itemsOrders.setDateIntegration(LocalDateTime.now());
       itemsOrders.setName(item.getName());
       itemsOrders.setIdOrderChange(orderDTO.getIdOrderChange());
+      itemsOrders.setTypePaiement(orderDTO.getTypePaiement());
 
       order.setItemsOrders(List.of(itemsOrders));
 

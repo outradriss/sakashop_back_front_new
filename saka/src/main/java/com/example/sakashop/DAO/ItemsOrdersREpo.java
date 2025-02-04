@@ -16,6 +16,10 @@ public interface ItemsOrdersREpo extends JpaRepository<ItemsOrders,Long> {
 
   @Query("SELECT io FROM ItemsOrders io JOIN FETCH io.item")
   List<ItemsOrders> findAllWithItems();
+
+  @Query("SELECT io FROM ItemsOrders io JOIN FETCH io.item WHERE DATE(io.dateIntegration) = CURRENT_DATE")
+  List<ItemsOrders> findAllWithItemsForToday();
+
 }
 
 

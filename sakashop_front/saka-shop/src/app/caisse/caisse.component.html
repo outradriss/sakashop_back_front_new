@@ -56,16 +56,20 @@
       <table class="sales-table">
         <thead>
           <tr>
+            <th>code barre</th>
             <th>Produit</th>
             <th>Quantité</th>
             <th>Prix</th>
+            <th>t.Paiement</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let sale of sales">
+            <td>{{ sale.itemCode }}</td>
             <td>{{ sale.itemName }}</td>
             <td>{{ sale.quantity }}</td>
             <td>{{ sale.salesPrice | currency:'MAD' }}</td>
+            <td>{{ sale.typePaiement }}</td>
           </tr>
         </tbody>
       </table>
@@ -84,19 +88,22 @@
   <div class="orders-popup">
     <div class="orders-popup-header">
       <h3>Commandes du jour</h3>
-      <button class="orders-btn-close" (click)="closeSalesPopup()">✖</button>
+      <!-- Bouton "X" reste rouge -->
+      <button class="orders-btn-close-imprim" (click)="closeSalesPopup()">X</button>
     </div>
 
     <div class="orders-popup-body">
       <div class="orders-card" *ngFor="let sale of filteredSales">
         <p><strong>ID :</strong> {{ sale.idOrderChange }}</p>
         <p><strong>Date :</strong> {{ sale.dateOrder | date: 'dd/MM/yyyy HH:mm' }}</p>
-        <button class="orders-btn-print" (click)="printSaleReceipt(sale)">Imprimer</button>
+        <!-- Appelle la méthode d'impression et ferme le popup -->
+        <button class="orders-btn-print" (click)="printAndClose(sale)">Imprimer</button>
       </div>
     </div>
   </div>
 </div>
 </div>
+
 
 
 <!-- Overlay -->
@@ -301,23 +308,23 @@
         Espèces
         <input 
           type="radio" 
-          name="paymentMethod" 
-          value="cash" 
+          name="typePaiement" 
+          value="espèces" 
           [(ngModel)]="selectedPaymentMethod" />
       </label>
       <label class="custom-payment-option custom-payment-card">
         Carte
         <input 
           type="radio" 
-          name="paymentMethod" 
-          value="card" 
+          name="typePaiement" 
+          value="carte" 
           [(ngModel)]="selectedPaymentMethod" />
       </label>
       <label class="custom-payment-option custom-payment-cheque">
         Chèque
         <input 
           type="radio" 
-          name="paymentMethod" 
+          name="typePaiement" 
           value="cheque" 
           [(ngModel)]="selectedPaymentMethod" />
       </label>

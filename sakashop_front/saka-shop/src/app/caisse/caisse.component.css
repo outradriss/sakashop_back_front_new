@@ -505,6 +505,67 @@ body {
   font-size: 18px;
   cursor: pointer;
 }
+.orders-btn-close-imprim {
+  background-color: red; /* Couleur de fond rouge */
+  color: white; /* Couleur du texte en blanc */
+  border: none; /* Pas de bordure */
+  font-size: 1.2rem; /* Taille du texte */
+  cursor: pointer; /* Curseur interactif */
+  border-radius: 50%; /* Forme ronde */
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute; /* Positionnement absolu */
+  top: 10px; /* Ajustement depuis le haut */
+  right: 10px; /* Ajustement depuis la droite */
+}
+
+.orders-btn-close:hover {
+  background-color: darkred; /* Rouge plus foncé au survol */
+}
+
+.orders-popup-overlay {
+  background-color: rgba(0, 0, 0, 0.5); /* Overlay semi-transparent */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.orders-popup {
+  background-color: #fff; /* Couleur de fond blanc */
+  border-radius: 8px; /* Coins arrondis */
+  padding: 20px;
+  width: 400px; /* Largeur fixe */
+  max-width: 90%; /* Largeur maximum */
+  position: relative;
+}
+
+.orders-popup-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.orders-btn-print {
+  background-color: #007bff; /* Couleur bleue */
+  color: white; /* Texte blanc */
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.orders-btn-print:hover {
+  background-color: #0056b3; /* Bleu plus foncé au survol */
+}
+
 
 /* Contenu de la modale */
 .orders-popup-body {

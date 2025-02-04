@@ -94,17 +94,20 @@ closeSalesPopup(): void {
 }
 // ✅ Ouvrir le popup avec les ventes
 openCloseCaissePopup(): void {
-  this.loadSalesData(() => {
+  this.loadSalesDataToday(() => {
     this.sales = [];
 
     // ✅ Décompacter les produits des commandes
     this.filteredSales.forEach(sale => {
       if (sale.items && sale.items.length > 0) {
-        sale.items.forEach((item: { nameProduct: string; quantity: number; salesPrice: number }) => {
+        sale.items.forEach((item: { itemCode: string ,nameProduct: string; quantity: number; salesPrice: number; typePaiement: string }) => {
           this.sales.push({
+            itemCode: item.itemCode,
             itemName: item.nameProduct,
             quantity: item.quantity,
-            salesPrice: item.salesPrice
+            salesPrice: item.salesPrice,
+            typePaiement: sale.typePaiement
+
           });
         });
       }
@@ -463,10 +466,10 @@ getOrder(): void {
 
   pay(): void {
     this.updateCartTotals();
-  
+
     // Générer un code aléatoire de 6 caractères (alphanumérique)
     const orderCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-  
+
     const orders = this.cart.map((product) => ({
       nameProduct: product.name,
       quantity: product.quantityInCart ?? 0,
@@ -481,14 +484,15 @@ getOrder(): void {
       lastUpdated: new Date().toISOString(),
       itemId: product.id,
       id_order_change: orderCode, // Ajout du code commande
-      comment: product.comment || '' // Ajout du commentaire
+      comment: product.comment || '', // Ajout du commentaire
+      typePaiement: this.selectedPaymentMethod // Ajout du mode de paiement
     }));
-  
+
     this.caisseService.saveOrders(orders).pipe(
       switchMap(() => this.caisseService.getAllInCaisse({ params: { noCache: new Date().getTime() } }))
     ).subscribe(
       (data) => {
-        Swal.fire('Succès', `Votre commande a été enregistrée avec succès.\n\nCode commande : **${orderCode}**`, 'success');
+        Swal.fire('Succès', `Votre commande a été enregistrée avec succès.\n\nCode commande : **${orderCode}**\nMode de paiement : **${this.selectedPaymentMethod}**`, 'success');
         this.printReceipt(orderCode); // Envoi du code commande au reçu
         this.cart = []; // Réinitialisation du panier
         this.searchQuery = ''; 
@@ -499,7 +503,8 @@ getOrder(): void {
         Swal.fire('Erreur', 'Une erreur est survenue lors de l\'enregistrement de votre commande.', 'error');
       }
     );
-  }
+}
+
   
 
   
@@ -677,7 +682,6 @@ Merci de votre achat !
 
           setTimeout(() => {
             this.isPrinting = false;
-            alert("✅ Reçu imprimé !");
           }, 2000);
         },
         error: (error) => {
@@ -688,7 +692,10 @@ Merci de votre achat !
       });
   }
 }
-
+printAndClose(sale: any): void {
+  this.printSaleReceipt(sale); // Appelle la méthode pour imprimer le reçu
+  this.closeSalesPopup(); // Ferme le popup
+}
 
 printSaleReceipt(sale: any): void {
   if (!sale || !sale.items || sale.items.length === 0) {
@@ -696,26 +703,36 @@ printSaleReceipt(sale: any): void {
     return;
   }
 
+  // ✅ Génération du contenu du reçu
   const receiptContent = `
 ==============================
-🏪 BAGGAGIO - Anfa Place
+
+          BAGGAGIO - ANFA PLACE          
 Merci pour votre visite !
+
 ------------------------------
-🛒 Code Commande : ${sale.idOrderChange}
-📅 Date : ${new Date(sale.dateOrder).toLocaleString()}
+Code Commande : ${sale.idOrderChange}
+
+Date : ${new Date(sale.dateOrder).toLocaleString()}
+
 ------------------------------
 Produit            Qté   Prix
 ------------------------------
+
 ${sale.items
   .map((item: SaleItem) =>
-      `${item.nameProduct.padEnd(15)} ${(item.quantity || 0).toString().padStart(3)}  ${item.salesPrice.toFixed(2).padStart(6)}`
+      `${item.nameProduct.padEnd(20)} ${(item.quantity || 0).toString().padStart(3)}  ${item.salesPrice.toFixed(2).padStart(8)}`
   )
-  .join("\n")}
+  .join("\n\n")} 
+
 ------------------------------
-💰 Total : ${sale.totalePrice.toFixed(2)} MAD
+Total : ${sale.totalePrice.toFixed(2)} MAD
+
 ------------------------------
+
 Merci de votre achat !
 À bientôt chez BAGGAGIO.
+
 ==============================
   `;
 
@@ -730,7 +747,6 @@ Merci de votre achat !
 
           setTimeout(() => {
             this.isPrinting = false;
-            alert("✅ Reçu imprimé !");
           }, 2000);
         },
         error: (error) => {
@@ -743,61 +759,81 @@ Merci de votre achat !
 }
 
 
+
+
 closeCaisse(): void {
-  // Calculer le total des ventes à partir des produits
   this.totalSales = this.sales.reduce((total, sale) => total + sale.salesPrice * sale.quantity, 0);
 
   const now = new Date();
   const openingDate = localStorage.getItem('caisseOpeningDate') || 'N/A';
-
   const storedCashAmount = localStorage.getItem('cashAmount');
   const cashAmount = storedCashAmount ? parseFloat(storedCashAmount) : 0;
-  const finalTotal = cashAmount + this.totalSales;
+  const finalTotal = this.totalSales;
 
-  // Construire la liste des produits vendus
+  // Fonction utilitaire pour découper les noms longs
+  const formatProductName = (name: string, maxLength: number): string[] => {
+    const lines: string[] = [];
+    while (name.length > maxLength) {
+      lines.push(name.slice(0, maxLength).trim()); // Découpe la ligne
+      name = name.slice(maxLength).trim(); // Continue avec le reste
+    }
+    lines.push(name); // Ajoute le reste
+    return lines;
+  };
+
+  // ✅ Construire la liste des produits vendus avec alignement des colonnes
   const productList = this.sales
-    .map(
-      (sale) =>
-        `${sale.itemName.padEnd(20)} ${sale.quantity
-          .toString()
-          .padStart(3)}  ${sale.salesPrice.toFixed(2).padStart(8)} MAD`
-    )
-    .join('\n');
+    .map(sale => {
+      const productLines = formatProductName(sale.itemName, 12); // Découpe le nom du produit
+      const firstLine = `${sale.itemCode.padEnd(10)} | ${productLines[0].padEnd(12)} | ${sale.quantity
+        .toString()
+        .padStart(3)} | ${sale.salesPrice.toFixed(2).padStart(8)} MAD | ${sale.typePaiement.padEnd(10)}`;
+      const additionalLines = productLines.slice(1).map(line => `             | ${line.padEnd(12)}`).join('\n'); // Indente les lignes suivantes
+      return additionalLines ? `${firstLine}\n${additionalLines}` : firstLine;
+    })
+    .join('\n----------------------------------------------------------------\n'); // Ligne entre chaque produit
 
-  // Ajouter la liste des produits au ticket
+  // ✅ Génération du ticket
   const ticketContent = `
 ==============================
+
 🏪 CAISSE : BAGGAGIO
 📍 Dépot : BAGGAGIO
+
 ------------------------------
 📅 Ouvert : ${openingDate}
 📅 Fermé  : ${now.toLocaleString()}
+
 ------------------------------
 💰 Fond initial : ${cashAmount.toFixed(2)} MAD
 💵 Total ventes : ${this.totalSales.toFixed(2)} MAD
+
 ------------------------------
 🔹 Liste des produits vendus :
-Produit              Qté   Prix
-------------------------------
+
+Code Barre     | Produit      | Qté |   Prix    | M.Paiement
+----------------------------------------------------------------
+
 ${productList}
-------------------------------
+
+----------------------------------------------------------------
 🔹 Total final : ${finalTotal.toFixed(2)} MAD
+
 ------------------------------
 Merci et à bientôt !
+
 ==============================
   `;
 
   if (!this.isPrinting) {
     this.isPrinting = true;
 
-    // ✅ Envoie le ticket au backend et attend la réponse avant de rediriger
+    // ✅ Envoi du ticket au backend
     this.http
-      .post('http://localhost:8090/api/print/ticket', ticketContent, {
-        responseType: 'text',
-      })
+      .post('http://localhost:8090/api/print/ticket', ticketContent, { responseType: 'text' })
       .subscribe({
         next: (response) => {
-          console.log('✅ Fermeture de caisse imprimée :', response);
+          console.log('✅ Ticket envoyé au serveur :', response);
 
           // ✅ Suppression des données locales après impression
           localStorage.removeItem('caisseOpeningDate');
@@ -811,14 +847,15 @@ Merci et à bientôt !
         },
         error: (error) => {
           console.error('❌ Erreur lors de l\'impression :', error);
-          alert(
-            'Erreur lors de l\'impression. Vérifiez votre connexion au backend.'
-          );
+          alert('Erreur lors de l\'impression. Vérifiez votre connexion au backend.');
           this.isPrinting = false;
         },
       });
   }
 }
+
+
+
 
 
 
@@ -850,7 +887,29 @@ Merci et à bientôt !
         }
       );
     }
-
+    loadSalesDataToday(callback?: () => void): void {
+      this.salesService.getSalesDataToday().subscribe(
+        (data) => {
+          this.sales = data;
+          const today = new Date();
+          this.filteredSales = this.sales.filter((sale) => {
+            const lastUpdated = new Date(sale.dateOrder);
+            return (
+              lastUpdated.getDate() === today.getDate() &&
+              lastUpdated.getMonth() === today.getMonth() &&
+              lastUpdated.getFullYear() === today.getFullYear()
+            );
+          });
+  
+          this.totalSales = this.filteredSales.reduce((sum, sale) => sum + sale.salesPrice, 0);
+  
+          if (callback) callback();
+        },
+        (error) => {
+          console.error('Erreur lors du chargement des données :', error);
+        }
+      );
+    }
 
     showChangeProductPopup(): void {
       if (this.cart.length === 0) {

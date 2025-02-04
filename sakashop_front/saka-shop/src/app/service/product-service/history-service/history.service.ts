@@ -16,4 +16,7 @@ export class HistoryService {
   getSalesData(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/ALL`);
   }
+  getSalesDataToday(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/ALLToDay`);
+  }
 }

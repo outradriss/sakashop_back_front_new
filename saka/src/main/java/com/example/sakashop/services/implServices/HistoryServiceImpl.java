@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
   @Service
@@ -111,6 +108,13 @@ import java.util.stream.Collectors;
         String idOrderChange = entry.getKey();
         List<ItemsOrders> ordersList = entry.getValue();
 
+        // Récupérer le type de paiement (en supposant qu'il est le même pour tous les items d'une commande)
+        String typePaiement = ordersList.stream()
+          .map(ItemsOrders::getTypePaiement)
+          .filter(Objects::nonNull) // Filtrer les valeurs nulles
+          .findFirst() // Prendre le premier type de paiement trouvé
+          .orElse("Inconnu"); // Valeur par défaut si non trouvé
+
         // Déterminer les valeurs communes pour la commande
         LocalDateTime dateOrder = ordersList.get(0).getDateIntegration();
         LocalDateTime lastUpdated = ordersList.get(0).getDateUpdate();
@@ -147,10 +151,76 @@ import java.util.stream.Collectors;
           0.0, // negoPrice (optionnel)
           0.0, // buyPrice
           itemDTOList,
-          idOrderChange // 🔥 ID Order Change
+          idOrderChange,
+          typePaiement // Envoi du type de paiement
         ).buildOrder();
       }).collect(Collectors.toList());
     }
+
+    public List<OrderRequestDTO> getAllProductHistoryToday() {
+      // Récupérer toutes les données de ItemsOrders avec Items inclus
+      List<ItemsOrders> itemsOrders = itemsOrdersRepository.findAllWithItemsForToday();
+
+      // Regrouper les items par idOrderChange
+      Map<String, List<ItemsOrders>> groupedOrders = itemsOrders.stream()
+        .collect(Collectors.groupingBy(ItemsOrders::getIdOrderChange));
+
+      // Convertir chaque groupe en une commande unique
+      return groupedOrders.entrySet().stream().map(entry -> {
+        String idOrderChange = entry.getKey();
+        List<ItemsOrders> ordersList = entry.getValue();
+
+        // Récupérer le type de paiement (en supposant qu'il est le même pour tous les items d'une commande)
+        String typePaiement = ordersList.stream()
+          .map(ItemsOrders::getTypePaiement)
+          .filter(Objects::nonNull)
+          .findFirst()
+          .orElse("Inconnu"); // Valeur par défaut si non trouvé
+
+        // Déterminer les valeurs communes pour la commande
+        LocalDateTime dateOrder = ordersList.get(0).getDateIntegration();
+        LocalDateTime lastUpdated = ordersList.get(0).getDateUpdate();
+        double totalePrice = ordersList.stream().mapToDouble(ItemsOrders::getTotalePrice).sum();
+
+        // Créer la liste des items (ItemRequestDTO)
+        List<OrderRequestDTO.ItemRequestDTO> itemDTOList = ordersList.stream().map(itemsOrder -> {
+          double buyPrice = (itemsOrder.getItem() != null && itemsOrder.getItem().getBuyPrice() > 0)
+            ? itemsOrder.getItem().getBuyPrice()
+            : 0;
+
+          OrderRequestDTO.ItemRequestDTO itemRequestDTO = new OrderRequestDTO.ItemRequestDTO();
+          itemRequestDTO.setNameProduct(itemsOrder.getName());
+          itemRequestDTO.setQuantity(itemsOrder.getCartQuantity());
+          itemRequestDTO.setSalesPrice(itemsOrder.getSalesPrice());
+          itemRequestDTO.setTotalePrice(buyPrice * itemsOrder.getCartQuantity());
+          itemRequestDTO.setItemId(itemsOrder.getItem() != null ? itemsOrder.getItem().getId() : null);
+          itemRequestDTO.setItemCode(itemsOrder.getItem() != null ? itemsOrder.getItem().getItemCode() : "N/A"); // ✅ Ajout du code de l'article
+
+          return itemRequestDTO;
+        }).collect(Collectors.toList());
+
+        return new OrderRequestDTO.Builder(
+          null, // ID de commande (optionnel si non stocké)
+          null, // Nom produit (optionnel car regroupé)
+          0, // Quantité totale pas utile ici
+          0, // Quantité ajoutée
+          false, // Promo (optionnel si pas commun)
+          0.0, // Prix promo
+          0.0, // Sales Price (optionnel si pas commun)
+          dateOrder,
+          lastUpdated,
+          null, // itemId (optionnel)
+          null, // itemsOrders (optionnel)
+          totalePrice, // Total Price de la commande groupée
+          0.0, // negoPrice (optionnel)
+          0.0, // buyPrice
+          itemDTOList,
+          idOrderChange,
+          typePaiement // Envoi du type de paiement
+        ).buildOrder();
+      }).collect(Collectors.toList());
+    }
+
 
 
 

@@ -28,6 +28,13 @@ public class OrderRequestDTO {
   private final double buyPrice;
   private final String idOrderChange;
   private final String comment;
+  private final String typePaiement;
+
+  public String getTypePaiement() {
+    return typePaiement;
+  }
+
+
 
   public String getComment() {
     return comment;
@@ -123,6 +130,7 @@ public class OrderRequestDTO {
     this.items = builder.items;
     this.idOrderChange = builder.idOrderChange;
     this.comment= builder.comment;
+    this.typePaiement=builder.typePaiement;
   }
 
   @JsonPOJOBuilder(buildMethodName = "buildOrder", withPrefix = "set")
@@ -150,6 +158,7 @@ public class OrderRequestDTO {
     private List<ItemRequestDTO> items;
     @JsonProperty("id_order_change")
     private String idOrderChange;
+    private String typePaiement;
 
     public String getComment() {
       return comment;
@@ -179,7 +188,8 @@ public class OrderRequestDTO {
       @JsonProperty("negoPrice") double negoPrice,
       @JsonProperty("buyPrice") double buyPrice,
       @JsonProperty("items") List<ItemRequestDTO> items,
-      @JsonProperty("id_order_change") String idOrderChange
+      @JsonProperty("id_order_change") String idOrderChange,
+      @JsonProperty("typePaiement")String typePaiement
       // Ajout des articles
     ) {
       this.idOrder = idOrder;
@@ -198,6 +208,7 @@ public class OrderRequestDTO {
       this.buyPrice = buyPrice;
       this.items = items;
       this.idOrderChange=idOrderChange;
+      this.typePaiement=typePaiement;
     }
     public Builder setItems(List<ItemRequestDTO> items) {
       this.items = items;
@@ -215,6 +226,16 @@ public class OrderRequestDTO {
     private double salesPrice;
     private double totalePrice;
     private Long itemId;
+    private String itemCode;
+    public String getItemCode() {
+      return itemCode;
+    }
+
+    public void setItemCode(String itemCode) {
+      this.itemCode = itemCode;
+    }
+
+
 
     // Getters et setters
     public String getNameProduct() {

@@ -51,6 +51,18 @@ public class ItemsOrders {
   @Column(name = "totale_price")
   private double totalePrice;
   private String typePaiement;
+
+  @Column(name = "code")
+  private String code;
+
+  public String getCode() {
+    return code;
+  }
+
+  public void setCode(String code) {
+    this.code = code;
+  }
+
   public String getTypePaiement() {
     return typePaiement;
   }

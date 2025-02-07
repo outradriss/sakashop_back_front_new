@@ -61,6 +61,11 @@ priceDifference: number | null = null;
 orderId: string = ''; // Stocke l'ID entré
 foundOrder: any = null;
 isOrderExpired: boolean = false;
+selectedProductForDiscount: any = null;
+discountPercentage: number = 0;
+discountedPrice: number = 0;
+amountGiven: number = 0;
+change: number = 0;
 
 // Variables pour Autre Méthode de Paiement
 cashAmount = 0;
@@ -100,14 +105,26 @@ openCloseCaissePopup(): void {
     // ✅ Décompacter les produits des commandes
     this.filteredSales.forEach(sale => {
       if (sale.items && sale.items.length > 0) {
-        sale.items.forEach((item: { itemCode: string ,nameProduct: string; quantity: number; salesPrice: number; typePaiement: string }) => {
+        sale.items.forEach((item: { code: string, nameProduct: string, quantity: number, salesPrice: number, negoPrice: number, typePaiement: string }) => {
+          
+          let unitPrice = item.salesPrice; // ✅ Par défaut, on affiche le prix de vente
+          let totalPrice = item.salesPrice * item.quantity; // ✅ Calcul du total par quantité
+
+          if (item.negoPrice === -1) {
+            unitPrice = 0; // ✅ Si negoPrice = -1, afficher 0 MAD
+            totalPrice = 0; // ✅ Total aussi à 0
+          } else if (item.negoPrice > 0) {
+            unitPrice = item.negoPrice; // ✅ Si negoPrice > 0, afficher negoPrice
+            totalPrice = item.negoPrice * item.quantity; // ✅ Calcul du total avec le prix négocié
+          }
+
           this.sales.push({
-            itemCode: item.itemCode,
+            itemCode: item.code,
             itemName: item.nameProduct,
             quantity: item.quantity,
-            salesPrice: item.salesPrice,
-            typePaiement: sale.typePaiement
-
+            salesPrice: totalPrice, // ✅ Afficher le prix total
+            typePaiement: sale.typePaiement,
+            promoLabel: item.negoPrice === -1 ? "(produit avec 100% de promo)" : "" // ✅ Ajout du label promo si -1
           });
         });
       }
@@ -116,8 +133,19 @@ openCloseCaissePopup(): void {
     this.isCloseCaissePopupOpen = true; // ✅ Afficher le popup
   });
 }
+calculateChange(): void {
+  const total = this.calculateTotal();
+  this.change = this.amountGiven - total;
+}
+resetCalculator(): void {
+  this.amountGiven = 0; // Réinitialise le montant donné par le client
+  this.change = 0; // Réinitialise la monnaie à rendre
+}
+
+
+
 calculateTotalSales(): number {
-  return this.sales.reduce((sum, sale) => sum + (sale.salesPrice * sale.quantity), 0);
+  return this.sales.reduce((sum, sale) => sum + (sale.salesPrice), 0);
 }
 
 
@@ -161,7 +189,93 @@ getOrder(): void {
     }
   );
 }
+  // ✅ Ouvrir le popup de remise
+  openDiscountPopup(product: any): void {
+    this.selectedProductForDiscount = product;
+    this.discountPercentage = 0;
+    this.discountedPrice = product.salesPrice; // Prix initial
+  }
 
+  // ✅ Calculer le prix après remise
+  calculateDiscountedPrice(): void {
+    if (this.selectedProductForDiscount) {
+      const originalPrice = this.selectedProductForDiscount.salesPrice;
+      this.discountedPrice = originalPrice - (originalPrice * (this.discountPercentage / 100));
+    }
+  }
+
+  // ✅ Appliquer la remise et mettre à jour le prix dans le panier
+  
+  applyDiscount(): void {
+    if (!this.selectedProductForDiscount) {
+      return;
+    }
+  
+    const product = this.selectedProductForDiscount;
+  
+    // ✅ Vérifier si la remise est de 100%
+    const finalPrice = this.discountedPrice <= 0 ? -1 : this.discountedPrice;
+  
+    // ✅ Vérifier si le produit a plusieurs unités
+    if (product.quantityInCart > 1) {
+      Swal.fire({
+        title: 'Remise sur plusieurs unités',
+        text: `Vous avez ${product.quantityInCart} unités de ce produit. Que voulez-vous faire ?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Appliquer à toutes les unités',
+        cancelButtonText: 'Appliquer seulement à une unité',
+        showDenyButton: true,
+        denyButtonText: 'Annuler'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // ✅ Appliquer la remise à toutes les unités
+          product.negoPrice = finalPrice;
+          Swal.fire('Succès', `Remise appliquée à toutes les unités (${product.quantityInCart}x).`, 'success');
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          // ✅ Séparer une unité et appliquer la remise uniquement sur elle
+          this.splitProductWithDiscount(product, finalPrice);
+        }
+        this.closeDiscountPopup();
+      });
+    } else {
+      // ✅ Appliquer directement si une seule unité
+      product.negoPrice = finalPrice;
+      Swal.fire('Succès', 'Remise appliquée.', 'success');
+      this.closeDiscountPopup();
+    }
+  }
+  
+
+  splitProductWithDiscount(product: Product, discountedPrice: number): void {
+    if (product.quantityInCart! > 1) {
+      product.quantityInCart!--; // ✅ Réduire la quantité du produit existant
+  
+      // ✅ Si la remise est de 100%, envoyer `negoPrice = -1`
+      const negoPriceToSend = discountedPrice === 0 ? -1 : discountedPrice;
+  
+      // ✅ Créer une nouvelle ligne avec 1 unité et le prix réduit
+      const discountedProduct = { 
+        ...product, 
+        quantityInCart: 1, 
+        negoPrice: negoPriceToSend 
+      };
+  
+      this.cart.push(discountedProduct); // ✅ Ajouter le produit avec remise
+  
+      Swal.fire('Succès', 'Une unité a été séparée avec la remise appliquée.', 'success');
+      this.updateTotal();
+    }
+  }
+  
+  
+  
+  
+
+  // ✅ Fermer le popup de remise
+  closeDiscountPopup(): void {
+    this.selectedProductForDiscount = null;
+  }
 
 
 
@@ -462,6 +576,7 @@ getOrder(): void {
   closePaymentPopup(): void {
     this.isPaymentPopupVisible = false;
     this.selectedPaymentMethod = null;
+    this.resetCalculator();
   }
   
   proceedPayment(): void {
@@ -474,20 +589,25 @@ getOrder(): void {
 
   pay(): void {
     this.updateCartTotals();
-
-    // Générer un code aléatoire de 6 caractères (alphanumérique)
+  
+    // ✅ Générer un code aléatoire pour la commande
     const orderCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-
+  
+    // ✅ Construire les commandes avec les bons prix
     const orders = this.cart.map((product) => ({
       nameProduct: product.name,
       quantity: product.quantityInCart ?? 0,
       quantityAddedUrgent:
         (product.quantityInCart ?? 0) > product.quantity ? (product.quantityInCart ?? 0) - product.quantity : 0,
       isPromo: product.isPromo,
-      salesPrice: product.salesPrice,
-      pricePromo: product.pricePromo,
-      negoPrice: product.negoPrice,
-      totalePrice: product.totalePrice,
+      salesPrice: product.salesPrice, // Prix normal (stocké pour référence)
+      pricePromo: product.pricePromo, // Prix promo si applicable
+      negoPrice: product.negoPrice, // Prix négocié si applicable
+      totalePrice: (product.negoPrice > 0 
+          ? product.negoPrice // Prix négocié s'il existe
+          : product.isPromo 
+          ? product.pricePromo // Prix promo si applicable
+          : product.salesPrice) * (product.quantityInCart ?? 0), // ✅ Calcul du total
       dateOrder: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
       itemId: product.id,
@@ -495,23 +615,29 @@ getOrder(): void {
       comment: product.comment || '', // Ajout du commentaire
       typePaiement: this.selectedPaymentMethod // Ajout du mode de paiement
     }));
-
+  
+    // ✅ Envoi au backend
     this.caisseService.saveOrders(orders).pipe(
       switchMap(() => this.caisseService.getAllInCaisse({ params: { noCache: new Date().getTime() } }))
     ).subscribe(
       (data) => {
-        Swal.fire('Succès', `Votre commande a été enregistrée avec succès.\n\nCode commande : **${orderCode}**\nMode de paiement : **${this.selectedPaymentMethod}**`, 'success');
-        this.printReceipt(orderCode); // Envoi du code commande au reçu
-        this.cart = []; // Réinitialisation du panier
+        Swal.fire(
+          'Succès',
+          `Votre commande a été enregistrée avec succès.\n\nCode commande : **${orderCode}**\nMode de paiement : **${this.selectedPaymentMethod}**`,
+          'success'
+        );
+        this.printReceipt(orderCode); // ✅ Impression du reçu avec le code commande
+        this.cart = []; // ✅ Réinitialisation du panier
         this.searchQuery = ''; 
-        this.ngOnInit(); // Recharge les produits
+        this.ngOnInit(); // ✅ Recharge des produits
       },
       (error) => {
         console.error('Erreur lors de l\'enregistrement de la commande :', error);
         Swal.fire('Erreur', 'Une erreur est survenue lors de l\'enregistrement de votre commande.', 'error');
       }
     );
-}
+  }
+  
 
   
 
@@ -648,6 +774,7 @@ confirmPayment(): void {
   // Réinitialiser l'état du popup
   this.isPaymentPopupVisible = false;
   this.selectedPaymentMethod = '';
+  this.resetCalculator();
 }
 
 printReceipt(orderCode: string): void {
@@ -700,6 +827,8 @@ Merci de votre achat !
       });
   }
 }
+
+
 printAndClose(sale: any): void {
   this.printSaleReceipt(sale); // Appelle la méthode pour imprimer le reçu
   this.closeSalesPopup(); // Ferme le popup
@@ -711,7 +840,7 @@ printSaleReceipt(sale: any): void {
     return;
   }
 
-  // ✅ Génération du contenu du reçu
+  // ✅ Génération du contenu du reçu avec negoPrice
   const receiptContent = `
 ==============================
 
@@ -728,9 +857,19 @@ Produit            Qté   Prix
 ------------------------------
 
 ${sale.items
-  .map((item: SaleItem) =>
-      `${item.nameProduct.padEnd(20)} ${(item.quantity || 0).toString().padStart(3)}  ${item.salesPrice.toFixed(2).padStart(8)}`
-  )
+  .map((item: SaleItem) => {
+    let finalPrice = item.negoPrice > 0 
+      ? item.negoPrice 
+      : item.negoPrice === -1 
+      ? 0 
+      : item.salesPrice;
+
+    let priceLabel = item.negoPrice === -1 
+      ? "0 MAD (produit avec 100% de promo)" 
+      : `${finalPrice.toFixed(2)} MAD`;
+
+    return `${item.nameProduct.padEnd(20)} ${(item.quantity || 0).toString().padStart(3)}  ${priceLabel.padStart(8)}`;
+  })
   .join("\n\n")} 
 
 ------------------------------
@@ -765,6 +904,7 @@ Merci de votre achat !
       });
   }
 }
+
 
 
 
@@ -895,6 +1035,7 @@ Merci et à bientôt !
         }
       );
     }
+    
     loadSalesDataToday(callback?: () => void): void {
       this.salesService.getSalesDataToday().subscribe(
         (data) => {

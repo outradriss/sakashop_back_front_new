@@ -157,69 +157,107 @@ import java.util.stream.Collectors;
       }).collect(Collectors.toList());
     }
 
+
     public List<OrderRequestDTO> getAllProductHistoryToday() {
-      // Récupérer toutes les données de ItemsOrders avec Items inclus
+      // ✅ Récupérer toutes les données de ItemsOrders avec Items inclus
       List<ItemsOrders> itemsOrders = itemsOrdersRepository.findAllWithItemsForToday();
 
-      // Regrouper les items par idOrderChange
+      // ✅ Vérification : Log des données récupérées
+      itemsOrders.forEach(io -> System.out.println(
+        "🛠️ ID: " + io.getId() +
+          ", Code: " + (io.getItem() != null ? io.getItem().getCode() : "N/A") +
+          ", NegoPrice: " + io.getNegoPrice() +
+          ", SalesPrice: " + io.getSalesPrice() +
+          ", CartQuantity: " + io.getCartQuantity() +
+          ", TotalePrice: " + io.getTotalePrice() +
+          ", TypePaiement: " + io.getTypePaiement()
+      ));
+
+      // ✅ Regrouper les items par `idOrderChange`
       Map<String, List<ItemsOrders>> groupedOrders = itemsOrders.stream()
         .collect(Collectors.groupingBy(ItemsOrders::getIdOrderChange));
 
-      // Convertir chaque groupe en une commande unique
+      // ✅ Convertir chaque groupe en une commande unique
       return groupedOrders.entrySet().stream().map(entry -> {
         String idOrderChange = entry.getKey();
         List<ItemsOrders> ordersList = entry.getValue();
 
-        // Récupérer le type de paiement (en supposant qu'il est le même pour tous les items d'une commande)
+        // ✅ Récupérer le type de paiement
         String typePaiement = ordersList.stream()
           .map(ItemsOrders::getTypePaiement)
           .filter(Objects::nonNull)
           .findFirst()
-          .orElse("Inconnu"); // Valeur par défaut si non trouvé
+          .orElse("Inconnu");
 
-        // Déterminer les valeurs communes pour la commande
+        // ✅ Déterminer les valeurs communes
         LocalDateTime dateOrder = ordersList.get(0).getDateIntegration();
         LocalDateTime lastUpdated = ordersList.get(0).getDateUpdate();
-        double totalePrice = ordersList.stream().mapToDouble(ItemsOrders::getTotalePrice).sum();
 
-        // Créer la liste des items (ItemRequestDTO)
+        // ✅ Calcul correct du total de la commande
+        double totalePrice = ordersList.stream()
+          .mapToDouble(itemsOrder ->
+            itemsOrder.getNegoPrice() > 0 ?
+              itemsOrder.getNegoPrice() * itemsOrder.getCartQuantity() :
+              itemsOrder.getSalesPrice() * itemsOrder.getCartQuantity()
+          )
+          .sum();
+
+        // ✅ Créer la liste des items (ItemRequestDTO)
         List<OrderRequestDTO.ItemRequestDTO> itemDTOList = ordersList.stream().map(itemsOrder -> {
           double buyPrice = (itemsOrder.getItem() != null && itemsOrder.getItem().getBuyPrice() > 0)
             ? itemsOrder.getItem().getBuyPrice()
-            : 0;
+            : 0.0;
+
+          double negoPrice = itemsOrder.getNegoPrice();
+          double salesPrice = itemsOrder.getSalesPrice();
+          String code = itemsOrder.getItem() != null ? itemsOrder.getItem().getCode() : "N/A";
 
           OrderRequestDTO.ItemRequestDTO itemRequestDTO = new OrderRequestDTO.ItemRequestDTO();
           itemRequestDTO.setNameProduct(itemsOrder.getName());
           itemRequestDTO.setQuantity(itemsOrder.getCartQuantity());
-          itemRequestDTO.setSalesPrice(itemsOrder.getSalesPrice());
+          itemRequestDTO.setSalesPrice(salesPrice);
           itemRequestDTO.setTotalePrice(buyPrice * itemsOrder.getCartQuantity());
           itemRequestDTO.setItemId(itemsOrder.getItem() != null ? itemsOrder.getItem().getId() : null);
-          itemRequestDTO.setItemCode(itemsOrder.getItem() != null ? itemsOrder.getItem().getItemCode() : "N/A"); // ✅ Ajout du code de l'article
+          itemRequestDTO.setItemCode(itemsOrder.getItem() != null ? itemsOrder.getItem().getItemCode() : "N/A");
+          itemRequestDTO.setNegoPrice(negoPrice);
+          itemRequestDTO.setCode(code);
+
+          // ✅ Log des valeurs récupérées pour chaque produit
+          System.out.println("✔️ Produit ajouté : " +
+            " Nom: " + itemRequestDTO.getNameProduct() +
+            ", Qté: " + itemRequestDTO.getQuantity() +
+            ", Prix Vente: " + itemRequestDTO.getSalesPrice() +
+            ", Prix Négocié: " + itemRequestDTO.getNegoPrice() +
+            ", Code: " + itemRequestDTO.getCode());
 
           return itemRequestDTO;
         }).collect(Collectors.toList());
 
+        // ✅ Retourner `Builder`
         return new OrderRequestDTO.Builder(
-          null, // ID de commande (optionnel si non stocké)
-          null, // Nom produit (optionnel car regroupé)
-          0, // Quantité totale pas utile ici
+          null, // ID de commande (optionnel)
+          null, // Nom produit (optionnel)
+          0, // Quantité totale
           0, // Quantité ajoutée
-          false, // Promo (optionnel si pas commun)
+          false, // Promo
           0.0, // Prix promo
-          0.0, // Sales Price (optionnel si pas commun)
+          0.0, // Sales Price
           dateOrder,
           lastUpdated,
           null, // itemId (optionnel)
           null, // itemsOrders (optionnel)
-          totalePrice, // Total Price de la commande groupée
-          0.0, // negoPrice (optionnel)
-          0.0, // buyPrice
+          totalePrice,
+          ordersList.stream().mapToDouble(ItemsOrders::getNegoPrice).sum(),
+          0.0, // buyPrice (optionnel)
           itemDTOList,
           idOrderChange,
-          typePaiement // Envoi du type de paiement
+          typePaiement
         ).buildOrder();
       }).collect(Collectors.toList());
     }
+
+
+
 
 
 

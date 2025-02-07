@@ -76,7 +76,7 @@ public class CaisseServiceImpl {
   public void processSingleOrder(OrderRequestDTO orderDTO) {
     long startTime = System.currentTimeMillis();
     try {
-      // Vérification des données d'entrée
+      // ✅ Vérification des données d'entrée
       if (orderDTO == null) {
         logger.error("OrderRequestDTO est nul.");
         throw new IllegalArgumentException("L'ordre fourni est nul.");
@@ -90,7 +90,7 @@ public class CaisseServiceImpl {
         throw new IllegalArgumentException("Quantité invalide pour l'article : " + orderDTO.getItemId());
       }
 
-      // Récupérer l'article
+      // ✅ Récupérer l'article
       Optional<Item> itemOptional = productRepository.findById(orderDTO.getItemId());
       if (itemOptional.isEmpty()) {
         logger.error("Article non trouvé : {}", orderDTO.getItemId());
@@ -99,27 +99,27 @@ public class CaisseServiceImpl {
 
       Item item = itemOptional.get();
 
-      // Vérification et mise à jour du champ 'name'
+      // ✅ Vérification et mise à jour du champ 'name'
       if (item.getName() == null || item.getName().isEmpty()) {
         item.setName(orderDTO.getNameProduct());
         logger.warn("Nom de l'article mis à jour depuis le DTO : {}", orderDTO.getNameProduct());
       }
 
-      // Vérification du stock disponible
+      // ✅ Vérification du stock disponible
       if (item.getQuantity() < orderDTO.getQuantity()) {
         logger.warn("Stock insuffisant pour l'article : {}", item.getId());
         throw new IllegalStateException("Stock insuffisant pour l'article : " + item.getId());
       }
 
-      // Mise à jour du stock
+      // ✅ Mise à jour du stock
       int updatedStock = item.getQuantity() - orderDTO.getQuantity();
       item.setQuantity(updatedStock);
 
-      // Sauvegarder l'article avec versionning
+      // ✅ Sauvegarder l'article avec versionning
       productRepository.save(item);
       logger.info("Stock mis à jour avec succès pour l'article : {}. Stock actuel : {}", item.getId(), item.getQuantity());
 
-      // Créer une nouvelle commande
+      // ✅ Création de la commande
       Order order = new Order();
       order.setDateOrder(orderDTO.getDateOrder());
       order.setLastUpdated(orderDTO.getLastUpdated());
@@ -127,24 +127,28 @@ public class CaisseServiceImpl {
       order.setIdOrderChange(orderDTO.getIdOrderChange());
       order.setComment(orderDTO.getComment());
 
-
-      // Associer les articles à la commande
+      // ✅ Associer les articles à la commande
       ItemsOrders itemsOrders = new ItemsOrders();
       itemsOrders.setOrder(order);
       itemsOrders.setItem(item);
       itemsOrders.setCartQuantity(orderDTO.getQuantity());
       itemsOrders.setStockQuantity(item.getQuantity());
-      itemsOrders.setSalesPrice(orderDTO.getSalesPrice());
+
+      // ✅ Gestion de negoPrice et salesPrice
+      double finalSalesPrice = (orderDTO.getNegoPrice() == -1) ? 0.0 : orderDTO.getSalesPrice();
+      itemsOrders.setSalesPrice(finalSalesPrice); // ✅ Applique la règle
+
       itemsOrders.setPromoPrice(orderDTO.getPricePromo());
       itemsOrders.setNegoPrice(orderDTO.getNegoPrice());
       itemsOrders.setDateIntegration(LocalDateTime.now());
       itemsOrders.setName(item.getName());
       itemsOrders.setIdOrderChange(orderDTO.getIdOrderChange());
       itemsOrders.setTypePaiement(orderDTO.getTypePaiement());
+      itemsOrders.setTotalePrice(orderDTO.getTotalePrice());
 
       order.setItemsOrders(List.of(itemsOrders));
 
-      // Sauvegarder la commande
+      // ✅ Sauvegarde de la commande
       caisseOrderRepo.save(order);
 
       long endTime = System.currentTimeMillis();
@@ -155,6 +159,9 @@ public class CaisseServiceImpl {
       throw e;
     }
   }
+
+
+
 
   public List<OrderItemDTO> findByIdOrder(String idOrderChange) {
     // Récupérer tous les items ayant le même idOrderChange

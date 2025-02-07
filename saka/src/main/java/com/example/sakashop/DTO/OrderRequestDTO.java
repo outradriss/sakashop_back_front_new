@@ -160,6 +160,8 @@ public class OrderRequestDTO {
     private String idOrderChange;
     private String typePaiement;
 
+
+
     public String getComment() {
       return comment;
     }
@@ -227,6 +229,27 @@ public class OrderRequestDTO {
     private double totalePrice;
     private Long itemId;
     private String itemCode;
+    private double negoPrice;
+    private String code;
+
+
+    public String getCode() {
+      return code;
+    }
+
+    public void setCode(String code) {
+      this.code = code;
+    }
+
+    public double getNegoPrice() {
+      return negoPrice;
+    }
+
+    public void setNegoPrice(double negoPrice) {
+      this.negoPrice = negoPrice;
+    }
+
+
     public String getItemCode() {
       return itemCode;
     }

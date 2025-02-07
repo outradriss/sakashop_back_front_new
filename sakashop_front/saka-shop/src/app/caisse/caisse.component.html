@@ -52,7 +52,7 @@
     </div>
 
     <!-- ✅ Tableau des ventes -->
-    <div class="close-caisse-body">
+    <div class="sales-table-container">
       <table class="sales-table">
         <thead>
           <tr>
@@ -68,7 +68,14 @@
             <td>{{ sale.itemCode }}</td>
             <td>{{ sale.itemName }}</td>
             <td>{{ sale.quantity }}</td>
-            <td>{{ sale.salesPrice | currency:'MAD' }}</td>
+            <td>
+              <ng-container *ngIf="sale.negoPrice === -1">
+                0 MAD (produit avec 100% de promo)
+              </ng-container>
+              <ng-container *ngIf="sale.negoPrice !== -1">
+                {{ sale.salesPrice | currency:'MAD' }}
+              </ng-container>
+            </td>                       
             <td>{{ sale.typePaiement }}</td>
           </tr>
         </tbody>
@@ -83,6 +90,8 @@
     </div>
   </div>
 </div>
+
+
 <!-- Modale personnalisée pour la liste des commandes -->
 <div class="orders-popup-overlay" *ngIf="isPopupVisible">
   <div class="orders-popup">
@@ -130,60 +139,89 @@
   </div>
 </div>
    
-   <!-- Panier -->
-   <div class="cart">
-       <h3>Panier</h3>
-       <div class="cart-items">
-           <div class="cart-item" *ngFor="let product of cart">
-             <div class="cart-details">
-               <p class="product-name">{{ product.name }}</p>
-               <p *ngIf="product.isPromo; else normalPrice">
-                 Prix avec promo : <input
-                 type="number"
-                 readonly
-                 [(ngModel)]="product.negoPrice"
-                 [ngModel]="product.negoPrice || product.pricePromo" 
-                 (input)="validateCartPrice(product)"
-                 [class.invalid]="product.negoPrice < product.pricePromo"
-                 min="0.01"
-               />
-               </p>
-               <ng-template #normalPrice>
-                   Prix :
-                   <input
-                     type="number"
-                     readonly
-                     [(ngModel)]="product.negoPrice"
-                     [ngModel]="product.negoPrice || product.salesPrice || product.pricePromo" 
-                     (input)="validateCartPrice(product)"
-                     [class.invalid]="product.negoPrice <= product.buyPrice"
-                     min="0.01"
-                   />
-                   <span *ngIf="product.negoPrice <= product.buyPrice" class="error">
-                       <br>
-                     <strong >Erreur :</strong> Le prix ne peut pas être inférieur au prix d'achat
-                   </span>
-               </ng-template>
-               <p class="stock-info">Stock disponible : {{ product.quantity }}</p>
-               <p>Quantité : <strong>{{ product.quantityInCart }}</strong></p>
-             </div>
-             <div class="cart-actions">
-               <button (click)="increaseQuantity(product)" class="btn-action">➕</button>
-               <button (click)="decreaseQuantity(product)" class="btn-action">➖</button>
-               <button (click)="removeFromCart(product)" class="btn-action btn-remove">❌</button>
-             </div>
-           </div>
-         </div>          
-       <div class="totals">
-         <h4>Total : {{ calculateTotal() | currency: 'MAD ':'symbol':'1.2-2' }}</h4>
-       </div>
-       <div class="actions">
-        <button class="btn-pay" (click)="showPaymentPopup()" [disabled]="cart.length === 0 || isPayButtonDisabled()">Payer</button>
-        <button class="btn-cancel" (click)="cancel()" [disabled]="cart.length === 0">Annuler</button>
-        <button class="btn-change-product" (click)="showChangeProductPopup()" [disabled]="cart.length === 0">Changer Produit</button>
-        <button class="btn-other-payment" (click)="showOtherPaymentPopup()" [disabled]="cart.length === 0">Autre Méthode de Paiement</button>
+<!-- ✅ Panier -->
+<div class="cart">
+  <h3>Panier</h3>
+  <div class="cart-items">
+    <div class="cart-item" *ngFor="let product of cart">
+      <div class="cart-details">
+        <p class="product-name">{{ product.name }}</p>
+        <p *ngIf="product.isPromo; else normalPrice">
+          Prix avec promo :
+          <input
+            type="number"
+            readonly
+            [(ngModel)]="product.negoPrice"
+            [ngModel]="product.negoPrice || product.pricePromo" 
+            (input)="validateCartPrice(product)"
+            [class.invalid]="product.negoPrice < product.pricePromo"
+            min="0.01"
+          />
+        </p>
+        <ng-template #normalPrice>
+          Prix :
+          <input
+            type="number"
+            readonly
+            [(ngModel)]="product.negoPrice"
+            [ngModel]="product.negoPrice || product.salesPrice || product.pricePromo" 
+            (input)="validateCartPrice(product)"
+            min="0.01"
+          />
+        </ng-template>
+        <p class="stock-info">Stock disponible : {{ product.quantity }}</p>
+        <p>Quantité : <strong>{{ product.quantityInCart }}</strong></p>
       </div>
-       </div>
+
+      <!-- ✅ Actions du panier -->
+      <div class="cart-actions">
+        <button (click)="increaseQuantity(product)" class="btn-action">➕</button>
+        <button (click)="decreaseQuantity(product)" class="btn-action">➖</button>
+        <button (click)="removeFromCart(product)" class="btn-action btn-remove">❌</button>
+        <button (click)="openDiscountPopup(product)" class="btn-action btn-discount">💰 Remise</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Pop-up de remise -->
+  <div *ngIf="selectedProductForDiscount" class="discount-popup-overlay">
+    <div class="discount-popup">
+      <h4>Appliquer une remise</h4>
+      <p><strong>Prix original :</strong> {{ selectedProductForDiscount.salesPrice | currency: 'MAD' }}</p>
+      
+      <label for="discountPercentage">Ajoutez la remise :</label>
+      <input
+        type="number"
+        id="discountPercentage"
+        [(ngModel)]="discountPercentage"
+        min="0"
+        max="100"
+        (input)="calculateDiscountedPrice()"
+      />
+
+      <p><strong>Prix après remise :</strong> {{ discountedPrice | currency: 'MAD' }}</p>
+
+      <div class="discount-actions">
+        <button (click)="applyDiscount()" class="btn-apply">✔ Appliquer</button>
+        <button (click)="closeDiscountPopup()" class="btn-cancel">❌ Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Totaux -->
+  <div class="totals">
+    <h4>Total : {{ calculateTotal() | currency: 'MAD ':'symbol':'1.2-2' }}</h4>
+  </div>
+
+  <!-- ✅ Boutons d'actions -->
+  <div class="actions">
+    <button class="btn-pay" (click)="showPaymentPopup()">Payer</button>
+    <button class="btn-cancel" (click)="cancel()" [disabled]="cart.length === 0">Annuler</button>
+    <button class="btn-change-product" (click)="showChangeProductPopup()" [disabled]="cart.length === 0">Changer Produit</button>
+    <button class="btn-other-payment" (click)="showOtherPaymentPopup()" [disabled]="cart.length === 0">Autre Méthode de Paiement</button>
+  </div>
+</div>
+
 
 
 
@@ -212,6 +250,7 @@
         <button class="change-search-btn" (click)="getOrder()">Rechercher</button>
       </div>
     </div>
+
 <!-- Affichage du message d'erreur si le produit n'existe pas dans la commande -->
 <p class="error-message" *ngIf="productNotFound">
   ⚠️ Le produit à remplacer n'est pas trouvé dans la commande.
@@ -299,42 +338,61 @@
 </div>
        
 
-     <!-- Popup de sélection du mode de paiement -->
+
+<!-- Popup de sélection du mode de paiement avec calculatrice -->
 <div *ngIf="isPaymentPopupVisible" class="custom-payment-popup-overlay">
   <div class="custom-payment-popup-content">
     <h3>Sélectionner le Mode de Paiement</h3>
+
+    <!-- Modes de paiement -->
     <div class="custom-payment-options">
       <label class="custom-payment-option custom-payment-cash">
         Espèces
-        <input 
-          type="radio" 
-          name="typePaiement" 
-          value="espèces" 
-          [(ngModel)]="selectedPaymentMethod" />
+        <input type="radio" name="typePaiement" value="espèces" [(ngModel)]="selectedPaymentMethod" />
       </label>
       <label class="custom-payment-option custom-payment-card">
         Carte
-        <input 
-          type="radio" 
-          name="typePaiement" 
-          value="carte" 
-          [(ngModel)]="selectedPaymentMethod" />
+        <input type="radio" name="typePaiement" value="carte" [(ngModel)]="selectedPaymentMethod" />
       </label>
       <label class="custom-payment-option custom-payment-cheque">
         Chèque
-        <input 
-          type="radio" 
-          name="typePaiement" 
-          value="cheque" 
-          [(ngModel)]="selectedPaymentMethod" />
+        <input type="radio" name="typePaiement" value="cheque" [(ngModel)]="selectedPaymentMethod" />
       </label>
     </div>
+
+    <!-- Ligne de séparation -->
+    <div class="custom-separator"></div>
+
+    <!-- Calculatrice de paiement -->
+    <div class="custom-payment-calculator">
+      <h4>Total à payer : <strong>{{ calculateTotal() | currency : 'MAD ':'symbol':'1.2-2'}}</strong></h4>
+
+      <label>Montant donné par le client :</label>
+      <input 
+        type="number" 
+        [(ngModel)]="amountGiven" 
+        (input)="calculateChange()" 
+        min="0" 
+        placeholder="Saisir le montant donné" 
+        class="custom-calculator-input"
+      />
+
+      <p *ngIf="change >= 0" class="custom-change-due">
+        🏦 Monnaie à rendre : <strong>{{ change | currency : 'MAD ':'symbol':'1.2-2' }}</strong>
+      </p>
+      <p *ngIf="change < 0" class="custom-error-message">
+        ❌ Montant insuffisant ! Il manque <strong>{{ (-change) | currency : 'MAD ':'symbol':'1.2-2' }}</strong>
+      </p>
+    </div>
+
+    <!-- Boutons -->
     <div class="custom-popup-actions">
-      <button class="custom-btn-confirm" (click)="confirmPayment()">Continuer</button>
+      <button class="custom-btn-confirm" (click)="confirmPayment()" [disabled]="change < 0">Continuer</button>
       <button class="custom-btn-cancel" (click)="closePaymentPopup()">Annuler</button>
     </div>
   </div>
 </div>
+
 
       
 <!-- Popup alert -->

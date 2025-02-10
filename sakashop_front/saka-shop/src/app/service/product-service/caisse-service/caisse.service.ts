@@ -18,7 +18,7 @@ export class CaisseService {
   saveOrders(orders: any[]): Observable<any> {
     return this.http.post(`${this.apiUrl}/saveOrder`, orders, { responseType: 'text' });
   }
-  
+
   getOrder(id: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${id}`).pipe(
       catchError((error) => {
@@ -27,6 +27,9 @@ export class CaisseService {
       })
     );
   }
+payWithMethod(orders: any[]): Observable<any> {
+  return this.http.post('/api/pay-multiple', orders);
+}
 
   saveOrderChange(orderChangeData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/saveOrderChange`, orderChangeData, { responseType: 'text' });

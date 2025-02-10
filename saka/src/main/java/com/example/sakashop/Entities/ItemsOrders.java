@@ -52,6 +52,34 @@ public class ItemsOrders {
   private double totalePrice;
   private String typePaiement;
 
+  private double chequeAmount;
+  private double cardAmount;
+  private double cashAmount;
+
+  public double getChequeAmount() {
+    return chequeAmount;
+  }
+
+  public void setChequeAmount(double chequeAmount) {
+    this.chequeAmount = chequeAmount;
+  }
+
+  public double getCardAmount() {
+    return cardAmount;
+  }
+
+  public void setCardAmount(double cardAmount) {
+    this.cardAmount = cardAmount;
+  }
+
+  public double getCashAmount() {
+    return cashAmount;
+  }
+
+  public void setCashAmount(double cashAmount) {
+    this.cashAmount = cashAmount;
+  }
+
   @Column(name = "code")
   private String code;
 

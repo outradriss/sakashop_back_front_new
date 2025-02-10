@@ -133,6 +133,10 @@ public class CaisseServiceImpl {
       itemsOrders.setItem(item);
       itemsOrders.setCartQuantity(orderDTO.getQuantity());
       itemsOrders.setStockQuantity(item.getQuantity());
+      itemsOrders.setCashAmount(orderDTO.getCashAmount());
+      itemsOrders.setChequeAmount(orderDTO.getChequeAmount());
+      itemsOrders.setCardAmount(orderDTO.getCardAmount());
+
 
       // ✅ Gestion de negoPrice et salesPrice
       double finalSalesPrice = (orderDTO.getNegoPrice() == -1) ? 0.0 : orderDTO.getSalesPrice();

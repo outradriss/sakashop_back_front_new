@@ -325,17 +325,28 @@
     <h3>Autre Méthode de Paiement</h3>
 
     <label>Montant en Espèce :</label>
-    <input type="number" [(ngModel)]="cashAmount" (input)="calculateRemainingCardPayment()" min="0" />
+    <input type="number" [(ngModel)]="cashAmount" (input)="calculateRemainingPayment()" min="0" />
 
     <label>Montant à payer par Carte :</label>
-    <input type="number" [value]="cardAmount" readonly />
+    <input type="number" [(ngModel)]="cardAmount" (input)="calculateRemainingPayment()" min="0" />
+
+    <label>Montant en Chèque :</label>
+    <input type="number" [(ngModel)]="chequeAmount" (input)="calculateRemainingPayment()" min="0" />
+
+    <p *ngIf="remainingAmount < 0" class="error-message">
+      ❌ Le total dépasse le montant à payer de <strong>{{ (-remainingAmount) | currency: 'MAD' }}</strong>
+    </p>
+    <p *ngIf="remainingAmount > 0" class="warning-message">
+      ⚠️ Il manque <strong>{{ remainingAmount | currency: 'MAD' }}</strong> pour compléter le paiement.
+    </p>
 
     <div class="popup-actions">
-      <button (click)="confirmOtherPayment()">Confirmer</button>
+      <button (click)="pay()" [disabled]="remainingAmount !== 0">Confirmer</button>
       <button (click)="isOtherPaymentPopupOpen = false">Annuler</button>
     </div>
   </div>
 </div>
+
        
 
 

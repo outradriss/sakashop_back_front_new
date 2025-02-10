@@ -29,6 +29,22 @@ public class OrderRequestDTO {
   private final String idOrderChange;
   private final String comment;
   private final String typePaiement;
+  private final double chequeAmount;
+  private final double cardAmount;
+  private final double cashAmount;
+
+
+  public double getChequeAmount() {
+    return chequeAmount;
+  }
+
+  public double getCardAmount() {
+    return cardAmount;
+  }
+
+  public double getCashAmount() {
+    return cashAmount;
+  }
 
   public String getTypePaiement() {
     return typePaiement;
@@ -131,12 +147,19 @@ public class OrderRequestDTO {
     this.idOrderChange = builder.idOrderChange;
     this.comment= builder.comment;
     this.typePaiement=builder.typePaiement;
+    this.cashAmount=builder.cashAmount;
+    this.chequeAmount=builder.chequeAmount;
+    this.cardAmount=builder.cardAmount;
+
   }
 
   @JsonPOJOBuilder(buildMethodName = "buildOrder", withPrefix = "set")
   public static class Builder {
     @JsonProperty("id_order")
     private Long idOrder;
+    public double cashAmount;
+    public double chequeAmount;
+    public double cardAmount;
     private String nameProduct;
     private int quantity;
     private int quantityAddedUrgent;

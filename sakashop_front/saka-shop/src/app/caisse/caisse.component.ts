@@ -62,15 +62,15 @@ orderId: string = ''; // Stocke l'ID entré
 foundOrder: any = null;
 isOrderExpired: boolean = false;
 selectedProductForDiscount: any = null;
+typePaiement: string = '';
 discountPercentage: number = 0;
 discountedPrice: number = 0;
 amountGiven: number = 0;
 change: number = 0;
-
-// Variables pour Autre Méthode de Paiement
-cashAmount = 0;
-cardAmount = 0;
-
+cashAmount: number = 0;
+cardAmount: number = 0;
+chequeAmount: number = 0;
+remainingAmount: number = 0;
 
   constructor(private salesService: HistoryService,private lockService:LockService,private router: Router,private http:HttpClient , private caisseService : CaisseService , private cdr: ChangeDetectorRef , private sharedService : SharedService) {}
 
@@ -89,7 +89,7 @@ cardAmount = 0;
   }
  // Ouvrir la liste des commandes
 openSalesPopup(): void {
-  this.loadSalesData();
+  this.loadSalesDataToday();
   this.isPopupVisible = true;
 }
 
@@ -600,7 +600,7 @@ getOrder(): void {
       quantityAddedUrgent:
         (product.quantityInCart ?? 0) > product.quantity ? (product.quantityInCart ?? 0) - product.quantity : 0,
       isPromo: product.isPromo,
-      salesPrice: product.salesPrice, // Prix normal (stocké pour référence)
+      salesPrice: product.salesPrice, // Prix normal stocké pour référence
       pricePromo: product.pricePromo, // Prix promo si applicable
       negoPrice: product.negoPrice, // Prix négocié si applicable
       totalePrice: (product.negoPrice > 0 
@@ -611,9 +611,16 @@ getOrder(): void {
       dateOrder: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
       itemId: product.id,
-      id_order_change: orderCode, // Ajout du code commande
-      comment: product.comment || '', // Ajout du commentaire
-      typePaiement: this.selectedPaymentMethod // Ajout du mode de paiement
+      id_order_change: orderCode, // ✅ Ajout du code commande
+      comment: product.comment || '', // ✅ Ajout du commentaire
+  
+      // ✅ Gestion du paiement avec plusieurs méthodes
+      cashAmount: this.cashAmount || 0,
+      cardAmount: this.cardAmount || 0,
+      chequeAmount: this.chequeAmount || 0,
+  
+      // ✅ Déterminer le mode de paiement en fonction des montants
+      typePaiement: this.getPaymentType()
     }));
   
     // ✅ Envoi au backend
@@ -623,10 +630,11 @@ getOrder(): void {
       (data) => {
         Swal.fire(
           'Succès',
-          `Votre commande a été enregistrée avec succès.\n\nCode commande : **${orderCode}**\nMode de paiement : **${this.selectedPaymentMethod}**`,
+          `Votre commande a été enregistrée avec succès.\n\nCode commande : **${orderCode}**\nMode de paiement : **${this.getPaymentType()}**`,
           'success'
         );
         this.printReceipt(orderCode); // ✅ Impression du reçu avec le code commande
+        this.resetPaymentFields(); // ✅ Réinitialisation des champs de paiement
         this.cart = []; // ✅ Réinitialisation du panier
         this.searchQuery = ''; 
         this.ngOnInit(); // ✅ Recharge des produits
@@ -637,6 +645,38 @@ getOrder(): void {
       }
     );
   }
+
+  
+  resetPaymentFields(): void {
+    this.cashAmount = 0;
+    this.cardAmount = 0;
+    this.chequeAmount = 0;
+  }
+  getPaymentType(): string {
+    if (this.selectedPaymentMethod) {
+      return this.selectedPaymentMethod; // ✅ Priorité au choix manuel
+    }
+  
+    if (this.cashAmount > 0 && this.cardAmount > 0 && this.chequeAmount > 0) {
+      return 'Mixte (Espèces + Carte + Chèque)';
+    } else if (this.cashAmount > 0 && this.cardAmount > 0) {
+      return 'Mixte (Espèces + Carte)';
+    } else if (this.cashAmount > 0 && this.chequeAmount > 0) {
+      return 'Mixte (Espèces + Chèque)';
+    } else if (this.cardAmount > 0 && this.chequeAmount > 0) {
+      return 'Mixte (Carte + Chèque)';
+    } else if (this.cashAmount > 0) {
+      return 'Espèces';
+    } else if (this.cardAmount > 0) {
+      return 'Carte';
+    } else if (this.chequeAmount > 0) {
+      return 'Chèque';
+    } else {
+      return 'Inconnu'; // ✅ Si aucun mode n'est sélectionné
+    }
+  }
+  
+  
   
 
   
@@ -760,22 +800,27 @@ confirmPayment(): void {
     return;
   }
 
-  // Appeler la méthode pay pour effectuer le paiement
+  // ✅ S'assurer que selectedPaymentMethod est utilisé avant pay()
+  this.typePaiement = this.selectedPaymentMethod;
+
+  // ✅ Exécuter `pay()`
   this.pay();
 
-  // Afficher un message de confirmation
+  // ✅ Afficher la confirmation après le paiement
   Swal.fire({
     title: 'Paiement confirmé',
-    text: `Paiement effectué avec succès en ${this.selectedPaymentMethod === 'cash' ? 'Espèces' : this.selectedPaymentMethod === 'card' ? 'Carte' : 'Chèque'}.`,
+    text: `Paiement effectué avec succès en ${this.selectedPaymentMethod === 'espèces' ? 'Espèces' : this.selectedPaymentMethod === 'carte' ? 'Carte' : 'Chèque'}.`,
     icon: 'success',
     confirmButtonText: 'OK'
   });
 
-  // Réinitialiser l'état du popup
+  // ✅ Réinitialiser après validation
   this.isPaymentPopupVisible = false;
-  this.selectedPaymentMethod = '';
+  this.selectedPaymentMethod = ''; // ✅ Nettoyage
   this.resetCalculator();
 }
+
+
 
 printReceipt(orderCode: string): void {
   if (!this.cart || this.cart.length === 0) {
@@ -784,32 +829,42 @@ printReceipt(orderCode: string): void {
   }
 
   const receiptContent = `
-==============================
-🏪 BAGGAGIO - Anfa Place
-Merci pour votre visite !
-------------------------------
-🛒 Code Commande : ${orderCode}
-------------------------------
-Produit            Qté   Prix
-------------------------------
+========================================
+🏪           BAGGAGIO - Anfa Place        
+        Merci pour votre visite !        
+----------------------------------------
+🛒   CODE COMMANDE :  ${orderCode}        
+----------------------------------------
+🛍️  PRODUITS ACHETÉS                     
+----------------------------------------
+Produit                 Qté       Prix  
+----------------------------------------
 ${this.cart
     .map(
       (item) =>
-        `${item.name.padEnd(15)} ${(item.quantityInCart || 0).toString().padStart(3)}  ${item.salesPrice.toFixed(2).padStart(6)}`
+        `${item.name.padEnd(20)} ${item.quantityInCart!.toString().padStart(3)}   ${item.salesPrice.toFixed(2).padStart(8)} MAD`
     )
     .join("\n")}
-------------------------------
-💰 Total : ${this.calculateTotal().toFixed(2)} MAD
-------------------------------
-Merci de votre achat !
-À bientôt chez BAGGAGIO.
-==============================
+----------------------------------------
+💰  TOTAL À PAYER :   ${this.calculateTotal().toFixed(2)} MAD     
+----------------------------------------
+
+💳  MODE DE PAIEMENT :
+----------------------------------------
+|      CARTE      |      ESPÈCE      |      CHÈQUE      |
+|----------------|----------------|----------------|
+|   ${this.cardAmount.toFixed(2).padStart(10)}   |   ${this.cashAmount.toFixed(2).padStart(10)}   |   ${this.chequeAmount.toFixed(2).padStart(10)}   |
+----------------------------------------
+
+📌  Merci de votre achat !               
+📌  À bientôt chez BAGGAGIO.              
+========================================
   `;
 
   if (!this.isPrinting) {
     this.isPrinting = true;
 
-    // ✅ Envoie le reçu au backend et attend la réponse avant de rediriger
+    // ✅ Envoi au backend pour impression
     this.http.post('http://localhost:8090/api/print/ticket', receiptContent, { responseType: 'text' })
       .subscribe({
         next: (response) => {
@@ -827,6 +882,7 @@ Merci de votre achat !
       });
   }
 }
+
 
 
 printAndClose(sale: any): void {
@@ -1174,15 +1230,14 @@ calculateRemainingCardPayment(): void {
   }
 }
 
-
-confirmOtherPayment(): void {
-  if (this.cashAmount + this.cardAmount !== this.calculateTotal()) {
-    Swal.fire('Erreur', 'Le montant total ne correspond pas.', 'error');
-    return;
-  }
-  Swal.fire('Succès', 'Paiement effectué avec succès.', 'success');
-  this.isOtherPaymentPopupOpen = false;
+calculateRemainingPayment(): void {
+  const totalGiven = (this.cashAmount || 0) + (this.cardAmount || 0) + (this.chequeAmount || 0);
+  this.remainingAmount = this.calculateTotal() - totalGiven;
 }
+
+
+
+
 
 }
 

@@ -482,7 +482,7 @@ getOrder(): void {
   }
 
   filterProductsChange(): void {
-    const query = this.discountSearchQuery.toLowerCase().trim();
+    const query = this.searchQuery.toLowerCase().trim();
   
     if (query) {
       // Recherche par code-barres, nom ou code
@@ -637,6 +637,7 @@ getOrder(): void {
         this.resetPaymentFields(); // ✅ Réinitialisation des champs de paiement
         this.cart = []; // ✅ Réinitialisation du panier
         this.searchQuery = ''; 
+        this.isOtherPaymentPopupOpen = false;
         this.ngOnInit(); // ✅ Recharge des produits
       },
       (error) => {

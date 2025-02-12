@@ -17,22 +17,30 @@ import java.util.Date;
 public class Credit {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id ;
-  @Column(name = "name_client")
-  private String nameClient;
-  @Column(name = "date_credit")
-  private LocalDate localDateTime ;
+  private Long id;
+
+  @Column(name = "client_name", nullable = false)
+  private String clientName;
+
+  @Column(name = "date_credit", nullable = false)
+  private LocalDate dateCredit;
+
   @Column(name = "date_update")
-  private LocalDateTime updatedDate ;
+  private LocalDateTime updatedDate;
+
   @Column(name = "date_pay")
-  private LocalDate  datePayCredit ;
-  @Column(name="total")
-  private double totale ;
-  @Column(name = "quantity")
+  private LocalDate datePayCredit;
+
+  @Column(name = "total", nullable = false)
+  private double total;
+
+  @Column(name = "quantity", nullable = false)
   private int quantity;
+
   @Column(name = "comment")
   private String comment;
+
   @ManyToOne
-  @JoinColumn(name = "item_id" ,nullable = false)
+  @JoinColumn(name = "product_id", nullable = false)
   private Item product;
 }

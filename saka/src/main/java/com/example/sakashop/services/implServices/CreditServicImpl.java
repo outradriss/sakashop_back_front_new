@@ -81,13 +81,13 @@ public class CreditServicImpl implements creditService {
 
       // Créer une nouvelle entité Credit
       Credit credit = new Credit();
-      credit.setNameClient(creditRequest.getNameClient());
+      credit.setClientName(creditRequest.getNameClient());
       credit.setComment(creditRequest.getComment());
-      credit.setLocalDateTime(creditRequest.getLocalDateTime());
+      credit.setDateCredit(creditRequest.getLocalDateTime());
       credit.setDatePayCredit(creditRequest.getDatePayCredit());
       credit.setProduct(product);
       credit.setQuantity(creditRequest.getQuantity());
-      credit.setTotale(creditRequest.getTotale());
+      credit.setTotal(creditRequest.getTotale());
 
       // Enregistrer dans la base de données
       return creditRepository.save(credit);
@@ -235,14 +235,14 @@ public class CreditServicImpl implements creditService {
       log.info("Quantité mise à jour pour le produit: {}", product);
 
       // Étape 5 : Mise à jour des champs du crédit existant
-      existingCredit.setNameClient(creditRequest.getNameClient());
+      existingCredit.setClientName(creditRequest.getNameClient());
       existingCredit.setComment(creditRequest.getComment());
-      existingCredit.setLocalDateTime(creditRequest.getLocalDateTime());
+      existingCredit.setDateCredit(creditRequest.getLocalDateTime());
       existingCredit.setUpdatedDate(LocalDateTime.now());
       existingCredit.setDatePayCredit(creditRequest.getDatePayCredit());
       existingCredit.setProduct(product);
       existingCredit.setQuantity(requestedQuantity);
-      existingCredit.setTotale(creditRequest.getTotale());
+      existingCredit.setTotal(creditRequest.getTotale());
       log.info("Crédit mis à jour avec succès: {}", existingCredit);
 
       return creditRepository.save(existingCredit);

@@ -256,13 +256,14 @@
   ⚠️ Le produit à remplacer n'est pas trouvé dans la commande.
 </p>
 
-    <!-- Affichage des détails de la commande -->
-    <div *ngIf="foundOrder && foundOrder.items.length > 0" class="change-order-details">
-      <p><strong>Date de la commande :</strong> {{ foundOrder.items[0].dateCommande | date: 'dd/MM/yyyy HH:mm' }}</p>
+  <!-- Affichage des détails de la commande -->
+<div *ngIf="foundOrder?.items?.length > 0" class="change-order-details">
+  <p><strong>Date de la commande :</strong> {{ foundOrder.items[0]?.dateCommande | date: 'dd/MM/yyyy HH:mm' }}</p>
 
-      <!-- Alerte si la commande dépasse 3 jours -->
-      <p class="change-alert" *ngIf="isOrderExpired">⚠️ Cette commande date de plus de 3 jours.</p>
-    </div>
+  <!-- Alerte si la commande dépasse 3 jours -->
+  <p class="change-alert" *ngIf="isOrderExpired">⚠️ Cette commande date de plus de 3 jours.</p>
+</div>
+
 
   <!-- Sélection du nouveau produit (désactivée si productNotFound = true) -->
 <div class="change-search-section">

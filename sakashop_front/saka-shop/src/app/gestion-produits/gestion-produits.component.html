@@ -13,12 +13,12 @@
       type="text"
       placeholder="Rechercher un produit..."
       [(ngModel)]="searchQuery"
-      (input)="onSearch()"
-  />
-    <button (click)="showAddProductPopup()" class="btn-add-product">+ Ajouter Produit</button>
-    <button (click)="showAddDiscountPopup()" class="btn-add-discount">
+      (input)="onSearch()"/>
+      
+      <button (click)="showAddProductPopup()" class="btn-add-product">+ Ajouter Produit</button>
+      <button (click)="showAddDiscountPopup()" class="btn-add-discount">
       <i class="fa fa-tags"></i> Ajouter une Remise
-  </button>
+       </button>
       <button (click)="exportToCSV()" class="btn-export-csv">Exporter en CSV</button>
     </div>
     <!-- Tableau des Produits -->

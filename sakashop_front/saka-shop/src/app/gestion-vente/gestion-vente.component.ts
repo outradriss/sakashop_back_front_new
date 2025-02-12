@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { HistoryService } from '../service/product-service/history-service/history.service';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Vente } from '../models/vente.model';
+import { Chart } from 'chart.js';
 
 @Component({
   selector: 'app-gestion-vente',
@@ -20,7 +21,16 @@ export class GestionVenteComponent {
   totalQuantity: number = 0;
   profitMarginPercentage: number = 0;
   products: Vente[] = [];
+  bestSellingProducts: any[] = [];
+  topSellingProduct3Months: { name: string; quantity: number } = { name: '', quantity: 0 };
+  topSellingProduct6Months: { name: string; quantity: number } = { name: '', quantity: 0 };
+  topSellingProductMonth: { name: string; quantity: number } = { name: '', quantity: 0 };
+ topSellingProductWeek: { name: string; quantity: number } = { name: '', quantity: 0 };
+ leastSellingProduct: { name: string; quantity: number } = { name: '', quantity: 0 };
 
+ currentView: string = 'gestion-vente'; // Par défaut, afficher la gestion de vente
+
+ 
   // Date Range sélectionné
   dateRangeForm!: FormGroup;
 
@@ -32,6 +42,7 @@ export class GestionVenteComponent {
 
   ngOnInit(): void {
     this.loadSalesData();
+    this.calculateTotals(this.filteredSales); // Calcul des totaux
 
     // Initialisation correcte du FormGroup
     const today = new Date();
@@ -42,67 +53,185 @@ export class GestionVenteComponent {
   }
   exportToCSV(): void {
     const csvData = this.generateCSVData();
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(["\uFEFF" + csvData], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-
+  
     link.setAttribute('href', url);
-    link.setAttribute('download', 'produits.csv');
+    link.setAttribute('download', 'ventes.csv');
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   }
-  private generateCSVData(): string {
-    // En-têtes avec format clair
-    const headers = [
-      'Produits Vendus',
-      'Quantité Vendus',
-      'Prix d\'Achat',
-      'Prix de Vente',
-      'Date'
-    ];
   
-    // Ajouter les lignes des produits
-    const rows = this.filteredSales.map((sale) => [
-      `"${sale.nameProduct}"`,           // Produits Vendus (entre guillemets pour éviter les problèmes avec des virgules)
-      sale.quantity,                    // Quantité Vendus
-      sale.buyPrice.toFixed(2),         // Prix d'Achat (formaté à 2 décimales)
-      sale.salesPrice.toFixed(2),       // Prix de Vente (formaté à 2 décimales)
-      `"${sale.dateOrder}"`             // Date (entre guillemets pour éviter les problèmes avec les formats)
-    ]);
+
+
+  generateCSVData(): string {
+    const header = ['Référence', 'Produit', 'Quantité', 'Prix Vente TTC', 'Prix Total TTC', 'Type de Paiement', 'Date de Commande'];
   
-    // Générer le CSV final avec les en-têtes et les lignes
-    const csvContent = [headers, ...rows].map((line) => line.join(',')).join('\n');
+    const rows = this.filteredSales.flatMap(sale => 
+      sale.items.map((item: { code: string; nameProduct: string; quantity: number; salesPrice: number; totalePrice: number }) => [
+        item.code || 'N/A', // Référence
+        item.nameProduct, // Produit
+        item.quantity, // Quantité
+        item.salesPrice.toFixed(2) + ' MAD', // Prix Vente TTC
+        item.totalePrice.toFixed(2) + ' MAD', // Prix Total TTC
+        sale.typePaiement, // Type de Paiement
+        new Date(sale.dateOrder).toLocaleString() // Date de Commande
+      ].join(';'))
+    );
   
-    return csvContent;
+    return [header.join(';'), ...rows].join('\n');
   }
   
-  // Charger les données depuis le backend
+  
+  
   loadSalesData(): void {
     this.salesService.getSalesData().subscribe(
       (data) => {
         this.sales = data;
-
-        // Filtrer les données par défaut pour `date_update = now()`
+  
+        // ✅ Filtrer les ventes des dernières 24 heures
         const today = new Date();
         this.filteredSales = this.sales.filter((sale) => {
-          const lastUpdated = new Date(sale.dateOrder);
+          const saleDate = new Date(sale.dateOrder);
           return (
-            lastUpdated.getDate() === today.getDate() &&
-            lastUpdated.getMonth() === today.getMonth() &&
-            lastUpdated.getFullYear() === today.getFullYear()
+            saleDate.getDate() === today.getDate() &&
+            saleDate.getMonth() === today.getMonth() &&
+            saleDate.getFullYear() === today.getFullYear()
           );
         });
-
-        // Calculer les totaux
-        this.calculateTotals(this.filteredSales);
+        this.calculateTotals(this.filteredSales); // Recalcule les totaux
+  
+        // ✅ Trouver les produits les plus vendus sur différentes périodes
+        this.topSellingProductWeek = this.getBestSellingProduct(7);
+        this.topSellingProductMonth = this.getBestSellingProduct(30);
+        this.topSellingProduct3Months = this.getBestSellingProduct(90);
+  
+        // ✅ Trouver le produit le moins vendu
+        this.leastSellingProduct = this.getLeastSellingProduct();
+  
+        // ✅ Récupérer la liste des produits les plus vendus pour le tableau
+        this.bestSellingProducts = this.getBestSellingProducts();
+  
+        // ✅ Afficher le graphique d'évolution des ventes
+        this.loadSalesChart();
       },
       (error) => {
         console.error('Erreur lors du chargement des données :', error);
       }
     );
   }
+  
+
+  getBestSellingProduct(days: number): { name: string; quantity: number } {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+  
+    const salesInPeriod = this.sales.filter((sale: any) => {
+      const saleDate = new Date(sale.dateOrder);
+      return saleDate >= cutoffDate;
+    });
+  
+    const productCounts = new Map<string, { name: string; quantity: number }>();
+  
+    salesInPeriod.forEach((sale: any) => {
+      sale.items.forEach((item: { nameProduct: string; quantity: number }) => {
+        if (!productCounts.has(item.nameProduct)) {
+          productCounts.set(item.nameProduct, { name: item.nameProduct, quantity: 0 });
+        }
+        productCounts.get(item.nameProduct)!.quantity += item.quantity;
+      });
+    });
+  
+    return [...productCounts.values()].reduce((max, product) => (product.quantity > max.quantity ? product : max), { name: 'Aucun', quantity: 0 });
+  }
+  
+
+  
+  getLeastSellingProduct(): { name: string; quantity: number } {
+    const productCounts = new Map<string, { name: string; quantity: number }>();
+  
+    this.sales.forEach((sale: any) => {
+      sale.items.forEach((item: { nameProduct: string; quantity: number }) => {
+        if (!productCounts.has(item.nameProduct)) {
+          productCounts.set(item.nameProduct, { name: item.nameProduct, quantity: 0 });
+        }
+        productCounts.get(item.nameProduct)!.quantity += item.quantity;
+      });
+    });
+  
+    return [...productCounts.values()].reduce(
+      (min, product) => (product.quantity < min.quantity ? product : min),
+      { name: 'Aucun', quantity: Infinity }
+    );
+  }
+  
+
+  getBestSellingProducts(): { name: string; quantity: number; salesPrice: number; promoCount: number }[] {
+    const productCounts = new Map<string, { name: string; quantity: number; salesPrice: number; promoCount: number }>();
+  
+    this.sales.forEach((sale: any) => {
+      sale.items.forEach((item: { nameProduct: string; quantity: number; salesPrice: number; isPromo?: boolean }) => {
+        if (!productCounts.has(item.nameProduct)) {
+          productCounts.set(item.nameProduct, { 
+            name: item.nameProduct, 
+            quantity: 0, 
+            salesPrice: item.salesPrice, 
+            promoCount: 0 
+          });
+        }
+        const product = productCounts.get(item.nameProduct)!;
+        product.quantity += item.quantity;
+        if (item.isPromo) {
+          product.promoCount += 1;
+        }
+      });
+    });
+  
+    return [...productCounts.values()].sort((a, b) => b.quantity - a.quantity);
+  }
+  
+
+loadSalesChart(): void {
+    const salesByDay = new Map();
+  
+    this.sales.forEach((sale) => {
+      const saleDate = new Date(sale.dateOrder).toISOString().split('T')[0]; // Format YYYY-MM-DD
+      if (!salesByDay.has(saleDate)) {
+        salesByDay.set(saleDate, 0);
+      }
+      salesByDay.set(saleDate, salesByDay.get(saleDate) + 1);
+    });
+  
+    const labels = [...salesByDay.keys()];
+    const data = [...salesByDay.values()];
+  
+    const ctx = document.getElementById('salesChart') as HTMLCanvasElement;
+   console.log("🔍 Vérification du canvas:", ctx);
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Nombre de ventes',
+          data,
+          borderColor: '#3498db',
+          backgroundColor: 'rgba(52, 152, 219, 0.2)',
+          borderWidth: 2
+        }]
+      },
+      options: { responsive: true }
+    });
+  }
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.loadSalesChart();
+    }, 500); // 🔹 Attendre 500ms pour s'assurer que le DOM est prêt
+  }
+  
 
   resetDateFilter(): void {
     const today = new Date();
@@ -123,6 +252,10 @@ export class GestionVenteComponent {
     this.sortSalesByDate();
     this.calculateTotals(this.filteredSales); // Recalcule les totaux
   }
+  navigateBack(): void {
+    this.currentView = 'main'; // Remet la vue principale
+  }
+  
   
   applyDateFilter(): void {
     const startDate = new Date(this.dateRangeForm.value.start);
@@ -151,29 +284,43 @@ export class GestionVenteComponent {
   }
   
   
-
-  // Calculer les totaux
   calculateTotals(sales: any[]): void {
-    this.totalProducts = sales.length;
-    this.totalBuyPrice = sales.reduce((acc, sale) => acc + sale.buyPrice, 0);
-    this.totalQuantity = sales.reduce((acc, sale) => acc + sale.quantity, 0);
-    this.totalSellPrice = sales.reduce((acc, sale) => acc + sale.salesPrice, 0);
+    this.totalProducts = 0;
+    this.totalQuantity = 0;
+    this.totalSellPrice = 0;
+    this.totalBuyPrice = 0;
 
-    // Calculer la marge absolue (valeur en dh)
+    sales.forEach((sale) => {
+        if (sale.items && Array.isArray(sale.items)) {
+            this.totalProducts += sale.items.length; // Nombre total de produits vendus (chaque ligne)
+            
+            sale.items.forEach((item: any) => {
+                this.totalQuantity += item.quantity || 0; // Somme des quantités de chaque produit
+                this.totalSellPrice += item.totalePrice || 0; // Somme des prix totaux des produits
+                this.totalBuyPrice += (item.buyPrice || 0) * (item.quantity || 0); // Calcul total du prix d'achat
+            });
+        }
+    });
+
+    // Calcul de la marge absolue
     this.profitMarginAmount = this.totalSellPrice - this.totalBuyPrice;
 
-    // Calculer la marge en pourcentage
+    // Calcul de la marge en pourcentage
     this.profitMarginPercentage =
-      this.totalSellPrice > 0
-        ? ((this.totalSellPrice - this.totalBuyPrice) / this.totalSellPrice) *
-          100
-        : 0;
-  }
+        this.totalSellPrice > 0
+            ? ((this.profitMarginAmount) / this.totalSellPrice) * 100
+            : 0;
+}
+
 
   navigateTo(route: string): void {
     this.router.navigate([`/${route}`]);
   }
 
+  navigateToBest(view: string): void {
+    this.currentView = view;
+  }
+  
   logout() {
     localStorage.removeItem('token');
     // Redirige l'utilisateur vers la page de login

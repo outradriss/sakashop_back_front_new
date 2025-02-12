@@ -200,25 +200,28 @@ applyPaginationAndFilter(): void {
   const startIndex = this.currentPage * this.pageSize;
   const endIndex = startIndex + this.pageSize;
 
-  // Appliquer le filtre de recherche
+  // Vérifier si une recherche est en cours
   if (this.searchQuery.trim()) {
-      const query = this.searchQuery.trim().toLowerCase();
-      const filtered = this.cachedProducts.filter(
-          (product) =>
-              product.name.toLowerCase().includes(query) || // Filtrer par nom
-              product.itemCode.toLowerCase().includes(query) // Filtrer par code produit
-      );
-      this.filteredProducts = filtered.slice(startIndex, endIndex); // Appliquer la pagination sur les données filtrées
-      this.totalPages = Math.ceil(filtered.length / this.pageSize); // Mettre à jour le nombre total de pages basé sur les données filtrées
+    const query = this.searchQuery.trim().toLowerCase();
+    
+    const filtered = this.cachedProducts.filter(
+      (product) =>
+        (product.name?.toLowerCase().includes(query) ?? false) ||  // Vérifier que name n'est pas null
+        (product.itemCode?.toLowerCase().includes(query) ?? false) // Vérifier que itemCode n'est pas null
+    );
+
+    this.filteredProducts = filtered.slice(startIndex, endIndex);
+    this.totalPages = Math.ceil(filtered.length / this.pageSize);
   } else {
-      // Pas de recherche : appliquer uniquement la pagination sur toutes les données
-      this.filteredProducts = this.cachedProducts.slice(startIndex, endIndex);
-      this.totalPages = Math.ceil(this.cachedProducts.length / this.pageSize);
+    // Pas de recherche, appliquer uniquement la pagination
+    this.filteredProducts = this.cachedProducts.slice(startIndex, endIndex);
+    this.totalPages = Math.ceil(this.cachedProducts.length / this.pageSize);
   }
 
   // Recalculer les pages visibles
   this.calculatePagination();
 }
+
 
 
 // Gérer le changement de page via le menu déroulant
@@ -389,9 +392,6 @@ calculatePagination(): void {
     }
   }
   
-  
-  
-  
   refreshData(): void {
     this.productService.getAllProducts().subscribe(
       (products) => {
@@ -422,8 +422,6 @@ filterDiscountProducts(): void {
     product.name.toLowerCase().includes(query)
   );
 }
-
-
 
 // Vérifier et sélectionner un produit pour une remise
 selectDiscountProduct(product: Product): void {
@@ -522,7 +520,7 @@ hideApplyDiscountPopup(): void {
         this.showConfirmDeletePopup = true;
       }
       
-      confirmDelete(): void {
+confirmDelete(): void {
         if (this.deletingProduct && this.deletingProduct.id) {
             this.productService.deleteProduct(this.deletingProduct.id).subscribe(
                 () => {

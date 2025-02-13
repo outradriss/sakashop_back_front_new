@@ -27,6 +27,8 @@
     "chart.js": "^4.4.7",
     "devextreme": "^24.1.7",
     "devextreme-angular": "^24.1.7",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "ng-apexcharts": "^1.15.0",
     "ngx-mat-daterange-picker": "^1.1.5",
     "ngx-toastr": "^19.0.0",

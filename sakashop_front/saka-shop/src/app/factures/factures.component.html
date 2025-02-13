@@ -1,0 +1,136 @@
+<div class="invoice-container">
+    <header>
+        <h2>Gestion des Factures</h2>
+        <button class="btn-primary" (click)="openForm()">➕ Nouvelle Facture</button>
+    </header>
+
+    <div class="invoice-content">
+        <!-- Tableau des factures -->
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>Référence</th>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Total (€)</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>FAC-2024-001</td>
+                    <td>Jean Dupont</td>
+                    <td>12/02/2024</td>
+                    <td>450,00</td>
+                    <td><span class="badge paid">Payée</span></td>
+                    <td>
+                        <button class="btn-edit">✏️</button>
+                        <button class="btn-delete">🗑️</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ✅ POPUP FACTURE PLEIN ÉCRAN -->
+<div *ngIf="formPopup" class="modal">
+    <div class="modal-content">
+        <span class="close" (click)="closeForm()">&times;</span>
+        <h3>Nouvelle Facture</h3>
+        <form>
+            <label>Référence :</label>
+            <input type="text" [(ngModel)]="factureReference" name="reference" readonly>            
+        
+            <label>Client :</label>
+            <input type="text" placeholder="Nom du client" required name="client">
+            <label>Adresse de client :</label>
+            <input type="text" placeholder="Adresse de client " required name="Adresse de client">
+
+            <label>entreprise client :</label>
+            <input type="text" placeholder="entreprise client " required name="entreprise client">
+
+            <label>ICE de client :</label>
+            <input type="text" placeholder="ICE de client" required name="ICE de client">
+        
+            <label>Date de Facture :</label>
+            <input type="date" required name="dateFacture">
+        
+            <label>Date d'Échéance :</label>
+            <input type="date" required name="dateEcheance">
+        
+            <!-- ✅ Champ de recherche produit -->
+    <div class="change-search-section">
+        <label>Ajouter un produit</label>
+        <input
+            type="text"
+            placeholder="Rechercher un produit par code barre ou reference..."
+            [(ngModel)]="discountSearchQuery"
+            (input)="filterDiscountProducts()"
+            name="discountSearchQuery"
+        />
+            
+        <!-- ✅ Liste des produits avec un scroll et max 4 éléments -->
+        <div class="product-list-container" *ngIf="discountFilteredProducts.length > 0">
+            <ul class="product-list">
+                <li *ngFor="let product of discountFilteredProducts.slice(0, 50)" (click)="selectProduct(product)">
+                    {{ product.name }} - {{ product.salesPrice | currency:'MAD' }}
+                </li>
+            </ul>
+        </div>
+    </div>
+<!-- ✅ Liste des produits ajoutés avec SCROLL -->
+<div class="selected-products-container">
+    <table class="selected-products">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix Unitaire TTC</th>
+                <th>TVA</th>
+                <th>Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let item of produitsSelectionnes; let i = index">
+                <td>{{ item.produit.name }}</td>
+                <td>
+                    <input type="number" [(ngModel)]="item.quantite" min="1" [max]="item.produit.quantity" name="quantite-{{i}}" (input)="checkStock(item)">
+                    <div *ngIf="item.quantite >= item.produit.quantity" class="error-message">
+                        La quantité de stock est {{ item.produit.quantity }}
+                    </div>
+                </td>                
+                <td>{{ item.produit.salesPrice | currency:'MAD' }}</td>
+                <td>{{ item.produit.tva }}</td>
+                <td>{{ item.quantite * item.produit.salesPrice | currency:'MAD' }}</td>
+                <td>
+                    <button class="btn-delete" (click)="removeProduct(i)">🗑️</button>
+                </td>
+            </tr>
+        </tbody>
+        
+    </table>
+</div>
+<label>Mode de Paiement :</label>
+            <select required name="modePaiement">
+                <option value="">Sélectionnez un mode de paiement</option>
+                <option value="CB">Carte Bancaire</option>
+                <option value="cheque">Chèque</option>
+                <option value="virement">Virement</option>
+                <option value="espece">Espèce</option>
+                <option value="uknown">vide</option>
+            </select>
+          <!-- ✅ Total bien visible -->
+<div class="total-container">
+    <h4>Montant Total:</h4>
+    <span class="total-amount">{{ calculTotal() | currency:'MAD' }}</span>
+</div>      
+<button type="submit" class="btn-primary-ajout" (click)="generateInvoiceAndPrint()">Imp et Ajouter la facture</button>
+            <button type="button" class="btn-secondary" (click)="closeForm()">Annuler</button>
+        </form>
+        
+    </div>
+</div>
+

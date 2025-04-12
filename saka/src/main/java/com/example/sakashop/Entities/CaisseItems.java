@@ -17,8 +17,8 @@ public class CaisseItems {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY) // Relation avec l'entité Item
-  @JoinColumn(name = "item_id", nullable = false) // Colonne pour la clé étrangère
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "item_id", nullable = false)
   private Item item;
 
   @Column(nullable = false)

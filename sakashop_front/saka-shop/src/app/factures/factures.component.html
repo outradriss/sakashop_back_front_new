@@ -1,4 +1,4 @@
-<div class="invoice-container">
+<div  class="invoice-container">
     <header>
         <h2>Gestion des Factures</h2>
         <button class="btn-primary" (click)="openForm()">➕ Nouvelle Facture</button>
@@ -12,53 +12,64 @@
                     <th>Référence</th>
                     <th>Client</th>
                     <th>Date</th>
-                    <th>Total (€)</th>
+                    <th>Total (MAD)</th>
                     <th>Statut</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>FAC-2024-001</td>
-                    <td>Jean Dupont</td>
-                    <td>12/02/2024</td>
-                    <td>450,00</td>
-                    <td><span class="badge paid">Payée</span></td>
+                <tr *ngFor="let facture of factures">
+                    <td>{{ facture.reference }}</td>
+                    <td>{{ facture.clientName }}</td>
+                    <td>{{ facture.dateFacture | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ facture.totalTTC | currency: 'MAD' }}</td>
                     <td>
-                        <button class="btn-edit">✏️</button>
-                        <button class="btn-delete">🗑️</button>
+                        <span [ngClass]="{'badge paid': facture.statusPaiement === 'payée', 'badge pending': facture.statusPaiement === 'en attente'}">
+                            {{ facture.statusPaiement }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-edit" (click)="modifierFacture(facture)">✏️</button>
+                        <button class="btn-delete" (click)="supprimerFacture(facture.id)">🗑️</button>
                     </td>
                 </tr>
             </tbody>
         </table>
     </div>
-</div>
+</div>    
 
 <!-- ✅ POPUP FACTURE PLEIN ÉCRAN -->
-<div *ngIf="formPopup" class="modal">
+<div id="invoice-container" *ngIf="formPopup" class="modal">
     <div class="modal-content">
         <span class="close" (click)="closeForm()">&times;</span>
-        <h3>Nouvelle Facture</h3>
+        <h3>{{ isEditMode ? 'Modifier Facture' : 'Nouvelle Facture' }}</h3>
         <form>
             <label>Référence :</label>
             <input type="text" [(ngModel)]="factureReference" name="reference" readonly>            
         
+            
             <label>Client :</label>
-            <input type="text" placeholder="Nom du client" required name="client">
-            <label>Adresse de client :</label>
-            <input type="text" placeholder="Adresse de client " required name="Adresse de client">
-
-            <label>entreprise client :</label>
-            <input type="text" placeholder="entreprise client " required name="entreprise client">
-
+            <input type="text" placeholder="Nom du client" required name="client" [(ngModel)]="clientName">
+            
             <label>ICE de client :</label>
-            <input type="text" placeholder="ICE de client" required name="ICE de client">
+            <input type="text" placeholder="ICE de client" required name="ICE de client" [(ngModel)]="clientICE">
+            
+            <label>Code Client :</label>
+            <input type="text" placeholder="Code Client" required name="clientCode" [(ngModel)]="clientCode">
+            
+            <label>Adresse de client :</label>
+            <input type="text" placeholder="Adresse de client " required name="Adresse de client" [(ngModel)]="adresse">
+            
+            <label>Entreprise client :</label>
+            <input type="text" placeholder="Entreprise client " required name="entreprise client" [(ngModel)]="entreprise">
+
         
             <label>Date de Facture :</label>
-            <input type="date" required name="dateFacture">
-        
+            <input type="date" required name="dateFacture" [(ngModel)]="dateFacture">
+
             <label>Date d'Échéance :</label>
-            <input type="date" required name="dateEcheance">
+            <input type="date" required name="dateEcheance" [(ngModel)]="dateEcheance">
+
         
             <!-- ✅ Champ de recherche produit -->
     <div class="change-search-section">
@@ -80,15 +91,16 @@
             </ul>
         </div>
     </div>
-<!-- ✅ Liste des produits ajoutés avec SCROLL -->
+<!-- ✅ Liste des produits sélectionnés avec vérification -->
 <div class="selected-products-container">
     <table class="selected-products">
         <thead>
             <tr>
                 <th>Produit</th>
                 <th>Quantité</th>
-                <th>Prix Unitaire TTC</th>
-                <th>TVA</th>
+                <th>Prix H.T.</th>
+                <th>TVA (%)</th>
+                <th>Prix T.T.C.</th>
                 <th>Total</th>
                 <th>Actions</th>
             </tr>
@@ -96,39 +108,86 @@
         <tbody>
             <tr *ngFor="let item of produitsSelectionnes; let i = index">
                 <td>{{ item.produit.name }}</td>
+
                 <td>
-                    <input type="number" [(ngModel)]="item.quantite" min="1" [max]="item.produit.quantity" name="quantite-{{i}}" (input)="checkStock(item)">
+                    <input
+                        type="number"
+                        [(ngModel)]="item.quantite"
+                        min="1"
+                        [max]="item.produit.quantity"
+                        name="quantite-{{i}}"
+                        (input)="checkStock(item)"
+                    />
                     <div *ngIf="item.quantite >= item.produit.quantity" class="error-message">
                         La quantité de stock est {{ item.produit.quantity }}
                     </div>
-                </td>                
-                <td>{{ item.produit.salesPrice | currency:'MAD' }}</td>
-                <td>{{ item.produit.tva }}</td>
-                <td>{{ item.quantite * item.produit.salesPrice | currency:'MAD' }}</td>
+                </td>
+
+                <td>
+                    <input
+                        type="number"
+                        [(ngModel)]="item.produit.buyPrice"
+                        name="prixht-{{i}}"
+                        min="0"
+                        step="0.01"
+                        (input)="updateTTC(item)"
+                    />
+                </td>
+
+                <td>
+                    <input
+                        type="number"
+                        [(ngModel)]="item.produit.tva"
+                        name="tva-{{i}}"
+                        min="0"
+                        step="1"
+                        (input)="updateTTC(item)"
+                    />
+                </td>
+
+                <td>{{ (+item.produit.buyPrice) + ((+item.produit.buyPrice) * (+item.produit.tva) / 100) | number:'1.2-2' }} MAD</td>
+                <td>{{ item.quantite * ((+item.produit.buyPrice) + ((+item.produit.buyPrice) * (+item.produit.tva) / 100)) | currency:'MAD' }}</td>
+                
                 <td>
                     <button class="btn-delete" (click)="removeProduct(i)">🗑️</button>
                 </td>
             </tr>
+
+            <tr *ngIf="produitsSelectionnes.length === 0">
+                <td colspan="7" class="text-center">Aucun produit sélectionné</td>
+            </tr>
         </tbody>
-        
     </table>
 </div>
+
+
+
+
 <label>Mode de Paiement :</label>
-            <select required name="modePaiement">
-                <option value="">Sélectionnez un mode de paiement</option>
-                <option value="CB">Carte Bancaire</option>
-                <option value="cheque">Chèque</option>
-                <option value="virement">Virement</option>
-                <option value="espece">Espèce</option>
-                <option value="uknown">vide</option>
-            </select>
+<select required name="modePaiement" [(ngModel)]="modePaiement">
+    <option value="">Sélectionnez un mode de paiement</option>
+    <option value="CB">Carte Bancaire</option>
+    <option value="cheque">Chèque</option>
+    <option value="virement">Virement</option>
+    <option value="espece">Espèce</option>
+    <option value="uknown">vide</option>
+</select>
+<label>statut de Paiement :</label>
+<select required name="statusPaiement" [(ngModel)]="statusPaiement">
+    <option value="">Sélectionnez un status de paiement</option>
+    <option value="payé">payé</option>
+    <option value="non payé">non payé</option>
+</select>
+
           <!-- ✅ Total bien visible -->
 <div class="total-container">
     <h4>Montant Total:</h4>
     <span class="total-amount">{{ calculTotal() | currency:'MAD' }}</span>
 </div>      
-<button type="submit" class="btn-primary-ajout" (click)="generateInvoiceAndPrint()">Imp et Ajouter la facture</button>
-            <button type="button" class="btn-secondary" (click)="closeForm()">Annuler</button>
+<button type="submit" class="btn-primary-ajout" (click)="generateInvoiceAndPrint()">
+    Imp et {{ isEditMode ? 'Mettre à jour' : 'Ajouter' }} la facture
+  </button>
+              <button type="button" class="btn-secondary" (click)="closeForm()">Annuler</button>
         </form>
         
     </div>

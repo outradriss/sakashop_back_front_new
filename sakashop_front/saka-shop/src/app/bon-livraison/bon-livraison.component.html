@@ -1,0 +1,150 @@
+<div class="invoice-container">
+    <header>
+      <h2>Gestion des Bons de Livraison</h2>
+      <button class="btn-primary" (click)="openForm()">➕ Nouveau Bon de Livraison</button>
+    </header>
+  
+    <div class="invoice-content">
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>Référence</th>
+            <th>Client</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let bl of bonsLivraison">
+            <td>{{ bl.reference }}</td>
+            <td>{{ bl.clientName }}</td>
+            <td>{{ bl.dateLivraison | date: 'dd/MM/yyyy' }}</td>
+            <td>
+              <button class="btn-edit" (click)="modifierBL(bl)">✏️</button>
+              <button class="btn-delete" (click)="supprimerBL(bl.id)">🗑️</button>
+              <button class="btn-print" (click)="imprimerBL(bl)">🖨️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- ✅ POPUP BL -->
+  <div *ngIf="formPopup" class="modal" id="bl-container">
+    <div class="modal-content">
+      <span class="close" (click)="closeForm()">&times;</span>
+      <h3>{{ isEditMode ? 'Modifier Bon de Livraison' : 'Nouveau Bon de Livraison' }}</h3>
+  
+      <form>
+        <label>Référence :</label>
+        <input type="text" [(ngModel)]="blReference" name="reference" readonly />
+  
+        <!-- ✅ Client existant -->
+        <label>Client existant :</label>
+        <select [(ngModel)]="selectedClientId" name="clientSelect" (change)="onClientSelected()">
+          <option value="">-- Sélectionner un client --</option>
+          <option *ngFor="let client of clients" [value]="client.id">
+            {{ client.name }} - {{ client.ice }}
+          </option>
+        </select>
+  
+        <!-- ✅ Nouveau client (reste vide même si client existant sélectionné) -->
+        <label>Nouveau client :</label>
+        <input type="text" placeholder="Nom du nouveau client" [(ngModel)]="nouveauClientNom" name="nouveauClientNom" />
+  
+        <label>Nom :</label>
+        <input type="text" placeholder="Nom du client" [(ngModel)]="clientName" name="clientName" />
+  
+        <label>ICE :</label>
+        <input type="text" placeholder="ICE du client" [(ngModel)]="clientICE" name="clientICE" />
+  
+        <label>Adresse :</label>
+        <input type="text" placeholder="Adresse du client" [(ngModel)]="adresse" name="adresse" />
+  
+        <label>Date de Livraison :</label>
+        <input type="date" [(ngModel)]="dateLivraison" name="dateLivraison" required />
+  
+        <div class="change-search-section">
+          <label>Ajouter un produit</label>
+          <input
+            type="text"
+            placeholder="Rechercher un produit par code barre ou référence..."
+            [(ngModel)]="discountSearchQuery"
+            (input)="filterDiscountProducts()"
+            name="discountSearchQuery"
+          />
+  
+          <div class="product-list-container" *ngIf="discountFilteredProducts.length > 0">
+            <ul class="product-list">
+              <li *ngFor="let product of discountFilteredProducts.slice(0, 50)" (click)="selectProduct(product)">
+                {{ product.name }} - {{ product.salesPrice | currency:'MAD' }}
+              </li>
+            </ul>
+          </div>
+        </div>
+  
+        <div class="selected-products-container">
+          <table class="selected-products">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix H.T.</th>
+                <th>TVA (%)</th>
+                <th>Prix T.T.C.</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of produitsSelectionnes; let i = index">
+                  <td>{{ item.produit.name }}</td>
+                  <td>
+                    <input type="number" [(ngModel)]="item.quantite" name="quantite-{{i}}" min="1" />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      [(ngModel)]="item.produit.buyPrice"
+                      name="prixht-{{i}}"
+                      min="0"
+                      step="0.01"
+                      (input)="updateTTC(item)"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      [(ngModel)]="item.produit.tva"
+                      name="tva-{{i}}"
+                      min="0"
+                      step="1"
+                      (input)="updateTTC(item)"
+                    />
+                  </td>
+                  <td>
+                    {{
+                      ((+item.produit.buyPrice + (+item.produit.buyPrice * +item.produit.tva / 100)) * item.quantite)
+                        | number: '1.2-2'
+                    }} MAD
+                  </td>
+                  <td>
+                    <button class="btn-delete" (click)="removeProduct(i)">🗑️</button>
+                  </td>
+                </tr>
+                <tr *ngIf="produitsSelectionnes.length === 0">
+                  <td colspan="6" class="text-center">Aucun produit sélectionné</td>
+                </tr>
+              </tbody>
+              
+          </table>
+        </div>
+  
+        <button type="submit" class="btn-primary-ajout" (click)="generateBLAndPrint()">
+          Imprimer et {{ isEditMode ? 'Mettre à jour' : 'Ajouter' }} le BL
+        </button>
+        <button type="button" class="btn-secondary" (click)="closeForm()">Annuler</button>
+      </form>
+    </div>
+  </div>
+  

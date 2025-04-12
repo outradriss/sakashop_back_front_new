@@ -1,6 +1,7 @@
 package com.example.sakashop.Entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +19,7 @@ import java.util.List;
 @Entity
 @Table(name = "items")
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "caisseItems", "factures"})
 public class Item {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,6 +63,11 @@ public class Item {
   private List<Credit> credits = new ArrayList<>();
   @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<CaisseItems> caisseItems = new ArrayList<>();
+
+  @ManyToMany(mappedBy = "items")
+  @JsonIgnore
+  private List<Factures> factures = new ArrayList<>();
+
 
   public String getComment() {
     return comment;
@@ -223,5 +230,13 @@ public class Item {
 
   public void setSupplier(String supplier) {
     this.supplier = supplier;
+  }
+
+  public List<Factures> getFactures() {
+    return factures;
+  }
+
+  public void setFactures(List<Factures> factures) {
+    this.factures = factures;
   }
 }

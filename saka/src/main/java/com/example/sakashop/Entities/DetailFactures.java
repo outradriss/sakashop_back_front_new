@@ -32,7 +32,7 @@ public class DetailFactures {
 
   @ManyToOne
   @JoinColumn(name = "bon_de_livraison_id")
-  private BonDeLivraison bonDeLivraison;  // ✅ Nom cohérent avec `mappedBy` dans `BonDeLivraison`
+  private BonDeLivraison bonDeLivraison;
 
   public Double getTotalLigne() {
     return this.quantite * this.prixUnitaire;

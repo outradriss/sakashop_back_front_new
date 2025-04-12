@@ -26,7 +26,7 @@ header {
     border-radius: 5px;
 }
 
-/* Contenu des factures */
+/* Contenu */
 .invoice-content {
     flex: 1;
     background: white;
@@ -54,7 +54,7 @@ header {
     color: white;
 }
 
-/* Badges */
+/* Badges (réutilisables si besoin) */
 .badge {
     padding: 5px 10px;
     border-radius: 5px;
@@ -93,8 +93,9 @@ header {
 .btn-primary:hover { background: #d8e42c; }
 .btn-edit { background: #ffc107; color: white; padding: 5px; border: none; cursor: pointer; }
 .btn-delete { background: #dc3545; color: white; padding: 5px; border: none; cursor: pointer; }
+.btn-print { background: #007bff; color: white; padding: 5px; border: none; cursor: pointer; }
 
-/* ✅ MODAL - POPUP PLEIN ÉCRAN */
+/* ✅ MODAL - POPUP */
 .modal {
     position: fixed;
     z-index: 1000;
@@ -102,31 +103,29 @@ header {
     top: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5); /* Fond assombri */
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.3s ease-in-out;
-    padding: 2vh 2vw; /* ✅ Ajoute un petit espace en haut, bas, gauche et droite */
+    padding: 2vh 2vw;
 }
 
 .modal-content {
     background: white;
     padding: 30px;
-    width: 95vw; /* ✅ S'étend presque sur toute la largeur */
-    height: 95vh; /* ✅ S'étend presque sur toute la hauteur */
-    max-width: 1600px; /* ✅ Largeur maximale */
-    max-height: 900px; /* ✅ Hauteur maximale */
+    width: 95vw;
+    height: 95vh;
+    max-width: 1600px;
+    max-height: 900px;
     border-radius: 12px;
     box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
     position: relative;
     text-align: left;
-    overflow-y: auto; /* ✅ Permet de scroller si besoin */
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
 }
 
-/* ✅ Bouton de fermeture */
 .close {
     position: absolute;
     top: 15px;
@@ -135,14 +134,12 @@ header {
     cursor: pointer;
     color: #333;
     font-weight: bold;
-    transition: color 0.3s;
 }
 
 .close:hover {
     color: red;
 }
 
-/* ✅ Titres */
 h3 {
     font-size: 22px;
     font-weight: bold;
@@ -150,7 +147,6 @@ h3 {
     margin-bottom: 15px;
 }
 
-/* ✅ Étiquettes en noir clair */
 label {
     display: block;
     font-size: 14px;
@@ -159,7 +155,6 @@ label {
     font-weight: bold;
 }
 
-/* ✅ Champs du formulaire */
 input, select {
     width: 100%;
     padding: 10px;
@@ -170,20 +165,16 @@ input, select {
     background-color: #f9f9f9;
 }
 
-/* ✅ Style du menu déroulant */
 select {
     cursor: pointer;
     background: white;
 }
 
-/* ✅ Boutons d'action */
 .btn-container {
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
 }
-
-
 
 .btn-secondary {
     background: #ccc;
@@ -193,76 +184,15 @@ select {
     border-radius: 6px;
     font-size: 16px;
     cursor: pointer;
-    transition: background 0.3s ease-in-out;
 }
 
 .btn-secondary:hover {
     background: #b3b3b3;
 }
-/* ✅ Section produits */
-.product-list {
-    background: white;
-    max-height: 120px; /* ✅ Max 4 produits */
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    margin-top: 5px;
-}
 
-.product-item {
-    padding: 10px;
-    cursor: pointer;
-}
-
-.product-item:hover {
-    background: #f1f1f1;
-}
-
-/* ✅ Table des produits sélectionnés */
-.selected-products {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-.selected-products th, .selected-products td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-.selected-products th {
-    background: #007bff;
-    color: white;
-}
-
-/* ✅ Bouton supprimer */
-.btn-delete {
-    background: #dc3545;
-    color: white;
-    padding: 5px;
-    border: none;
-    cursor: pointer;
-}
-/* ✅ Ajout d'un espace entre les éléments */
-.change-product-section,
-.change-order-search-section,
-.change-search-section,
-.change-difference-section,
-.change-popup-actions {
-  margin-bottom: 20px;
-}
-.change-search-input {
-    flex-grow: 1;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-  }
-  
-  /* ✅ Conteneur de la liste des produits avec un scroll */
+/* Produits */
 .product-list-container {
-    max-height: 160px; /* 4 éléments x 40px par élément */
+    max-height: 160px;
     overflow-y: auto;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -271,7 +201,6 @@ select {
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* ✅ Style de la liste des produits */
 .product-list {
     list-style: none;
     padding: 0;
@@ -286,23 +215,21 @@ select {
 }
 
 .product-list li:last-child {
-    border-bottom: none; /* Supprime la bordure du dernier élément */
+    border-bottom: none;
 }
 
-/* ✅ Effet au survol */
 .product-list li:hover {
     background: #f1f1f1;
 }
-/* ✅ Ajout d'un scroll sur la liste des produits ajoutés */
+
 .selected-products-container {
-    max-height: 200px; /* ✅ Ajuste cette valeur si nécessaire */
+    max-height: 200px;
     overflow-y: auto;
     border: 1px solid #ddd;
     border-radius: 5px;
     margin-top: 10px;
 }
 
-/* ✅ Garde l'en-tête du tableau toujours visible */
 .selected-products thead {
     position: sticky;
     top: 0;
@@ -311,7 +238,6 @@ select {
     z-index: 2;
 }
 
-/* ✅ Ajuste la largeur et l'affichage du tableau */
 .selected-products {
     width: 100%;
     border-collapse: collapse;
@@ -323,7 +249,6 @@ select {
     border-bottom: 1px solid #ddd;
 }
 
-/* ✅ Style pour améliorer la visibilité */
 .selected-products tbody tr:hover {
     background: #f1f1f1;
 }
@@ -333,6 +258,7 @@ select {
     font-size: 12px;
     margin-top: 4px;
 }
+
 .total-container {
     margin-top: 20px;
     padding: 15px;
@@ -350,18 +276,12 @@ select {
     font-weight: bold;
     color: #d32f2f;
 }
+
 @media print {
-    .invoice-table th { 
-      background: #000 !important; 
-      color: #fff !important; 
-      -webkit-print-color-adjust: exact; 
-      print-color-adjust: exact; 
+    .invoice-table th {
+        background: #000 !important;
+        color: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
-    .invoice-total .total { 
-      background: #000 !important; 
-      color: #fff !important; 
-      -webkit-print-color-adjust: exact; 
-      print-color-adjust: exact; 
-    }
-  }
-  
+}

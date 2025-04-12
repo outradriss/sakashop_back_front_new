@@ -29,6 +29,7 @@ import { StockCaisseComponent } from './stock-caisse/stock-caisse.component';
 import { FlushCaisseComponent } from './flush-caisse/flush-caisse.component';
 import { OpenCaisseComponent } from './open-caisse/open-caisse.component';
 import { FacturesComponent } from './factures/factures.component';
+import { BonLivraisonComponent } from './bon-livraison/bon-livraison.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -48,6 +49,7 @@ import { FacturesComponent } from './factures/factures.component';
    FlushCaisseComponent,
    OpenCaisseComponent,
    FacturesComponent,
+   BonLivraisonComponent,
   ],
   imports: [
     BrowserModule,

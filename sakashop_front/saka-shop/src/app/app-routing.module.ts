@@ -17,6 +17,7 @@ import { LockGuard } from './guards/lock.guard';
 import { FlushCaisseComponent } from './flush-caisse/flush-caisse.component';
 import { OpenCaisseComponent } from './open-caisse/open-caisse.component';
 import { FacturesComponent } from './factures/factures.component';
+import { BonLivraisonComponent } from './bon-livraison/bon-livraison.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent  },
@@ -34,6 +35,7 @@ const routes: Routes = [
   { path: 'flush-caisse', component: FlushCaisseComponent ,canActivate: [AuthGuard] },
   { path: 'open-caisse', component: OpenCaisseComponent ,canActivate: [AuthGuard] },
   { path: 'gestion-facture', component: FacturesComponent ,canActivate: [AuthGuard] },
+  { path: 'bon-livraison', component: BonLivraisonComponent ,canActivate: [AuthGuard] },
   { path: '**', component: LoginComponent  },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 ];

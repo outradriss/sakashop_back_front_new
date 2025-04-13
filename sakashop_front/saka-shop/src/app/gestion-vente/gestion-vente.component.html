@@ -82,7 +82,8 @@
         </div>
       </div>
     </div>
-
+    <!-- ✅ Boutons de navigation (style dashboard) -->
+   
     <!-- Meilleure Vente -->
 <div *ngIf="currentView === 'meilleur-vente'" class="meilleure-vente-container">
   <!-- En-tête -->
@@ -115,13 +116,6 @@
     </div>
   </div>
 
-  <!-- Graphiques -->
-  <div class="charts-container">
-    <div class="chart">
-      <h3>📦 Évolution des ventes</h3>
-      <canvas id="salesChart"></canvas>
-    </div>
-  </div>
 
   <!-- Tableau des Meilleures Ventes -->
   <div class="table-container">
@@ -149,4 +143,12 @@
   <div class="actions">
     <button class="btn-export" (click)="exportToCSV()">📥 Exporter en CSV</button>
   </div>
+</div>
+<div class="navigation-buttons">
+  <button (click)="navigateTo('gestion-product/list')">Gestion de STOCK</button>
+  <button (click)="navigateTo('turnover')">Chiffre d'Affaire</button>
+  <button (click)="navigateTo('bon-livraison')">Géstion BL </button>
+  <button (click)="navigateTo('gestion-facture')">🧾 Gestion Facturese</button>
+  <button (click)="navigateTo('gestion-caisse')"> Gestion des caisses </button>
+  <button class="btn-logout" (click)="logout()">Quitter</button>
 </div>

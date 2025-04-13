@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/api")
@@ -47,4 +48,33 @@ public class AddCaisseController {
         .body(Collections.emptyList());
     }
   }
+
+  @DeleteMapping("/caisses/{id}")
+  public ResponseEntity<?> deleteCaisse(@PathVariable Long id) {
+    try {
+      caisseService.deleteCaisseById(id);
+      return ResponseEntity.ok().build();
+    } catch (RuntimeException e) {
+      if (e.getMessage().contains("Impossible de supprimer la caisse")) {
+        // Message métier contrôlé
+        return ResponseEntity.ok(Map.of("status", "warning", "message", e.getMessage()));
+      } else {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("Erreur lors de la suppression : " + e.getMessage());
+      }
+    }
+  }
+
+
+  @PutMapping("/caisses/{id}")
+  public ResponseEntity<?> updateCaisse(@PathVariable Long id, @RequestBody AddCaisseDTO caisseDTO) {
+    try {
+      Caisse updated = caisseService.updateCaisse(id, caisseDTO);
+      return ResponseEntity.ok(updated);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body("Erreur lors de la mise à jour : " + e.getMessage());
+    }
+  }
+
 }

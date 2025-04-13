@@ -232,23 +232,32 @@
     background-color: #17a2b8;
     color: #fff;
   }
-  
   .navigation-buttons button:nth-child(3) {
+    background-color: #17a2b8;
+    color: #fff;
+  }
+  
+  .navigation-buttons button:nth-child(4) {
     background-color: #ffc107;
     color: #fff;
   }
-  .navigation-buttons button:nth-child(4) {
+  .navigation-buttons button:nth-child(5) {
     background-color: #579fcf;
     color: #fff;
    
   }
-  .navigation-buttons button:nth-child(5) {
+  .navigation-buttons button:nth-child(6) {
     background-color: #ff0783;
     color: #fff;
   }
-  .navigation-buttons button:nth-child(6) {
+  .navigation-buttons button:nth-child(7) {
     background-color: #ff0707;
     color: #fff;
     transform: translateX(150%);
+  }
+  .error-message {
+    color: red;
+    font-size: 13px;
+    margin-top: 5px;
   }
   

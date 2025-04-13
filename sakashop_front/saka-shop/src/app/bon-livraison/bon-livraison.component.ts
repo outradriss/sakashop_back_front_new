@@ -3,6 +3,7 @@ import { ProductService } from '../service/product-service/product.service';
 import { Product } from '../models/product.model';
 import { FactureService } from '../service/facture.service';
 import { BonLivraisonServiceService } from '../bon-livraison-service.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-bon-livraison',
@@ -38,7 +39,8 @@ filteredBonsLivraison: any[] = [];
   constructor(
     private productService: ProductService,
     private factureService: FactureService,
-    private bonLivraisonService: BonLivraisonServiceService
+    private bonLivraisonService: BonLivraisonServiceService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -267,12 +269,12 @@ filteredBonsLivraison: any[] = [];
             </div>
             <div class='invoice-info'>
               <div>
-                <strong>Émetteur</strong>
-                <p>BAGGAGIO</p>
-                <p>Rue 107, N°31 Boulevard Oued Sbou Hay Oulfa, 22200 Casablanca</p>
-                <p>Tél.: 0667747180</p>
-                <p>Email: mekka.technologie@gmail.com</p>
-              </div>
+              <strong>Émetteur</strong>
+              <p>BAGGAGIO</p>
+              <p>18, Rue ibn habib RDC Résidence ANAOURASS Casablanca</p>
+              <p>Tél.: 05222-66800 | +2126-79899480</p>
+              <p>Email: contact@monbagage.ma</p>
+            </div>
               <div>
                 <strong>Adressé à</strong>
                 <p>${this.clientName}</p>
@@ -339,7 +341,10 @@ filteredBonsLivraison: any[] = [];
     const prixTTC = prixHT + (prixHT * tva / 100);
     item.produit.prixTTC = prixTTC;
   }
-
+  navigateTo(route: string) {
+    this.router.navigate([`/${route}`]);
+  }
+  
   envoyerBL(): void {
     if (this.produitsSelectionnes.length === 0) {
       alert("Ajoutez au moins un produit avant d'envoyer le bon de livraison !");
@@ -428,6 +433,10 @@ filteredBonsLivraison: any[] = [];
       item.quantite = item.produit.quantity;
     }
   }
-  
+  logout() {
+    localStorage.removeItem('token');
+    // Redirige l'utilisateur vers la page de login
+    this.router.navigate(['/login']);
+  }
 
 }

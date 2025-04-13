@@ -15,4 +15,8 @@ export class AddCaisseService {
   getCaisses(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/all`); // Endpoint pour récupérer toutes les caisses
   }
+  deleteCaisse(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/caisses/${id}`);
+  }
+  
 }

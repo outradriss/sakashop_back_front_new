@@ -19,6 +19,8 @@ export class GestionCaisseComponent {
   isSubmitting = false;
   selectedCaisseName: string = ''; 
   cachedProducts: any[] = [];
+  editMode = false;
+editingCaisseId: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -30,10 +32,19 @@ export class GestionCaisseComponent {
       nom: ['', Validators.required],
       pays: ['', Validators.required],
       ville: ['', Validators.required],
-      utilisateur: ['', Validators.required],
-      password: ['', Validators.required],
-      role: [{ value: 'CAISSIER', disabled: true }] // Champ readonly
+      utilisateur: ['', [Validators.required, Validators.email]],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(10),
+          Validators.pattern('^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,}$')
+        ]
+      ],
+      
+      role: [{ value: 'CAISSIER', disabled: true }]
     });
+    
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras?.state?.['selectedProducts']) {
       this.cachedProducts = navigation.extras.state['selectedProducts'];
@@ -42,7 +53,7 @@ export class GestionCaisseComponent {
   }
 
   ngOnInit(): void {
-    this.loadCaisses(); // Charger les caisses au démarrage
+    this.loadCaisses(); 
   }
 
   loadCaisses(): void {
@@ -74,9 +85,9 @@ export class GestionCaisseComponent {
       this.addCaisseService.addCaisse(newCaisse).subscribe(
         (response: any) => {
           console.log('Caisse ajoutée avec succès :', response);
-          this.closeAddCaissePopup(); // Fermer le popup après l'ajout
-          this.loadCaisses(); // Recharger les caisses après ajout
-          this.isSubmitting = false; // Réactiver le bouton
+          this.closeAddCaissePopup(); 
+          this.loadCaisses(); 
+          this.isSubmitting = false; 
         },
         (error: any) => {
           console.error("Erreur lors de l'ajout de la caisse :", error);
@@ -88,41 +99,56 @@ export class GestionCaisseComponent {
   
 
   editCaisse(caisse: any): void {
-    console.log('Modifier caisse:', caisse);
+    this.editMode = true;
+    this.editingCaisseId = caisse.id;
+    this.isAddCaissePopupVisible = true;
+    this.addCaisseForm.patchValue({
+      nom: caisse.nom,
+      pays: caisse.pays,
+      ville: caisse.ville,
+      utilisateur: caisse.utilisateur.split('@')[0], // retirer le domaine
+      password: '', // mot de passe non modifiable ici
+      role: 'CAISSIER'
+    });
   }
-
+  
   deleteCaisse(caisse: any): void {
-   // this.caisses = this.caisses.filter((c) => c.id !== caisse.id);
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette caisse ?")) return;
+  
+    this.addCaisseService.deleteCaisse(caisse.id).subscribe(
+      (res: any) => {
+        if (res?.status === 'warning') {
+          alert(res.message);
+        } else {
+          alert("✅ Caisse supprimée avec succès");
+          this.loadCaisses();
+        }
+      },
+      (error) => {
+        console.error("Erreur côté serveur :", error);
+        alert("Erreur lors de la suppression !");
+      }
+    );
   }
+  
+
+
   navigateTo(route: string): void {
     this.router.navigate([`/${route}`]);
   }
 
-  navigateToStock(caisseName: string): void {
-    this.selectedCaisseName = caisseName; // Stocker le nom pour référence locale
-    this.router.navigate(['/stock-caisse'], { queryParams: { caisseName } }); // Naviguer avec le nom de la caisse
-  }
-  
-  handleStockSaved(products: any[]): void {
-    this.cachedProducts = products; // Stocker les produits enregistrés
-    this.isAddCaissePopupVisible = true; // Rouvrir le popup "Ajouter Caisse"
-  }
-  openStockManagement(): void {
-    const caisseName = this.addCaisseForm.get('nom')?.value;
-    if (caisseName) {
-      // Stocker les produits dans le service partagé
-      this.caisseStockService.setCachedProducts(this.cachedProducts);
-  
-      // Naviguer vers le composant avec le nom de la caisse
-      this.router.navigate(['/stock-caisse'], { queryParams: { caisseName } });
-    }
-  }
+
   
   logout() {
     localStorage.removeItem('token');
     // Redirige l'utilisateur vers la page de login
     this.router.navigate(['/login']);
   }
-  
+  resetForm(): void {
+    this.closeAddCaissePopup();
+    this.editMode = false;
+    this.editingCaisseId = null;
+    this.isSubmitting = false;
+  }
 
 }

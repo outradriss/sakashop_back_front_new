@@ -39,7 +39,15 @@
         </tbody>
       </table>
     </div>
-  </div>
+
+    <div class="navigation-buttons">
+      <button (click)="navigateTo('gestion-product/list')">Gestion de STOCK</button>
+      <button (click)="navigateTo('turnover')">Chiffre d'Affaire</button>
+      <button (click)="navigateTo('gestion-vente')">Géstion de vente </button>
+      <button (click)="navigateTo('gestion-facture')">🧾 Gestion Facturese</button>
+      <button (click)="navigateTo('gestion-caisse')"> Gestion des caisses </button>
+      <button class="btn-logout" (click)="logout()">Quitter</button>
+    </div>
   
   <!-- ✅ POPUP BL -->
   <div *ngIf="formPopup" class="modal" id="bl-container">
@@ -165,5 +173,3 @@
         <button type="button" class="btn-secondary" (click)="closeForm()">Annuler</button>
       </form>
     </div>
-  </div>
-  

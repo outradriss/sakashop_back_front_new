@@ -364,4 +364,59 @@ select {
       print-color-adjust: exact; 
     }
   }
+  .navigation-buttons {
+    position: fixed;
+    bottom: 30px; /* Espace par rapport au bas de la page */
+    left: 40%; /* Centre horizontalement */
+    transform: translateX(-30%); /* Ajustement pour centrer */
+    display: flex;
+    gap: 20px; /* Espace entre les boutons */
+  }
   
+  /* Style pour les boutons */
+  .navigation-buttons button {
+    padding: 15px 30px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+    
+    .navigation-buttons button:hover {
+      background-color: #0056b3;
+      color: #fff;
+    }
+    
+    .navigation-buttons button:nth-child(1) {
+      background-color: #007bff;
+      color: #fff;
+    }
+    
+    .navigation-buttons button:nth-child(2) {
+      background-color: #17a2b8;
+      color: #fff;
+    }
+    .navigation-buttons button:nth-child(3) {
+      background-color: #17a2b8;
+      color: #fff;
+    }
+    
+    .navigation-buttons button:nth-child(4) {
+      background-color: #ffc107;
+      color: #fff;
+    }
+    .navigation-buttons button:nth-child(5) {
+      background-color: #579fcf;
+      color: #fff;
+     
+    }
+    .navigation-buttons button:nth-child(6) {
+      background-color: #ff0783;
+      color: #fff;
+    }
+    .navigation-buttons button:nth-child(7) {
+      background-color: #ff0707;
+      color: #fff;
+      transform: translateX(150%);
+    }

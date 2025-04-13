@@ -44,9 +44,15 @@
                 </tr>
             </tbody>
         </table>
-    </div>
-</div>    
-
+    </div> 
+<div class="navigation-buttons">
+    <button (click)="navigateTo('gestion-product/list')">Gestion de STOCK</button>
+    <button (click)="navigateTo('turnover')">Chiffre d'Affaire</button>
+    <button (click)="navigateTo('gestion-vente')">Géstion de vente </button>
+    <button (click)="navigateTo('bon-livraison')">🧾 Gestion BL</button>
+    <button (click)="navigateTo('gestion-caisse')"> Gestion des caisses </button>
+    <button class="btn-logout" (click)="logout()">Quitter</button>
+  </div>
 <!-- ✅ POPUP FACTURE PLEIN ÉCRAN -->
 <div id="invoice-container" *ngIf="formPopup" class="modal">
     <div class="modal-content">
@@ -169,9 +175,6 @@
     </table>
 </div>
 
-
-
-
 <label>Mode de Paiement :</label>
 <select required name="modePaiement" [(ngModel)]="modePaiement">
     <option value="">Sélectionnez un mode de paiement</option>
@@ -201,4 +204,5 @@
         
     </div>
 </div>
+
 

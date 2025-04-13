@@ -3,6 +3,7 @@ import { ProductService } from '../service/product-service/product.service';
 import { Product } from '../models/product.model';
 import { ChangeDetectorRef } from '@angular/core';
 import { FactureService } from '../service/facture.service';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -42,7 +43,7 @@ export class FacturesComponent {
   factureSelectionnee: any = null;
   isEditMode: boolean = false;
 facturesOriginal: any[] = []; 
-  constructor(private productService: ProductService , private cdRef: ChangeDetectorRef , private factureService : FactureService)  { }
+  constructor(private productService: ProductService , private cdRef: ChangeDetectorRef , private factureService : FactureService , private router:Router)  { }
 
   ngOnInit() {
     this.loadProducts();
@@ -250,9 +251,9 @@ generateInvoiceAndPrint(): void {
             <div>
               <strong>Émetteur</strong>
               <p>BAGGAGIO</p>
-              <p>Rue 107, N°31 Boulevard Oued Sbou Hay Oulfa, 22200 Casablanca</p>
-              <p>Tél.: 0667747180</p>
-              <p>Email: mekka.technologie@gmail.com</p>
+              <p>18, Rue ibn habib RDC Résidence ANAOURASS Casablanca</p>
+              <p>Tél.: 05222-66800 | +2126-79899480</p>
+              <p>Email: contact@monbagage.ma</p>
             </div>
             <div>
               <strong>Adressé à</strong>
@@ -534,7 +535,17 @@ updateTTC(item: any): void {
 
 
 
+navigateTo(route: string): void {
+  this.router.navigate([`/${route}`]);
+}
 
+
+
+logout() {
+  localStorage.removeItem('token');
+  // Redirige l'utilisateur vers la page de login
+  this.router.navigate(['/login']);
+}
 
 
 

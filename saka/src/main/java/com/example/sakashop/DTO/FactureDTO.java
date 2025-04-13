@@ -58,11 +58,10 @@ public class FactureDTO {
     this.totalTTC = facture.getTotalTTC();
 
 
-
-    // ✅ Récupération des quantités sélectionnées dans la facture
     this.itemQuantities = facture.getFactureItems().stream()
       .map(factureItem -> new ItemQuantityDTO(
         factureItem.getItem().getId(),
+        factureItem.getItem().getName(),
         factureItem.getQuantite(),
         factureItem.getPrixHT(),
         factureItem.getTva(),
@@ -71,11 +70,7 @@ public class FactureDTO {
       ))
       .collect(Collectors.toList());
   }
-
-
-
-
-  public List<ItemDTO> getItems() {
+    public List<ItemDTO> getItems() {
     return items;
   }
 

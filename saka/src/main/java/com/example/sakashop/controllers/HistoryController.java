@@ -44,10 +44,11 @@ public class HistoryController {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur interne : " + ex.getMessage());
     }
   }
+
   @GetMapping("/ALLToDay")
-  public ResponseEntity<?> getAllProductHistoryToday() {
+  public ResponseEntity<?> getAllProductHistoryToday(@RequestParam("caisseId") Long caisseId) {
     try {
-      List<OrderRequestDTO> history = historyService.getAllProductHistoryToday();
+      List<OrderRequestDTO> history = historyService.getAllProductHistoryToday(caisseId);
       return ResponseEntity.ok(history);
     } catch (EntityNotFoundException ex) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
@@ -55,5 +56,6 @@ public class HistoryController {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur interne : " + ex.getMessage());
     }
   }
+
 
 }

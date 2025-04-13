@@ -590,62 +590,76 @@ getOrder(): void {
   pay(): void {
     this.updateCartTotals();
   
-    // ✅ Générer un code aléatoire pour la commande
     const orderCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const caisse = JSON.parse(localStorage.getItem('caisse') || '{}');
+    const caisseId = caisse?.id;
   
-    // ✅ Construire les commandes avec les bons prix
     const orders = this.cart.map((product) => ({
       nameProduct: product.name,
       quantity: product.quantityInCart ?? 0,
       quantityAddedUrgent:
-        (product.quantityInCart ?? 0) > product.quantity ? (product.quantityInCart ?? 0) - product.quantity : 0,
+        (product.quantityInCart ?? 0) > product.quantity
+          ? (product.quantityInCart ?? 0) - product.quantity
+          : 0,
       isPromo: product.isPromo,
-      salesPrice: product.salesPrice, // Prix normal stocké pour référence
-      pricePromo: product.pricePromo, // Prix promo si applicable
-      negoPrice: product.negoPrice, // Prix négocié si applicable
-      totalePrice: (product.negoPrice > 0 
-          ? product.negoPrice // Prix négocié s'il existe
-          : product.isPromo 
-          ? product.pricePromo // Prix promo si applicable
-          : product.salesPrice) * (product.quantityInCart ?? 0), // ✅ Calcul du total
+      salesPrice: product.salesPrice,
+      pricePromo: product.pricePromo,
+      negoPrice: product.negoPrice,
+      totalePrice:
+        (product.negoPrice > 0
+          ? product.negoPrice
+          : product.isPromo
+          ? product.pricePromo
+          : product.salesPrice) * (product.quantityInCart ?? 0),
       dateOrder: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
       itemId: product.id,
-      id_order_change: orderCode, // ✅ Ajout du code commande
-      comment: product.comment || '', // ✅ Ajout du commentaire
-  
-      // ✅ Gestion du paiement avec plusieurs méthodes
+      id_order_change: orderCode,
+      comment: product.comment || '',
       cashAmount: this.cashAmount || 0,
       cardAmount: this.cardAmount || 0,
       chequeAmount: this.chequeAmount || 0,
-  
-      // ✅ Déterminer le mode de paiement en fonction des montants
-      typePaiement: this.getPaymentType()
+      typePaiement: this.getPaymentType(),
+      caisseId: caisseId // ✅ ajout ici
     }));
   
-    // ✅ Envoi au backend
-    this.caisseService.saveOrders(orders).pipe(
-      switchMap(() => this.caisseService.getAllInCaisse({ params: { noCache: new Date().getTime() } }))
-    ).subscribe(
-      (data) => {
-        Swal.fire(
-          'Succès',
-          `Votre commande a été enregistrée avec succès.\n\nCode commande : **${orderCode}**\nMode de paiement : **${this.getPaymentType()}**`,
-          'success'
-        );
-        this.printReceipt(orderCode); // ✅ Impression du reçu avec le code commande
-        this.resetPaymentFields(); // ✅ Réinitialisation des champs de paiement
-        this.cart = []; // ✅ Réinitialisation du panier
-        this.searchQuery = ''; 
-        this.isOtherPaymentPopupOpen = false;
-        this.ngOnInit(); // ✅ Recharge des produits
-      },
-      (error) => {
-        console.error('Erreur lors de l\'enregistrement de la commande :', error);
-        Swal.fire('Erreur', 'Une erreur est survenue lors de l\'enregistrement de votre commande.', 'error');
-      }
-    );
+    this.caisseService
+      .saveOrders(orders)
+      .pipe(
+        switchMap(() =>
+          this.caisseService.getAllInCaisse({
+            params: { noCache: new Date().getTime() },
+          })
+        )
+      )
+      .subscribe(
+        (data) => {
+          Swal.fire(
+            'Succès',
+            `Votre commande a été enregistrée avec succès.\n\nCode commande : **${orderCode}**\nMode de paiement : **${this.getPaymentType()}**`,
+            'success'
+          );
+          this.printReceipt(orderCode);
+          this.resetPaymentFields();
+          this.cart = [];
+          this.searchQuery = '';
+          this.isOtherPaymentPopupOpen = false;
+          this.ngOnInit();
+        },
+        (error) => {
+          console.error(
+            "Erreur lors de l'enregistrement de la commande :",
+            error
+          );
+          Swal.fire(
+            'Erreur',
+            "Une erreur est survenue lors de l'enregistrement de votre commande.",
+            'error'
+          );
+        }
+      );
   }
+  
 
   
   resetPaymentFields(): void {
@@ -1094,7 +1108,8 @@ Merci et à bientôt !
     }
     
     loadSalesDataToday(callback?: () => void): void {
-      this.salesService.getSalesDataToday().subscribe(
+      const caisseId = JSON.parse(localStorage.getItem('caisse') || '{}')?.id;
+      this.salesService.getSalesDataToday(caisseId).subscribe(
         (data) => {
           this.sales = data;
           const today = new Date();

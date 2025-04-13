@@ -19,12 +19,21 @@ public class Order {
   private LocalDateTime dateOrder;
   private LocalDateTime lastUpdated;
   private double totalePrice ;
-  @ManyToOne(fetch = FetchType.LAZY) // Relation avec Caisse
-  @JoinColumn(name = "caisse_id", nullable = true) // Colonne pour la clé étrangère
-  private Caisse CaisseId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "caisse_id", nullable = true)
+  private Caisse caisse;
+
   @Column(name = "id_order_change", length = 20, unique = true) // ✅ Ajout du champ
   private String idOrderChange;
   private String comment;
+
+  public Caisse getCaisse() {
+    return caisse;
+  }
+
+  public void setCaisse(Caisse caisse) {
+    this.caisse = caisse;
+  }
 
   public String getComment() {
     return comment;

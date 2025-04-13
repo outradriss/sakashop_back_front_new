@@ -285,3 +285,14 @@ select {
         print-color-adjust: exact;
     }
 }
+.search-bar {
+    margin: 10px 0;
+  }
+  .search-input {
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  

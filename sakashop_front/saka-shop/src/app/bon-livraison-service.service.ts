@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class BonLivraisonServiceService {
 
 
-  private baseUrl = 'http://localhost:8090/api/bonLivraison';
+  private baseUrl = 'http://localhost:8090/api/bl';
 
   constructor(private http: HttpClient) {}
 
@@ -18,5 +18,10 @@ export class BonLivraisonServiceService {
   getAllBL(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/all`);
   }
-  
+  updateBL(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/update/${id}`, data);
+  }
+  deleteBL(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/delete/${id}`);
+  }  
 }

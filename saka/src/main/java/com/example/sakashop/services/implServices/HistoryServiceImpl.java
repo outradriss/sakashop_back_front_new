@@ -16,268 +16,219 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-  @Service
-  public class HistoryServiceImpl {
+@Service
+public class HistoryServiceImpl {
 
-    private final ProductRepository productRepository;
-    private final ItemsOrdersREpo itemsOrdersRepository;
-    private final HistoryREpo historyREpo;
+  private final ProductRepository productRepository;
+  private final ItemsOrdersREpo itemsOrdersRepository;
+  private final HistoryREpo historyREpo;
 
-    public HistoryServiceImpl(ProductRepository productRepository, ItemsOrdersREpo itemsOrdersRepository, HistoryREpo historyREpo) {
-      this.productRepository = productRepository;
-      this.itemsOrdersRepository = itemsOrdersRepository;
-      this.historyREpo = historyREpo;
-    }
+  public HistoryServiceImpl(ProductRepository productRepository, ItemsOrdersREpo itemsOrdersRepository, HistoryREpo historyREpo) {
+    this.productRepository = productRepository;
+    this.itemsOrdersRepository = itemsOrdersRepository;
+    this.historyREpo = historyREpo;
+  }
 
-    public List<ProductHistoryDTO> getProductHistory(Long productId) {
-      try {
-        // Vérifie si le produit existe dans la table `Item`
-        Item item = productRepository.findById(productId)
-          .orElseThrow(() -> new EntityNotFoundException("Produit introuvable avec l'ID : " + productId));
+  public List<ProductHistoryDTO> getProductHistory(Long productId) {
+    try {
+      Item item = productRepository.findById(productId)
+        .orElseThrow(() -> new EntityNotFoundException("Produit introuvable avec l'ID : " + productId));
 
-        // Vérifie si le code de l'item est valide
-        if (item.getItemCode() == null || item.getItemCode().trim().isEmpty()) {
-          throw new IllegalStateException("Le produit avec l'ID " + productId + " n'a pas de code valide.");
-        }
+      if (item.getItemCode() == null || item.getItemCode().trim().isEmpty()) {
+        throw new IllegalStateException("Le produit avec l'ID " + productId + " n'a pas de code valide.");
+      }
 
-        // Récupère les données historiques de la table `ItemsOrders`
-        List<ItemsOrders> itemsOrders = itemsOrdersRepository.findByItem(item);
+      List<ItemsOrders> itemsOrders = itemsOrdersRepository.findByItem(item);
 
-        // Vérifie si `itemsOrders` est vide
-        if (itemsOrders == null || itemsOrders.isEmpty()) {
-          return List.of(new ProductHistoryDTO(
+      if (itemsOrders == null || itemsOrders.isEmpty()) {
+        return List.of(new ProductHistoryDTO(
+          item.getName(),
+          item.getItemCode(),
+          item.getProductAddedDate(),
+          item.getQuantity(),
+          item.getPricePromo(),
+          item.getBuyPrice(),
+          0,
+          item.getSalesPrice(),
+          item.getProductAddedDate(),
+          null,
+          0.0,
+          null,
+          0.0,
+          null
+        ));
+      }
+
+      return itemsOrders.stream()
+        .map(order -> {
+          Order associatedOrder = order.getOrder();
+          return new ProductHistoryDTO(
             item.getName(),
             item.getItemCode(),
             item.getProductAddedDate(),
             item.getQuantity(),
             item.getPricePromo(),
             item.getBuyPrice(),
-            0, // Quantité ajoutée par défaut
-            item.getSalesPrice(), // Prix de vente par défaut
-            item.getProductAddedDate(), // Date par défaut
-            null, // ID commande
-            0.0, // Total commande par défaut
-            null, // Date commande par défaut
-            0.0, // Prix négocié par défaut
-            null // Date de mise à jour par défaut
-          ));
-        }
+            order.getCartQuantity(),
+            order.getSalesPrice(),
+            order.getDateIntegration() != null ? order.getDateIntegration() : item.getProductAddedDate(),
+            associatedOrder != null ? associatedOrder.getIdOrder() : null,
+            associatedOrder != null ? associatedOrder.getTotalePrice() : 0.0,
+            associatedOrder != null ? associatedOrder.getDateOrder() : null,
+            order.getNegoPrice(),
+            order.getDateUpdate() != null ? order.getDateUpdate() : null
+          );
+        })
+        .collect(Collectors.toList());
 
-        // Transformation des données en `ProductHistoryDTO`
-        return itemsOrders.stream()
-          .map(order -> {
-            Order associatedOrder = order.getOrder();
-            return new ProductHistoryDTO(
-              item.getName(),
-              item.getItemCode(),
-              item.getProductAddedDate(),
-              item.getQuantity(),
-              item.getPricePromo(),
-              item.getBuyPrice(),
-              order.getCartQuantity(),
-              order.getSalesPrice(),
-              order.getDateIntegration() != null ? order.getDateIntegration() : item.getProductAddedDate(),
-              associatedOrder != null ? associatedOrder.getIdOrder() : null,
-              associatedOrder != null ? associatedOrder.getTotalePrice() : 0.0,
-              associatedOrder != null ? associatedOrder.getDateOrder() : null,
-              order.getNegoPrice(),
-              order.getDateUpdate() != null ? order.getDateUpdate() : null
-            );
-          })
-          .collect(Collectors.toList());
-
-      } catch (EntityNotFoundException ex) {
-        // Gérer le cas où le produit est introuvable
-        throw ex; // Laisser remonter pour être géré par le contrôleur ou @ControllerAdvice
-      } catch (Exception ex) {
-        // Gérer toute autre exception imprévue
-        throw new RuntimeException("Erreur lors de la récupération de l'historique du produit", ex);
-      }
+    } catch (EntityNotFoundException ex) {
+      throw ex;
+    } catch (Exception ex) {
+      throw new RuntimeException("Erreur lors de la récupération de l'historique du produit", ex);
     }
-
-    public List<OrderRequestDTO> getAllProductHistory() {
-      // ✅ Récupérer toutes les données de ItemsOrders avec Items inclus
-      List<ItemsOrders> itemsOrders = itemsOrdersRepository.findAllWithItems();
-
-      // ✅ Vérification des données récupérées
-      if (itemsOrders.isEmpty()) {
-        return Collections.emptyList();
-      }
-
-      // ✅ Regrouper les items par `idOrderChange`
-      Map<String, List<ItemsOrders>> groupedOrders = itemsOrders.stream()
-        .collect(Collectors.groupingBy(ItemsOrders::getIdOrderChange));
-
-      // ✅ Convertir chaque groupe en une commande unique
-      return groupedOrders.entrySet().stream().map(entry -> {
-        String idOrderChange = entry.getKey();
-        List<ItemsOrders> ordersList = entry.getValue();
-
-        // ✅ Récupérer le type de paiement
-        String typePaiement = ordersList.stream()
-          .map(ItemsOrders::getTypePaiement)
-          .filter(Objects::nonNull)
-          .findFirst()
-          .orElse("Inconnu");
-
-        // ✅ Déterminer les valeurs communes
-        LocalDateTime dateOrder = ordersList.get(0).getDateIntegration();
-        LocalDateTime lastUpdated = ordersList.get(0).getDateUpdate();
-
-        // ✅ Calcul du total de la commande
-        double totalePrice = ordersList.stream()
-          .mapToDouble(itemsOrder -> itemsOrder.getTotalePrice() > 0 ? itemsOrder.getTotalePrice() :
-            (itemsOrder.getNegoPrice() > 0 ? itemsOrder.getNegoPrice() * itemsOrder.getCartQuantity() :
-              itemsOrder.getSalesPrice() * itemsOrder.getCartQuantity()))
-          .sum();
-
-        // ✅ Créer la liste des items (ItemRequestDTO)
-        List<OrderRequestDTO.ItemRequestDTO> itemDTOList = ordersList.stream().map(itemsOrder -> {
-          Item item = itemsOrder.getItem();
-
-          double negoPrice = itemsOrder.getNegoPrice() > 0 ? itemsOrder.getNegoPrice() : 0.0;
-          double salesPrice = itemsOrder.getSalesPrice() > 0 ? itemsOrder.getSalesPrice() : 0.0;
-
-          OrderRequestDTO.ItemRequestDTO itemRequestDTO = new OrderRequestDTO.ItemRequestDTO();
-          itemRequestDTO.setNameProduct(itemsOrder.getName());
-          itemRequestDTO.setQuantity(itemsOrder.getCartQuantity() > 0 ? itemsOrder.getCartQuantity() : 1);
-          itemRequestDTO.setSalesPrice(salesPrice);
-          itemRequestDTO.setTotalePrice(salesPrice * itemsOrder.getCartQuantity());
-          itemRequestDTO.setNegoPrice(negoPrice);
-          itemRequestDTO.setItemId(item != null ? item.getId() : null);
-          itemRequestDTO.setCode(item.getCode() != null ? item.getCode() : "NC");
-
-          return itemRequestDTO;
-        }).collect(Collectors.toList());
-
-        // ✅ Retourner `Builder` avec les valeurs corrigées
-        return new OrderRequestDTO.Builder(
-          null, // ID de commande (optionnel)
-          null, // Nom produit (optionnel)
-          ordersList.stream().mapToInt(ItemsOrders::getCartQuantity).sum(), // ✅ Quantité totale
-          0, // Quantité ajoutée
-          false, // Promo (optionnel si pas commun)
-          0.0, // Prix promo
-          ordersList.stream().mapToDouble(ItemsOrders::getSalesPrice).sum(), // ✅ Total des `salesPrice`
-          dateOrder,
-          lastUpdated,
-          null, // itemId (optionnel)
-          null, // itemsOrders (optionnel)
-          totalePrice, // ✅ Total Price corrigé
-          ordersList.stream().mapToDouble(ItemsOrders::getNegoPrice).sum(), // ✅ NegoPrice total
-          ordersList.stream().mapToDouble(io -> io.getItem() != null ? io.getItem().getBuyPrice() : 0.0).sum(), // ✅ BuyPrice total
-          itemDTOList,
-          idOrderChange,
-          typePaiement // ✅ Type de paiement envoyé correctement
-        ).buildOrder();
-      }).collect(Collectors.toList());
-    }
-
-
-
-    public List<OrderRequestDTO> getAllProductHistoryToday() {
-      // ✅ Récupérer toutes les données de ItemsOrders avec Items inclus
-      List<ItemsOrders> itemsOrders = itemsOrdersRepository.findAllWithItemsForToday();
-
-      // ✅ Vérification : Log des données récupérées
-      itemsOrders.forEach(io -> System.out.println(
-        "🛠️ ID: " + io.getId() +
-          ", Code: " + (io.getItem() != null ? io.getItem().getCode() : "N/A") +
-          ", NegoPrice: " + io.getNegoPrice() +
-          ", SalesPrice: " + io.getSalesPrice() +
-          ", CartQuantity: " + io.getCartQuantity() +
-          ", TotalePrice: " + io.getTotalePrice() +
-          ", TypePaiement: " + io.getTypePaiement()
-      ));
-
-      // ✅ Regrouper les items par `idOrderChange`
-      Map<String, List<ItemsOrders>> groupedOrders = itemsOrders.stream()
-        .collect(Collectors.groupingBy(ItemsOrders::getIdOrderChange));
-
-      // ✅ Convertir chaque groupe en une commande unique
-      return groupedOrders.entrySet().stream().map(entry -> {
-        String idOrderChange = entry.getKey();
-        List<ItemsOrders> ordersList = entry.getValue();
-
-        // ✅ Récupérer le type de paiement
-        String typePaiement = ordersList.stream()
-          .map(ItemsOrders::getTypePaiement)
-          .filter(Objects::nonNull)
-          .findFirst()
-          .orElse("Inconnu");
-
-        // ✅ Déterminer les valeurs communes
-        LocalDateTime dateOrder = ordersList.get(0).getDateIntegration();
-        LocalDateTime lastUpdated = ordersList.get(0).getDateUpdate();
-
-        // ✅ Calcul correct du total de la commande
-        double totalePrice = ordersList.stream()
-          .mapToDouble(itemsOrder ->
-            itemsOrder.getNegoPrice() > 0 ?
-              itemsOrder.getNegoPrice() * itemsOrder.getCartQuantity() :
-              itemsOrder.getSalesPrice() * itemsOrder.getCartQuantity()
-          )
-          .sum();
-
-        // ✅ Créer la liste des items (ItemRequestDTO)
-        List<OrderRequestDTO.ItemRequestDTO> itemDTOList = ordersList.stream().map(itemsOrder -> {
-          double buyPrice = (itemsOrder.getItem() != null && itemsOrder.getItem().getBuyPrice() > 0)
-            ? itemsOrder.getItem().getBuyPrice()
-            : 0.0;
-
-          double negoPrice = itemsOrder.getNegoPrice();
-          double salesPrice = itemsOrder.getSalesPrice();
-          String code = itemsOrder.getItem() != null ? itemsOrder.getItem().getCode() : "N/A";
-
-          OrderRequestDTO.ItemRequestDTO itemRequestDTO = new OrderRequestDTO.ItemRequestDTO();
-          itemRequestDTO.setNameProduct(itemsOrder.getName());
-          itemRequestDTO.setQuantity(itemsOrder.getCartQuantity());
-          itemRequestDTO.setSalesPrice(salesPrice);
-          itemRequestDTO.setTotalePrice(buyPrice * itemsOrder.getCartQuantity());
-          itemRequestDTO.setItemId(itemsOrder.getItem() != null ? itemsOrder.getItem().getId() : null);
-          itemRequestDTO.setItemCode(itemsOrder.getItem() != null ? itemsOrder.getItem().getItemCode() : "N/A");
-          itemRequestDTO.setNegoPrice(negoPrice);
-          itemRequestDTO.setCode(code);
-
-          // ✅ Log des valeurs récupérées pour chaque produit
-          System.out.println("✔️ Produit ajouté : " +
-            " Nom: " + itemRequestDTO.getNameProduct() +
-            ", Qté: " + itemRequestDTO.getQuantity() +
-            ", Prix Vente: " + itemRequestDTO.getSalesPrice() +
-            ", Prix Négocié: " + itemRequestDTO.getNegoPrice() +
-            ", Code: " + itemRequestDTO.getCode());
-
-          return itemRequestDTO;
-        }).collect(Collectors.toList());
-
-        // ✅ Retourner `Builder`
-        return new OrderRequestDTO.Builder(
-          null, // ID de commande (optionnel)
-          null, // Nom produit (optionnel)
-          0, // Quantité totale
-          0, // Quantité ajoutée
-          false, // Promo
-          0.0, // Prix promo
-          0.0, // Sales Price
-          dateOrder,
-          lastUpdated,
-          null, // itemId (optionnel)
-          null, // itemsOrders (optionnel)
-          totalePrice,
-          ordersList.stream().mapToDouble(ItemsOrders::getNegoPrice).sum(),
-          0.0, // buyPrice (optionnel)
-          itemDTOList,
-          idOrderChange,
-          typePaiement
-        ).buildOrder();
-      }).collect(Collectors.toList());
-    }
-
-
-
-
-
-
-
   }
 
+  public List<OrderRequestDTO> getAllProductHistory() {
+    List<ItemsOrders> itemsOrders = itemsOrdersRepository.findAllWithItems();
+
+    if (itemsOrders.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    Map<String, List<ItemsOrders>> groupedOrders = itemsOrders.stream()
+      .collect(Collectors.groupingBy(ItemsOrders::getIdOrderChange));
+
+    return groupedOrders.entrySet().stream().map(entry -> {
+      String idOrderChange = entry.getKey();
+      List<ItemsOrders> ordersList = entry.getValue();
+
+      String typePaiement = ordersList.stream()
+        .map(ItemsOrders::getTypePaiement)
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse("Inconnu");
+
+      LocalDateTime dateOrder = ordersList.get(0).getDateIntegration();
+      LocalDateTime lastUpdated = ordersList.get(0).getDateUpdate();
+
+      double totalePrice = ordersList.stream()
+        .mapToDouble(itemsOrder -> itemsOrder.getTotalePrice() > 0 ? itemsOrder.getTotalePrice() :
+          (itemsOrder.getNegoPrice() > 0 ? itemsOrder.getNegoPrice() * itemsOrder.getCartQuantity() :
+            itemsOrder.getSalesPrice() * itemsOrder.getCartQuantity()))
+        .sum();
+
+      List<OrderRequestDTO.ItemRequestDTO> itemDTOList = ordersList.stream().map(itemsOrder -> {
+        Item item = itemsOrder.getItem();
+
+        double negoPrice = itemsOrder.getNegoPrice() > 0 ? itemsOrder.getNegoPrice() : 0.0;
+        double salesPrice = itemsOrder.getSalesPrice() > 0 ? itemsOrder.getSalesPrice() : 0.0;
+
+        OrderRequestDTO.ItemRequestDTO itemRequestDTO = new OrderRequestDTO.ItemRequestDTO();
+        itemRequestDTO.setNameProduct(itemsOrder.getName());
+        itemRequestDTO.setQuantity(itemsOrder.getCartQuantity() > 0 ? itemsOrder.getCartQuantity() : 1);
+        itemRequestDTO.setSalesPrice(salesPrice);
+        itemRequestDTO.setTotalePrice(salesPrice * itemsOrder.getCartQuantity());
+        itemRequestDTO.setNegoPrice(negoPrice);
+        itemRequestDTO.setItemId(item != null ? item.getId() : null);
+        itemRequestDTO.setCode(item.getCode() != null ? item.getCode() : "NC");
+
+        return itemRequestDTO;
+      }).collect(Collectors.toList());
+
+      return new OrderRequestDTO.Builder(
+        null,
+        null,
+        1L,
+        ordersList.stream().mapToInt(ItemsOrders::getCartQuantity).sum(),
+        0,
+        false,
+        0.0,
+        ordersList.stream().mapToDouble(ItemsOrders::getSalesPrice).sum(),
+        dateOrder,
+        lastUpdated,
+        null,
+        null,
+        totalePrice,
+        ordersList.stream().mapToDouble(ItemsOrders::getNegoPrice).sum(),
+        ordersList.stream().mapToDouble(io -> io.getItem() != null ? io.getItem().getBuyPrice() : 0.0).sum(),
+        itemDTOList,
+        idOrderChange,
+        typePaiement
+      ).buildOrder();
+    }).collect(Collectors.toList());
+  }
+
+  public List<OrderRequestDTO> getAllProductHistoryToday(Long caisseId) {
+    List<ItemsOrders> itemsOrders = itemsOrdersRepository.findAllWithItemsForToday()
+      .stream().filter(io -> io.getOrder() != null && io.getOrder().getCaisse() != null && io.getOrder().getCaisse().getId().equals(caisseId))
+      .collect(Collectors.toList());
+
+    Map<String, List<ItemsOrders>> groupedOrders = itemsOrders.stream()
+      .collect(Collectors.groupingBy(ItemsOrders::getIdOrderChange));
+
+    return groupedOrders.entrySet().stream().map(entry -> {
+      String idOrderChange = entry.getKey();
+      List<ItemsOrders> ordersList = entry.getValue();
+
+      String typePaiement = ordersList.stream()
+        .map(ItemsOrders::getTypePaiement)
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse("Inconnu");
+
+      LocalDateTime dateOrder = ordersList.get(0).getDateIntegration();
+      LocalDateTime lastUpdated = ordersList.get(0).getDateUpdate();
+
+      double totalePrice = ordersList.stream()
+        .mapToDouble(itemsOrder ->
+          itemsOrder.getNegoPrice() > 0 ?
+            itemsOrder.getNegoPrice() * itemsOrder.getCartQuantity() :
+            itemsOrder.getSalesPrice() * itemsOrder.getCartQuantity()
+        )
+        .sum();
+
+      List<OrderRequestDTO.ItemRequestDTO> itemDTOList = ordersList.stream().map(itemsOrder -> {
+        double buyPrice = (itemsOrder.getItem() != null && itemsOrder.getItem().getBuyPrice() > 0)
+          ? itemsOrder.getItem().getBuyPrice()
+          : 0.0;
+
+        double negoPrice = itemsOrder.getNegoPrice();
+        double salesPrice = itemsOrder.getSalesPrice();
+        String code = itemsOrder.getItem() != null ? itemsOrder.getItem().getCode() : "N/A";
+
+        OrderRequestDTO.ItemRequestDTO itemRequestDTO = new OrderRequestDTO.ItemRequestDTO();
+        itemRequestDTO.setNameProduct(itemsOrder.getName());
+        itemRequestDTO.setQuantity(itemsOrder.getCartQuantity());
+        itemRequestDTO.setSalesPrice(salesPrice);
+        itemRequestDTO.setTotalePrice(buyPrice * itemsOrder.getCartQuantity());
+        itemRequestDTO.setItemId(itemsOrder.getItem() != null ? itemsOrder.getItem().getId() : null);
+        itemRequestDTO.setItemCode(itemsOrder.getItem() != null ? itemsOrder.getItem().getItemCode() : "N/A");
+        itemRequestDTO.setNegoPrice(negoPrice);
+        itemRequestDTO.setCode(code);
+
+        return itemRequestDTO;
+      }).collect(Collectors.toList());
+
+      return new OrderRequestDTO.Builder(
+        null,
+        null,
+        caisseId,
+        ordersList.stream().mapToInt(ItemsOrders::getCartQuantity).sum(),
+        0,
+        false,
+        0.0,
+        ordersList.stream().mapToDouble(ItemsOrders::getSalesPrice).sum(),
+        dateOrder,
+        lastUpdated,
+        null,
+        null,
+        totalePrice,
+        ordersList.stream().mapToDouble(ItemsOrders::getNegoPrice).sum(),
+        ordersList.stream().mapToDouble(io -> io.getItem() != null ? io.getItem().getBuyPrice() : 0.0).sum(),
+        itemDTOList,
+        idOrderChange,
+        typePaiement
+      ).buildOrder();
+    }).collect(Collectors.toList());
+  }
+}

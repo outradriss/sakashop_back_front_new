@@ -5,13 +5,16 @@ import lombok.*;
 
 @Getter
 @Setter
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemQuantityDTO {
   private Long id;
+
+  private String name;
+
   @JsonProperty("quantity")
   private int quantite;
+
   private double prixHT;
   private double tva;
   private double prixTTC;

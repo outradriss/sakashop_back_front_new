@@ -13,6 +13,7 @@ import java.util.List;
 @JsonDeserialize(builder = OrderRequestDTO.Builder.class)
 public class OrderRequestDTO {
   private final Long idOrder;
+  private Long caisseId;
   private final String nameProduct;
   private final int quantity;
   private final int quantityAddedUrgent;
@@ -127,9 +128,15 @@ public class OrderRequestDTO {
     return buyPrice;
   }
 
+  public Long getCaisseId() {
+    return caisseId;
+  }
+
+
   // Constructeur privé pour le Builder
   private OrderRequestDTO(Builder builder) {
     this.idOrder = builder.idOrder;
+    this.caisseId=builder.caisseId;
     this.nameProduct = builder.nameProduct;
     this.quantity = builder.quantity;
     this.quantityAddedUrgent = builder.quantityAddedUrgent;
@@ -155,6 +162,7 @@ public class OrderRequestDTO {
 
   @JsonPOJOBuilder(buildMethodName = "buildOrder", withPrefix = "set")
   public static class Builder {
+    private final Long caisseId;
     @JsonProperty("id_order")
     private Long idOrder;
     public double cashAmount;
@@ -200,6 +208,7 @@ public class OrderRequestDTO {
     public Builder(
       @JsonProperty("idOrder") Long idOrder,
       @JsonProperty("nameProduct") String nameProduct,
+      @JsonProperty("caisseId") Long caisseId,
       @JsonProperty("quantity") int quantity,
       @JsonProperty("quantityAddedUrgent") int quantityAddedUrgent,
       @JsonProperty("isPromo") boolean isPromo,
@@ -227,6 +236,7 @@ public class OrderRequestDTO {
       this.dateOrder = dateOrder;
       this.lastUpdated = lastUpdated;
       this.itemId = itemId;
+      this.caisseId = caisseId;
       this.itemsOrders = itemsOrders;
       this.totalePrice = totalePrice;
       this.negoPrice = negoPrice;

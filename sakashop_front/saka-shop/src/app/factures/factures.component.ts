@@ -41,12 +41,14 @@ export class FacturesComponent {
   statusPaiement: string = '';
   factureSelectionnee: any = null;
   isEditMode: boolean = false;
+facturesOriginal: any[] = []; 
   constructor(private productService: ProductService , private cdRef: ChangeDetectorRef , private factureService : FactureService)  { }
 
   ngOnInit() {
     this.loadProducts();
     console.log('Produits chargés:', this.products);
     this.chargerFactures();
+
 
   }
   openForm(): void {
@@ -64,7 +66,13 @@ export class FacturesComponent {
     this.produitsSelectionnes = []; // Vider la liste des produits
     this.formPopup = true;
   }
-  
+  filtrerFactures(): void {
+  const query = this.searchQuery.toLowerCase().trim();
+  this.factures = this.facturesOriginal.filter(facture =>
+    facture.reference?.toLowerCase().includes(query) ||
+    facture.clientName?.toLowerCase().includes(query)
+  );
+}
   
   generateFactureReference(): string {
     const currentYear = new Date().getFullYear();
@@ -388,7 +396,8 @@ envoyerFacture(): void {
 chargerFactures(): void {
   this.factureService.getFactures().subscribe(
     (data) => {
-      this.factures = data;
+      this.facturesOriginal = data; // ✅ sauvegarde les données complètes
+      this.factures = [...data];    // ✅ copie pour affichage
       console.log("Factures chargées avec succès :", this.factures);
     },
     (error) => {
@@ -396,6 +405,7 @@ chargerFactures(): void {
     }
   );
 }
+
 
 
 /**
@@ -422,7 +432,7 @@ supprimerFacture(id: number): void {
 
 modifierFacture(facture: any): void {
   this.isEditMode = true;
-  this.factureSelectionnee = { ...facture }; 
+  this.factureSelectionnee = { ...facture };
 
   this.factureReference = facture.reference;
   this.clientName = facture.clientName;
@@ -435,27 +445,26 @@ modifierFacture(facture: any): void {
   this.modePaiement = facture.modePaiement;
   this.statusPaiement = facture.statusPaiement;
 
-if (facture.items && Array.isArray(facture.items)) {
-  this.produitsSelectionnes = facture.items.map((produit: any) => ({
-    produit: { 
-      id: produit.id || null, 
-      name: produit.name || 'Produit inconnu', 
-      salesPrice: produit.salesPrice || 0, 
-      tva: produit.tva || 0,
-      quantity: produit.quantity || 1 
-    },
-    quantite: produit.quantity || 1
-  }));
-} else {
-  console.warn("⚠️ Aucun produit trouvé dans la facture sélectionnée !");
-  this.produitsSelectionnes = []; 
+  if (facture.itemQuantities && Array.isArray(facture.itemQuantities)) {
+    this.produitsSelectionnes = facture.itemQuantities.map((item: any) => ({
+      produit: {
+        id: item.id || null,
+        name: item.name || 'Produit inconnu',
+        buyPrice: item.prixHT || 0,       // ✅ utilisé comme prix H.T.
+        tva: item.tva || 0,
+        quantity: item.quantity || 1
+      },
+      quantite: item.quantity || 1
+    }));
+  } else {
+    console.warn("⚠️ Aucun produit trouvé dans la facture sélectionnée !");
+    this.produitsSelectionnes = [];
+  }
+
+  this.formPopup = true;
 }
 
 
-  console.log("📌 Produits chargés pour modification :", this.produitsSelectionnes);
-
-  this.formPopup = true; 
-}
 
 
 
@@ -466,7 +475,7 @@ updateFacture(): void {
   }
 
   const updatedFactureData = {
-    id: this.factureSelectionnee.id, // ID de la facture
+    id: this.factureSelectionnee.id,
     reference: this.factureReference,
     clientName: this.clientName,
     clientICE: this.clientICE,
@@ -477,28 +486,40 @@ updateFacture(): void {
     dateEcheance: this.dateEcheance ? new Date(this.dateEcheance).toISOString().split('T')[0] : null,
     modePaiement: this.modePaiement,
     statusPaiement: this.statusPaiement,
-    factureItems: this.produitsSelectionnes.length > 0 ? this.produitsSelectionnes.map(item => ({
-      item: { id: item.produit.id }, 
+
+    factureItems: this.produitsSelectionnes.map(item => ({
+      item: { id: item.produit.id },
       quantite: item.quantite,
-      totalHT: item.quantite * item.produit.salesPrice,
-      totalTTC: item.quantite * item.produit.salesPrice * (1 + parseFloat(item.produit.tva) / 100)
-    })) : [],
-    totalHT: this.produitsSelectionnes.reduce((total, item) => total + item.quantite * item.produit.salesPrice, 0),
-    totalTVA: this.produitsSelectionnes.reduce((total, item) => total + (item.quantite * item.produit.salesPrice * (parseFloat(item.produit.tva) / 100)), 0),
-    totalTTC: this.produitsSelectionnes.reduce((total, item) => total + item.quantite * item.produit.salesPrice * (1 + parseFloat(item.produit.tva) / 100), 0)
+      prixHT: item.produit.buyPrice,
+      tva: parseFloat(item.produit.tva),
+      prixTTC: item.produit.buyPrice * (1 + parseFloat(item.produit.tva) / 100),
+      totalTTC: item.quantite * item.produit.buyPrice * (1 + parseFloat(item.produit.tva) / 100)
+    })),
+
+    totalHT: this.produitsSelectionnes.reduce(
+      (total, item) => total + item.quantite * item.produit.buyPrice, 0
+    ),
+
+    totalTVA: this.produitsSelectionnes.reduce(
+      (total, item) => total + item.quantite * item.produit.buyPrice * (parseFloat(item.produit.tva) / 100), 0
+    ),
+
+    totalTTC: this.produitsSelectionnes.reduce(
+      (total, item) => total + item.quantite * item.produit.buyPrice * (1 + parseFloat(item.produit.tva) / 100), 0
+    )
   };
 
-  console.log("Données mises à jour :", updatedFactureData);
+  console.log("📤 Données envoyées :", updatedFactureData);
 
   this.factureService.updateFacture(updatedFactureData).subscribe(
     response => {
-      console.log("Facture mise à jour avec succès:", response);
+      console.log("✅ Facture mise à jour avec succès:", response);
       alert("Facture mise à jour avec succès !");
       this.closeForm();
-      this.chargerFactures(); // Recharge la liste des factures après modification
+      this.chargerFactures();
     },
     error => {
-      console.error("Erreur lors de la mise à jour de la facture:", error);
+      console.error("❌ Erreur lors de la mise à jour de la facture:", error);
       alert("Une erreur est survenue lors de la mise à jour de la facture.");
     }
   );

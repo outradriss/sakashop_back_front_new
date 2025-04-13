@@ -43,33 +43,40 @@ export class LoginComponent {
       (response: any) => {
         this.isLoading = false;
   
-        // Sauvegarder le token
         const token = response.token;
         localStorage.setItem('token', token);
   
-        // Décoder le token pour récupérer les rôles
         const decodedToken: any = jwtDecode(token);
         const roles: string[] = decodedToken.roles || [];
+        console.log(decodedToken);
+
   
-        // Vérifier les rôles pour gérer les accès
         if (roles.includes('ROLE_CAISSIER')) {
-          // Rediriger directement vers "open-caisse"
-          this.router.navigate(['/open-caisse']);
+          // ➕ Appeler le backend pour récupérer la caisse
+          this.authService.getMyCaisse().subscribe(
+            (caisseResponse: any) => {
+              localStorage.setItem('caisse', JSON.stringify(caisseResponse));
+              this.router.navigate(['/open-caisse']);
+            },
+            (error) => {
+              this.errorMessage = "Caisse non trouvée pour cet utilisateur.";
+              localStorage.removeItem('token');
+            }
+          );
         } else if (roles.includes('ROLE_ADMIN')) {
-          // Admin : Accès à tout sauf "caisse/list"
           this.router.navigate(['home']);
         } else {
-          // Aucun rôle autorisé
           this.errorMessage = "Vous n'avez pas les autorisations nécessaires.";
-          localStorage.removeItem('token'); // Supprime le token si non autorisé
+          localStorage.removeItem('token');
         }
       },
       (error: any) => {
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Invalid email or password';
+        this.errorMessage = error.error?.message || 'Email ou mot de passe invalide';
       }
     );
   }
+  
   
   
 }

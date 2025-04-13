@@ -17,4 +17,7 @@ public interface FactureRepository extends JpaRepository<Factures, Long> {
 
   @Query("SELECT DISTINCT new map(f.clientCode as id, f.clientName as name, f.clientICE as ice, f.adresse as adresse) FROM Factures f")
   List<Map<String, Object>> findDistinctClients();
+
+  @Query("SELECT DISTINCT f FROM Factures f LEFT JOIN FETCH f.factureItems fi LEFT JOIN FETCH fi.item")
+  List<Factures> findAllWithItems();
 }

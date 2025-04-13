@@ -64,9 +64,6 @@ public class Item {
   @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<CaisseItems> caisseItems = new ArrayList<>();
 
-  @ManyToMany(mappedBy = "items")
-  @JsonIgnore
-  private List<Factures> factures = new ArrayList<>();
 
 
   public String getComment() {
@@ -232,11 +229,6 @@ public class Item {
     this.supplier = supplier;
   }
 
-  public List<Factures> getFactures() {
-    return factures;
-  }
 
-  public void setFactures(List<Factures> factures) {
-    this.factures = factures;
-  }
+
 }

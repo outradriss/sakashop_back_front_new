@@ -2,6 +2,7 @@ package com.example.sakashop.services.implServices;
 
 
 import com.example.sakashop.DAO.FactureItemREpo;
+import com.example.sakashop.DAO.FactureRepository;
 import com.example.sakashop.DAO.ProductRepository;
 import com.example.sakashop.DTO.FactureDTO;
 
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 @Service
 public class FactureService {
 
-  private final com.example.sakashop.DAO.FactureRepository factureRepository;
+  private final FactureRepository factureRepository;
   private final ProductRepository itemRepository;
   private final FactureItemREpo factureItemRepository;
 
@@ -85,10 +86,23 @@ public class FactureService {
     }
     throw new RuntimeException("Facture non trouvée avec l'ID : " + id);
   }
+
+  @Transactional
   public Factures updateFacture(Long id, Factures updatedFacture) {
     Factures existingFacture = factureRepository.findById(id)
       .orElseThrow(() -> new RuntimeException("Facture non trouvée avec l'ID : " + id));
 
+    // Vider proprement les anciens items
+    existingFacture.getFactureItems().clear();
+
+    // Ajouter les nouveaux produits en liant chaque item à la facture
+    if (updatedFacture.getFactureItems() != null) {
+      for (FactureItem item : updatedFacture.getFactureItems()) {
+        existingFacture.addFactureItem(item);
+      }
+    }
+
+    // Mise à jour des autres champs
     existingFacture.setClientName(updatedFacture.getClientName());
     existingFacture.setClientICE(updatedFacture.getClientICE());
     existingFacture.setClientCode(updatedFacture.getClientCode());

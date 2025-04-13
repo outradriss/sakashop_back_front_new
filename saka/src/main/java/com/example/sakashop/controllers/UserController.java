@@ -1,13 +1,17 @@
 package com.example.sakashop.controllers;
 
 import com.example.sakashop.Configurations.TokenProvider;
+import com.example.sakashop.DAO.CaisseEntityRepo;
+import com.example.sakashop.DAO.CaisseRepo;
 import com.example.sakashop.DTO.UserDTO;
 import com.example.sakashop.Entities.AuthToken;
+import com.example.sakashop.Entities.Caisse;
 import com.example.sakashop.Entities.LoginUser;
 import com.example.sakashop.Entities.User;
 import com.example.sakashop.Exceptions.ErrorResponse;
 import com.example.sakashop.services.implServices.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,9 +19,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -32,6 +38,9 @@ public class UserController {
 
     @Autowired
     private UserServiceImpl userService;
+
+  @Autowired
+  private CaisseEntityRepo caisseRepo;
 
     /**
      * Generates a token for the given user credentials.
@@ -52,6 +61,26 @@ public class UserController {
       final String token = jwtTokenUtil.generateToken(authentication);
       return ResponseEntity.ok(new AuthToken(token));
     }
+  @GetMapping("/my-caisse")
+  public ResponseEntity<Object> getMyCaisse() {
+    Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    String username;
+
+    if (principal instanceof UserDetails) {
+      username = ((UserDetails) principal).getUsername();
+    } else {
+      username = principal.toString();
+    }
+
+    System.out.println("🔍 Utilisateur connecté : " + username); // 🟡 Ajoute ceci
+
+    Optional<Caisse> caisseOpt = caisseRepo.findByUtilisateur(username);
+    return caisseOpt
+      .<ResponseEntity<Object>>map(ResponseEntity::ok)
+      .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aucune caisse associée à cet utilisateur"));
+  }
+
+
 
   /**
      * Saves a new user.

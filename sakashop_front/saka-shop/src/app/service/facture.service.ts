@@ -11,25 +11,33 @@ export class FactureService {
 
   constructor(private http: HttpClient) {}
 
-  // Méthode pour envoyer la facture au backend
+  // ➕ Créer une facture
   envoyerFacture(factureData: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl, factureData);
+    return this.http.post<any>(`${this.apiUrl}`, factureData);
   }
+
+  // 📄 Toutes les factures
   getFactures(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/All`);
+    return this.http.get<any[]>(`${this.apiUrl}/all`);
   }
+
+  // 🔍 Récupérer une facture par ID
   getFactureById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/facture/${id}`);
-  }  
-  supprimerFacture(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/delete/${id}`);
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
+
+  // ❌ Supprimer une facture par ID
+  supprimerFacture(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  // ♻️ Mettre à jour une facture
   updateFacture(factureData: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/${factureData.id}`, factureData);
   }
+
+  // 👥 Récupérer les clients avec leurs produits
   getClientsFromFactures(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/clients`);
   }
-  
-  
 }

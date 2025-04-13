@@ -40,7 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/api/users/authenticate","/api/print/ticket","/api/add-caisse","/api/users/register" ,"/api/gestion-product/delete/*", "/api/gestion-product/list","api/gestion-product/list/*","/api/caisse/*","/api/credit-client/credits/*","/api/credit-client/update/*","/api/credit-client/*","/api/credit-client/delete/*","/api/history/*","/api/gestion-product/*","/api/gestion-product/save/category","/api/*","/api/gestion-product/save/*","/api/gestion-product/save","/api/factures/*","/api/factures/delete/*").permitAll()
+                .antMatchers("/api/users/authenticate","/api/print/ticket","/api/add-caisse","/api/users/register" ,"api/users/my-caisse/*","api/users/my-caisse","/api/gestion-product/delete/*", "/api/gestion-product/list","api/gestion-product/list/*","/api/caisse/*","/api/credit-client/credits/*","/api/credit-client/update/*","/api/credit-client/*","/api/credit-client/delete/*","/api/history/*","/api/gestion-product/*","/api/gestion-product/save/category","/api/*","/api/gestion-product/save/*","/api/gestion-product/save","/api/factures/*","/api/factures/delete/*","/api/bl/create","/api/bl/*","/api/bl/update/*","/api/bl/delete/*").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint).and()

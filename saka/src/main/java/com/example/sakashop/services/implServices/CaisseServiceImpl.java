@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,6 +39,8 @@ public class CaisseServiceImpl {
 
   @Autowired
   PasswordLockCaisseRepo passwordLockCaisseRepo;
+  @Autowired
+  private CaisseEntityRepo caisseRepository;
 
   @Autowired
   JdbcTemplate jdbcTemplate;
@@ -55,6 +58,7 @@ public class CaisseServiceImpl {
     }
     return lockCaisse;
   }
+
   @Transactional
   @CacheEvict(value = "products",  key = "'allProducts'",allEntries = true)
   public void processAndSaveOrder(List<OrderRequestDTO> orderDTOList) {
@@ -71,8 +75,6 @@ public class CaisseServiceImpl {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @CacheEvict(value = "products",  key = "'allProducts'",allEntries = true)
-
-
   public void processSingleOrder(OrderRequestDTO orderDTO) {
     long startTime = System.currentTimeMillis();
     try {
@@ -126,6 +128,11 @@ public class CaisseServiceImpl {
       order.setTotalePrice(orderDTO.getTotalePrice());
       order.setIdOrderChange(orderDTO.getIdOrderChange());
       order.setComment(orderDTO.getComment());
+      Caisse caisse = caisseRepository.findById(orderDTO.getCaisseId())
+        .orElseThrow(() -> new EntityNotFoundException("Caisse non trouvée avec l'id: " + orderDTO.getCaisseId()));
+      order.setCaisse(caisse);
+
+
 
       // ✅ Associer les articles à la commande
       ItemsOrders itemsOrders = new ItemsOrders();

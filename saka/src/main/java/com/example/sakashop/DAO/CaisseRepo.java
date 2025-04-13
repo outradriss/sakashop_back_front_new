@@ -1,6 +1,7 @@
 package com.example.sakashop.DAO;
 
 import com.example.sakashop.DTO.ItemCaisseDTO;
+import com.example.sakashop.Entities.Caisse;
 import com.example.sakashop.Entities.Item;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CaisseRepo extends JpaRepository<Item,Long> {
@@ -25,5 +27,6 @@ public interface CaisseRepo extends JpaRepository<Item,Long> {
 
   @Query("SELECT i FROM Item i WHERE i.quantity > 0")
   List<Item> findAllWithCategoryForCaisse();
+
 
 }

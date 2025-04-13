@@ -1,6 +1,5 @@
 package com.example.sakashop.Entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -11,9 +10,8 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Table(name = "factures_items")
-@AllArgsConstructor
 @NoArgsConstructor
-@Data
+@AllArgsConstructor
 public class FactureItem {
 
   @Id
@@ -29,10 +27,10 @@ public class FactureItem {
   @JoinColumn(name = "item_id", nullable = false)
   @JsonIgnoreProperties("factureItems")
   private Item item;
+
   private int quantite;
   private double prixHT;
   private double tva;
   private double prixTTC;
   private double totalTTC;
-
 }

@@ -13,4 +13,9 @@ export class LoginService {
   login(data: { email: string; password: string }): Observable<any> {
     return this.http.post<any>(this.apiUrl, data);
   }
+  getMyCaisse(): Observable<any> {
+    return this.http.get('http://localhost:8090/api/users/my-caisse');
+  }
+  
+  
 }

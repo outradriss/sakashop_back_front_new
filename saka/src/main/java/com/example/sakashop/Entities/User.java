@@ -16,8 +16,19 @@ public class User {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private long id;
+  @OneToOne
+  @JoinColumn(name = "caisse_id", referencedColumnName = "id")
+  private Caisse caisse;
 
-    @Column
+  public Caisse getCaisse() {
+    return caisse;
+  }
+
+  public void setCaisse(Caisse caisse) {
+    this.caisse = caisse;
+  }
+
+  @Column
     private String username;
 
     @Column

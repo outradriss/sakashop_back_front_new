@@ -3,10 +3,19 @@
         <h2>Gestion des Factures</h2>
         <button class="btn-primary" (click)="openForm()">➕ Nouvelle Facture</button>
     </header>
-
+    <div class="search-bar">
+        <input
+          type="text"
+          placeholder="🔍 Rechercher par référence ou client..."
+          [(ngModel)]="searchQuery"
+          (input)="filtrerFactures()"
+        />
+      </div>
     <div class="invoice-content">
         <!-- Tableau des factures -->
         <table class="invoice-table">
+            
+              
             <thead>
                 <tr>
                     <th>Référence</th>

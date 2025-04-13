@@ -1,19 +1,14 @@
 package com.example.sakashop.Entities;
 
-import com.example.sakashop.Entities.FactureItem;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Entity
 @Getter
@@ -25,6 +20,7 @@ public class Factures {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
   private String reference;
   private String clientName;
   private String clientICE;
@@ -32,12 +28,13 @@ public class Factures {
   private String adresse;
   private String entreprise;
   private String modePaiement;
+
   @Column(name = "status")
   private String statusPaiement;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-
   private LocalDate dateFacture;
+
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   private LocalDate dateEcheance;
 
@@ -45,29 +42,17 @@ public class Factures {
   private double totalTVA;
   private double totalTTC;
 
-  @ManyToMany(fetch = FetchType.EAGER)
-  @JoinTable(
-    name = "factures_items",
-    joinColumns = @JoinColumn(name = "facture_id"),
-    inverseJoinColumns = @JoinColumn(name = "item_id")
-  )
-  private List<Item> items = new ArrayList<>();
-
-  @OneToMany(mappedBy = "facture", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-  private List<FactureItem> factureItems;
+  @OneToMany(mappedBy = "facture", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+  private List<FactureItem> factureItems = new ArrayList<>();
 
 
-
-  @ElementCollection
-  @CollectionTable(name = "factures_items", joinColumns = @JoinColumn(name = "facture_id"))
-  @MapKeyJoinColumn(name = "item_id")
-  @Column(name = "quantity")
-  private Map<Item, Integer> itemQuantities = new HashMap<>();
-
-  public void addItemWithQuantity(Item item, int quantity) {
-    this.items.add(item);
-    this.itemQuantities.put(item, quantity); // ✅ Correction ici
+  public void addFactureItem(FactureItem item) {
+    factureItems.add(item);
+    item.setFacture(this);
   }
 
-
+  public void removeFactureItem(FactureItem item) {
+    factureItems.remove(item);
+    item.setFacture(null);
+  }
 }

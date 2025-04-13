@@ -4,6 +4,17 @@
       <button class="btn-primary" (click)="openForm()">➕ Nouveau Bon de Livraison</button>
     </header>
   
+    <!-- ✅ Barre de recherche -->
+    <div class="search-bar">
+      <input
+        type="text"
+        placeholder="🔍 Rechercher par Référence ou Client..."
+        [(ngModel)]="searchQuery"
+        (input)="filterBL()"
+        class="search-input"
+      />
+    </div>
+  
     <div class="invoice-content">
       <table class="invoice-table">
         <thead>
@@ -15,7 +26,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let bl of bonsLivraison">
+          <tr *ngFor="let bl of filteredBonsLivraison">
             <td>{{ bl.reference }}</td>
             <td>{{ bl.clientName }}</td>
             <td>{{ bl.dateLivraison | date: 'dd/MM/yyyy' }}</td>
@@ -40,7 +51,6 @@
         <label>Référence :</label>
         <input type="text" [(ngModel)]="blReference" name="reference" readonly />
   
-        <!-- ✅ Client existant -->
         <label>Client existant :</label>
         <select [(ngModel)]="selectedClientId" name="clientSelect" (change)="onClientSelected()">
           <option value="">-- Sélectionner un client --</option>
@@ -49,7 +59,6 @@
           </option>
         </select>
   
-        <!-- ✅ Nouveau client (reste vide même si client existant sélectionné) -->
         <label>Nouveau client :</label>
         <input type="text" placeholder="Nom du nouveau client" [(ngModel)]="nouveauClientNom" name="nouveauClientNom" />
   
@@ -97,46 +106,56 @@
               </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let item of produitsSelectionnes; let i = index">
-                  <td>{{ item.produit.name }}</td>
-                  <td>
-                    <input type="number" [(ngModel)]="item.quantite" name="quantite-{{i}}" min="1" />
-                  </td>
-                  <td>
+              <tr *ngFor="let item of produitsSelectionnes; let i = index">
+                <td>{{ item.produit.name }}</td>
+                <td>
                     <input
                       type="number"
-                      [(ngModel)]="item.produit.buyPrice"
-                      name="prixht-{{i}}"
-                      min="0"
-                      step="0.01"
-                      (input)="updateTTC(item)"
+                      [(ngModel)]="item.quantite"
+                      name="quantite-{{i}}"
+                      min="1"
+                      [max]="item.produit.quantity"
+                      (input)="checkStock(item)"
                     />
+                    <div *ngIf="item.quantite >= item.produit.quantity" class="error-message">
+                      Stock max disponible : {{ item.produit.quantity }}
+                    </div>
                   </td>
-                  <td>
-                    <input
-                      type="number"
-                      [(ngModel)]="item.produit.tva"
-                      name="tva-{{i}}"
-                      min="0"
-                      step="1"
-                      (input)="updateTTC(item)"
-                    />
-                  </td>
-                  <td>
-                    {{
-                      ((+item.produit.buyPrice + (+item.produit.buyPrice * +item.produit.tva / 100)) * item.quantite)
-                        | number: '1.2-2'
-                    }} MAD
-                  </td>
-                  <td>
-                    <button class="btn-delete" (click)="removeProduct(i)">🗑️</button>
-                  </td>
-                </tr>
-                <tr *ngIf="produitsSelectionnes.length === 0">
-                  <td colspan="6" class="text-center">Aucun produit sélectionné</td>
-                </tr>
-              </tbody>
-              
+                  
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="item.produit.buyPrice"
+                    name="prixht-{{i}}"
+                    min="0"
+                    step="0.01"
+                    (input)="updateTTC(item)"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    [(ngModel)]="item.produit.tva"
+                    name="tva-{{i}}"
+                    min="0"
+                    step="1"
+                    (input)="updateTTC(item)"
+                  />
+                </td>
+                <td>
+                  {{
+                    ((+item.produit.buyPrice + (+item.produit.buyPrice * +item.produit.tva / 100)) * item.quantite)
+                      | number: '1.2-2'
+                  }} MAD
+                </td>
+                <td>
+                  <button class="btn-delete" (click)="removeProduct(i)">🗑️</button>
+                </td>
+              </tr>
+              <tr *ngIf="produitsSelectionnes.length === 0">
+                <td colspan="6" class="text-center">Aucun produit sélectionné</td>
+              </tr>
+            </tbody>
           </table>
         </div>
   

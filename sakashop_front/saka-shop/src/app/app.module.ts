@@ -30,6 +30,9 @@ import { FlushCaisseComponent } from './flush-caisse/flush-caisse.component';
 import { OpenCaisseComponent } from './open-caisse/open-caisse.component';
 import { FacturesComponent } from './factures/factures.component';
 import { BonLivraisonComponent } from './bon-livraison/bon-livraison.component';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './auth.interceptor';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -74,8 +77,14 @@ import { BonLivraisonComponent } from './bon-livraison/bon-livraison.component';
     }),    
   ],
   providers: [
-    { provide: LOCALE_ID, useValue: 'en-US' } 
+    { provide: LOCALE_ID, useValue: 'en-US' },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
   ],
+
   bootstrap: [AppComponent]
 })
 export class AppModule { }

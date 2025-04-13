@@ -16,6 +16,8 @@ export class BonLivraisonComponent implements OnInit {
   clientICE: string = '';
   adresse: string = '';
   nouveauClientNom: string = '';
+  searchQuery: string = '';
+filteredBonsLivraison: any[] = [];
 
   dateLivraison: Date = new Date();
 
@@ -42,6 +44,7 @@ export class BonLivraisonComponent implements OnInit {
   ngOnInit(): void {
     this.loadProducts();
     this.loadClientsFromFactures();
+    this.loadAllBL();
   }
 
   openForm(): void {
@@ -60,6 +63,7 @@ export class BonLivraisonComponent implements OnInit {
   closeForm(): void {
     this.formPopup = false;
   }
+
 
   loadProducts(): void {
     this.productService.getAllProducts().subscribe(
@@ -90,7 +94,6 @@ export class BonLivraisonComponent implements OnInit {
       this.clientICE = client.ice;
       this.adresse = client.adresse;
     } else {
-      // Réinitialise si aucun client sélectionné
       this.clientName = '';
       this.clientICE = '';
       this.adresse = '';
@@ -119,7 +122,6 @@ export class BonLivraisonComponent implements OnInit {
   removeProduct(index: number): void {
     this.produitsSelectionnes.splice(index, 1);
   }
-
   modifierBL(bl: any): void {
     this.isEditMode = true;
     this.formPopup = true;
@@ -128,47 +130,88 @@ export class BonLivraisonComponent implements OnInit {
     this.clientICE = bl.clientICE;
     this.adresse = bl.adresse;
     this.dateLivraison = new Date(bl.dateLivraison);
-    this.produitsSelectionnes = [...bl.produits];
+    this.produitsSelectionnes = Array.isArray(bl.itemQuantities) ? bl.itemQuantities.map((item: any) => ({
+      produit: {
+        id: item.productId,
+        name: item.productName,
+        buyPrice: item.prixHT,
+        tva: item.tva,
+        quantity: item.quantity
+      },
+      quantite: item.quantity
+    })) : [];
+  
     this.blEnCoursEditionId = bl.id;
   }
+  
+
 
   supprimerBL(id: number): void {
     const confirmation = confirm('Êtes-vous sûr de vouloir supprimer ce bon de livraison ?');
     if (confirmation) {
-      this.bonsLivraison = this.bonsLivraison.filter(bl => bl.id !== id);
+      this.bonLivraisonService.deleteBL(id).subscribe({
+        next: () => {
+          alert("Bon de Livraison supprimé avec succès !");
+          this.loadAllBL(); // recharge la liste après suppression
+        },
+        error: err => {
+          console.error('Erreur lors de la suppression du Bon de Livraison :', err);
+          alert("Une erreur est survenue lors de la suppression du Bon de Livraison.");
+        }
+      });
     }
   }
-
+  
   imprimerBL(bl: any): void {
     this.blReference = bl.reference;
     this.clientName = bl.clientName;
     this.clientICE = bl.clientICE;
     this.adresse = bl.adresse;
     this.dateLivraison = new Date(bl.dateLivraison);
-    this.produitsSelectionnes = [...bl.produits];
-    this.generateBLAndPrint();
+  
+    this.produitsSelectionnes = Array.isArray(bl.itemQuantities)
+      ? bl.itemQuantities.map((item: any) => ({
+          produit: {
+            id: item.productId,
+            name: item.productName,
+            buyPrice: item.prixHT,
+            tva: item.tva,
+            quantity: item.quantity,
+          },
+          quantite: item.quantity
+        }))
+      : [];
+  
+    this.generateBLAndPrint(false);
   }
+  
 
-  generateBLAndPrint(): void {
-    const dateLivraisonFormatted = new Date(this.dateLivraison).toLocaleDateString();
-  
-    // Calcul HT, TVA, TTC comme pour la facture
-    let totalHT = this.produitsSelectionnes.reduce((total, item) => {
-      const ht = Number(item.produit.buyPrice) || 0;
-      return total + item.quantite * ht;
-    }, 0);
-  
-    let totalTVA = this.produitsSelectionnes.reduce((total, item) => {
-      const ht = Number(item.produit.buyPrice) || 0;
-      const tva = Number(item.produit.tva) || 0;
-      return total + item.quantite * ht * tva / 100;
-    }, 0);
-  
-    let totalTTC = totalHT + totalTVA;
-  
-    const totalRows = 30;
-    const filledRows = this.produitsSelectionnes.length;
-    const emptyRows = Math.max(0, totalRows - filledRows);
+
+  generateBLAndPrint(enregistrer: boolean = true): void {
+     // 1. Appel d'abord à l'enregistrement backend
+     if (enregistrer) {
+      this.envoyerBL(); // ➕ Enregistre seulement si demandé
+    }
+
+  // 2. Ensuite impression
+  const dateLivraisonFormatted = new Date(this.dateLivraison).toLocaleDateString();
+
+  let totalHT = this.produitsSelectionnes.reduce((total, item) => {
+    const ht = Number(item.produit.buyPrice) || 0;
+    return total + item.quantite * ht;
+  }, 0);
+
+  let totalTVA = this.produitsSelectionnes.reduce((total, item) => {
+    const ht = Number(item.produit.buyPrice) || 0;
+    const tva = Number(item.produit.tva) || 0;
+    return total + item.quantite * ht * tva / 100;
+  }, 0);
+
+  let totalTTC = totalHT + totalTVA;
+
+  const totalRows = 30;
+  const filledRows = this.produitsSelectionnes.length;
+  const emptyRows = Math.max(0, totalRows - filledRows);
   
     const blHTML = `
       <html>
@@ -282,13 +325,13 @@ export class BonLivraisonComponent implements OnInit {
     `;
   
     const printWindow = window.open('', '', 'width=800,height=900');
-    if (printWindow) {
-      printWindow.document.write(blHTML);
-      printWindow.document.close();
-      printWindow.print();
-    }
-  
-    this.closeForm();
+  if (printWindow) {
+    printWindow.document.write(blHTML);
+    printWindow.document.close();
+    printWindow.print();
+  }
+
+  this.closeForm();
   }
   updateTTC(item: any): void {
     const prixHT = Number(item.produit.buyPrice) || 0;
@@ -296,8 +339,7 @@ export class BonLivraisonComponent implements OnInit {
     const prixTTC = prixHT + (prixHT * tva / 100);
     item.produit.prixTTC = prixTTC;
   }
-  
-  
+
   envoyerBL(): void {
     if (this.produitsSelectionnes.length === 0) {
       alert("Ajoutez au moins un produit avant d'envoyer le bon de livraison !");
@@ -333,7 +375,8 @@ export class BonLivraisonComponent implements OnInit {
         const tva = Number(item.produit.tva) || 0;
         const prixTTC = ht + (ht * tva / 100);
         return {
-          id: item.produit.id,
+          productId: item.produit.id,
+          productName: item.produit.name,
           quantity: item.quantite,
           prixHT: ht,
           tva,
@@ -346,11 +389,13 @@ export class BonLivraisonComponent implements OnInit {
       totalTTC
     };
   
-    console.log("Données Bon de Livraison :", blData);
+    const apiCall = this.isEditMode && this.blEnCoursEditionId
+      ? this.bonLivraisonService.updateBL(this.blEnCoursEditionId, blData)
+      : this.bonLivraisonService.envoyerBL(blData);
   
-    this.bonLivraisonService.envoyerBL(blData).subscribe(
+    apiCall.subscribe(
       response => {
-        console.log("Bon de Livraison enregistré avec succès:", response);
+        console.log("Bon de Livraison sauvegardé avec succès :", response);
         alert("Bon de Livraison enregistré avec succès !");
         this.closeForm();
         this.loadAllBL();
@@ -361,16 +406,27 @@ export class BonLivraisonComponent implements OnInit {
       }
     );
   }
+  
+
+  
+
   loadAllBL(): void {
-    this.bonLivraisonService.getAllBL().subscribe(
-      (data) => {
-        this.bonsLivraison = data;
-      },
-      (error) => {
-        console.error("Erreur lors du chargement des bons de livraison :", error);
-        alert("Une erreur est survenue lors du chargement des bons de livraison.");
-      }
+    this.bonLivraisonService.getAllBL().subscribe((data) => {
+      this.bonsLivraison = data;
+      this.filteredBonsLivraison = data; 
+    });
+  }
+  filterBL(): void {
+    const query = this.searchQuery.toLowerCase().trim();
+    this.filteredBonsLivraison = this.bonsLivraison.filter(bl =>
+      bl.reference.toLowerCase().includes(query) ||
+      bl.clientName.toLowerCase().includes(query)
     );
+  }
+  checkStock(item: any): void {
+    if (item.quantite > item.produit.quantity) {
+      item.quantite = item.produit.quantity;
+    }
   }
   
 

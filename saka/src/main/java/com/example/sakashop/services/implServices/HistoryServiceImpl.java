@@ -102,6 +102,10 @@ public class HistoryServiceImpl {
       String idOrderChange = entry.getKey();
       List<ItemsOrders> ordersList = entry.getValue();
 
+      Order order = ordersList.get(0).getOrder();
+      String caisseName = (order != null && order.getCaisse() != null) ? order.getCaisse().getNom() : "NC";
+      Long caisseId = (order != null && order.getCaisse() != null) ? order.getCaisse().getId() : null;
+
       String typePaiement = ordersList.stream()
         .map(ItemsOrders::getTypePaiement)
         .filter(Objects::nonNull)
@@ -112,33 +116,29 @@ public class HistoryServiceImpl {
       LocalDateTime lastUpdated = ordersList.get(0).getDateUpdate();
 
       double totalePrice = ordersList.stream()
-        .mapToDouble(itemsOrder -> itemsOrder.getTotalePrice() > 0 ? itemsOrder.getTotalePrice() :
-          (itemsOrder.getNegoPrice() > 0 ? itemsOrder.getNegoPrice() * itemsOrder.getCartQuantity() :
-            itemsOrder.getSalesPrice() * itemsOrder.getCartQuantity()))
+        .mapToDouble(io -> io.getTotalePrice() > 0
+          ? io.getTotalePrice()
+          : (io.getNegoPrice() > 0 ? io.getNegoPrice() * io.getCartQuantity() : io.getSalesPrice() * io.getCartQuantity()))
         .sum();
 
-      List<OrderRequestDTO.ItemRequestDTO> itemDTOList = ordersList.stream().map(itemsOrder -> {
-        Item item = itemsOrder.getItem();
-
-        double negoPrice = itemsOrder.getNegoPrice() > 0 ? itemsOrder.getNegoPrice() : 0.0;
-        double salesPrice = itemsOrder.getSalesPrice() > 0 ? itemsOrder.getSalesPrice() : 0.0;
-
-        OrderRequestDTO.ItemRequestDTO itemRequestDTO = new OrderRequestDTO.ItemRequestDTO();
-        itemRequestDTO.setNameProduct(itemsOrder.getName());
-        itemRequestDTO.setQuantity(itemsOrder.getCartQuantity() > 0 ? itemsOrder.getCartQuantity() : 1);
-        itemRequestDTO.setSalesPrice(salesPrice);
-        itemRequestDTO.setTotalePrice(salesPrice * itemsOrder.getCartQuantity());
-        itemRequestDTO.setNegoPrice(negoPrice);
-        itemRequestDTO.setItemId(item != null ? item.getId() : null);
-        itemRequestDTO.setCode(item.getCode() != null ? item.getCode() : "NC");
-
-        return itemRequestDTO;
+      List<OrderRequestDTO.ItemRequestDTO> items = ordersList.stream().map(io -> {
+        Item item = io.getItem();
+        OrderRequestDTO.ItemRequestDTO dto = new OrderRequestDTO.ItemRequestDTO();
+        dto.setNameProduct(io.getName());
+        dto.setQuantity(io.getCartQuantity());
+        dto.setSalesPrice(io.getSalesPrice());
+        dto.setTotalePrice(io.getSalesPrice() * io.getCartQuantity());
+        dto.setNegoPrice(io.getNegoPrice());
+        dto.setItemId(item != null ? item.getId() : null);
+        dto.setItemCode(item != null ? item.getItemCode() : null);
+        dto.setCode(item != null && item.getCode() != null ? item.getCode() : "NC");
+        return dto;
       }).collect(Collectors.toList());
 
       return new OrderRequestDTO.Builder(
         null,
         null,
-        1L,
+        caisseId,
         ordersList.stream().mapToInt(ItemsOrders::getCartQuantity).sum(),
         0,
         false,
@@ -151,9 +151,10 @@ public class HistoryServiceImpl {
         totalePrice,
         ordersList.stream().mapToDouble(ItemsOrders::getNegoPrice).sum(),
         ordersList.stream().mapToDouble(io -> io.getItem() != null ? io.getItem().getBuyPrice() : 0.0).sum(),
-        itemDTOList,
+        items,
         idOrderChange,
-        typePaiement
+        typePaiement,
+        caisseName
       ).buildOrder();
     }).collect(Collectors.toList());
   }
@@ -209,6 +210,9 @@ public class HistoryServiceImpl {
         return itemRequestDTO;
       }).collect(Collectors.toList());
 
+      Order order = ordersList.get(0).getOrder();
+      String caisseName = (order != null && order.getCaisse() != null) ? order.getCaisse().getNom() : "NC";
+
       return new OrderRequestDTO.Builder(
         null,
         null,
@@ -227,7 +231,8 @@ public class HistoryServiceImpl {
         ordersList.stream().mapToDouble(io -> io.getItem() != null ? io.getItem().getBuyPrice() : 0.0).sum(),
         itemDTOList,
         idOrderChange,
-        typePaiement
+        typePaiement,
+        caisseName
       ).buildOrder();
     }).collect(Collectors.toList());
   }

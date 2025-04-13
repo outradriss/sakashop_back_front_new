@@ -32,6 +32,7 @@ import { FacturesComponent } from './factures/factures.component';
 import { BonLivraisonComponent } from './bon-livraison/bon-livraison.component';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './auth.interceptor';
+import { CaisseFilterPipe } from './filters/caisse-filter.pipe';
 
 @NgModule({
   declarations: [
@@ -45,6 +46,7 @@ import { AuthInterceptor } from './auth.interceptor';
     GestionProduitsComponent,
    HistoryComponent,
    TurnoverComponent,
+   CaisseFilterPipe,
    VenteComponent,
    ConsumerComponent,
    GestionCaisseComponent,
@@ -53,6 +55,7 @@ import { AuthInterceptor } from './auth.interceptor';
    OpenCaisseComponent,
    FacturesComponent,
    BonLivraisonComponent,
+   CaisseFilterPipe,
   ],
   imports: [
     BrowserModule,

@@ -33,7 +33,19 @@ public class OrderRequestDTO {
   private final double chequeAmount;
   private final double cardAmount;
   private final double cashAmount;
+  private String caisseName;
 
+  public String getCaisseName() {
+    return caisseName;
+  }
+
+  public void setCaisseName(String caisseName) {
+    this.caisseName = caisseName;
+  }
+
+  public void setCaisseId(Long caisseId) {
+    this.caisseId = caisseId;
+  }
 
   public double getChequeAmount() {
     return chequeAmount;
@@ -137,6 +149,7 @@ public class OrderRequestDTO {
   private OrderRequestDTO(Builder builder) {
     this.idOrder = builder.idOrder;
     this.caisseId=builder.caisseId;
+    this.caisseName=builder.caisseName;
     this.nameProduct = builder.nameProduct;
     this.quantity = builder.quantity;
     this.quantityAddedUrgent = builder.quantityAddedUrgent;
@@ -190,6 +203,7 @@ public class OrderRequestDTO {
     @JsonProperty("id_order_change")
     private String idOrderChange;
     private String typePaiement;
+    private String caisseName;
 
 
 
@@ -223,7 +237,9 @@ public class OrderRequestDTO {
       @JsonProperty("buyPrice") double buyPrice,
       @JsonProperty("items") List<ItemRequestDTO> items,
       @JsonProperty("id_order_change") String idOrderChange,
-      @JsonProperty("typePaiement")String typePaiement
+      @JsonProperty("typePaiement")String typePaiement,
+      @JsonProperty("caisseName")String caisseName
+
       // Ajout des articles
     ) {
       this.idOrder = idOrder;
@@ -244,6 +260,7 @@ public class OrderRequestDTO {
       this.items = items;
       this.idOrderChange=idOrderChange;
       this.typePaiement=typePaiement;
+      this.caisseName=caisseName;
     }
     public Builder setItems(List<ItemRequestDTO> items) {
       this.items = items;

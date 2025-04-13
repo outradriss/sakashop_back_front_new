@@ -45,6 +45,9 @@ public class ItemsOrders {
   private double negoPrice;
   @Column(name = "promo_price")
   private double promoPrice;
+  @ManyToOne
+  @JoinColumn(name = "caisse_id") // ou adapte selon le nom exact dans ta table
+  private Caisse caisse;
 
   @Column(name = "id_order_change")
   private String idOrderChange;
@@ -55,6 +58,14 @@ public class ItemsOrders {
   private double chequeAmount;
   private double cardAmount;
   private double cashAmount;
+
+  public Caisse getCaisse() {
+    return caisse;
+  }
+
+  public void setCaisse(Caisse caisse) {
+    this.caisse = caisse;
+  }
 
   public double getChequeAmount() {
     return chequeAmount;

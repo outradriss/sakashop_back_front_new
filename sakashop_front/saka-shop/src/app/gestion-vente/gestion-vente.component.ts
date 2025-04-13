@@ -20,6 +20,9 @@ export class GestionVenteComponent {
   profitMarginAmount: number = 0;
   totalQuantity: number = 0;
   profitMarginPercentage: number = 0;
+  searchCaisseName: string = '';
+  filteredSalesCaisse: any[] = [];
+
   products: Vente[] = [];
   bestSellingProducts: any[] = [];
   topSellingProduct3Months: { name: string; quantity: number } = { name: '', quantity: 0 };
@@ -40,9 +43,13 @@ export class GestionVenteComponent {
     private fb: FormBuilder
   ) {}
 
+  
+
   ngOnInit(): void {
     this.loadSalesData();
     this.calculateTotals(this.filteredSales); // Calcul des totaux
+    this.filteredSalesCaisse = this.filteredSales;
+
 
     // Initialisation correcte du FormGroup
     const today = new Date();
@@ -92,36 +99,45 @@ export class GestionVenteComponent {
       (data) => {
         this.sales = data;
   
-        // ✅ Filtrer les ventes des dernières 24 heures
+        // ✅ Par défaut : filtrer les ventes d’aujourd’hui
         const today = new Date();
+        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+  
         this.filteredSales = this.sales.filter((sale) => {
           const saleDate = new Date(sale.dateOrder);
-          return (
-            saleDate.getDate() === today.getDate() &&
-            saleDate.getMonth() === today.getMonth() &&
-            saleDate.getFullYear() === today.getFullYear()
-          );
+          return saleDate >= startOfDay && saleDate <= endOfDay;
         });
-        this.calculateTotals(this.filteredSales); // Recalcule les totaux
   
-        // ✅ Trouver les produits les plus vendus sur différentes périodes
+        this.updateCaisseFilter(); // 🔄 Appliquer filtre caisse
+        this.calculateTotals(this.filteredSalesCaisse);
+  
+        // 🔍 Stats produits
         this.topSellingProductWeek = this.getBestSellingProduct(7);
         this.topSellingProductMonth = this.getBestSellingProduct(30);
         this.topSellingProduct3Months = this.getBestSellingProduct(90);
-  
-        // ✅ Trouver le produit le moins vendu
         this.leastSellingProduct = this.getLeastSellingProduct();
-  
-        // ✅ Récupérer la liste des produits les plus vendus pour le tableau
         this.bestSellingProducts = this.getBestSellingProducts();
-  
-        // ✅ Afficher le graphique d'évolution des ventes
         this.loadSalesChart();
       },
       (error) => {
         console.error('Erreur lors du chargement des données :', error);
       }
     );
+  }
+  
+  
+  updateCaisseFilter(): void {
+    if (!this.searchCaisseName) {
+      this.filteredSalesCaisse = this.filteredSales;
+    } else {
+      const lower = this.searchCaisseName.toLowerCase();
+      this.filteredSalesCaisse = this.filteredSales.filter(
+        sale => sale.caisseName?.toLowerCase().includes(lower)
+      );
+    }
+  
+    this.calculateTotals(this.filteredSalesCaisse); // recalcul dynamique
   }
   
 
@@ -262,20 +278,19 @@ loadSalesChart(): void {
     const endDate = new Date(this.dateRangeForm.value.end);
   
     if (startDate && endDate) {
-      // Ajuster les dates pour inclure toute la journée
       const startOfDay = new Date(startDate.setHours(0, 0, 0, 0));
       const endOfDay = new Date(endDate.setHours(23, 59, 59, 999));
   
-      // Filtrer les ventes dans la plage de dates sélectionnée
       this.filteredSales = this.sales.filter((sale) => {
         const saleDate = new Date(sale.dateOrder);
         return saleDate >= startOfDay && saleDate <= endOfDay;
       });
   
-      this.sortSalesByDate();
-      this.calculateTotals(this.filteredSales); // Recalcule les totaux
+      this.updateCaisseFilter(); // 🔁 Appliquer filtre caisse
+      this.calculateTotals(this.filteredSalesCaisse);
     }
   }
+  
   
   sortSalesByDate(): void {
     this.filteredSales.sort(

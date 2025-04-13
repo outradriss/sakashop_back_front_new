@@ -448,3 +448,7 @@
 .bl-tile:hover {
   background-color: #45a049;
 }
+.search-caisse-bar {
+  margin-top: 10px;
+  max-width: 300px;
+}

@@ -35,6 +35,13 @@
         </div>
         <button (click)="exportToCSV()" class="btn-export-csv">Exporter en CSV</button>
       </div>
+<!-- 🔍 Barre de recherche par caisse -->
+<div class="search-caisse-bar">
+  <mat-form-field appearance="fill" class="search-caisse-field">
+    <mat-label>Chercher la caisse</mat-label>
+    <input matInput [(ngModel)]="searchCaisseName" (ngModelChange)="updateCaisseFilter()" placeholder="Ex: caisse-test" />
+  </mat-form-field>
+</div>
 
       <div class="table-container">
         <div class="table-body-scroll">
@@ -48,10 +55,11 @@
                 <th>Prix Total TTC</th>
                 <th>Type de Paiement</th>
                 <th>Date de Commande</th>
+                <th>nom de caisse</th>
               </tr>
             </thead>
             <tbody>
-              <ng-container *ngFor="let sale of filteredSales">
+              <ng-container *ngFor="let sale of filteredSalesCaisse">
                 <tr *ngFor="let item of sale.items">
                   <td>{{ item.code }}</td>
                   <td>{{ item.nameProduct }}</td>
@@ -60,6 +68,7 @@
                   <td>{{ item.totalePrice | currency: 'MAD' }}</td>
                   <td>{{ sale.typePaiement }}</td>
                   <td>{{ sale.dateOrder | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ sale.caisseName}}</td>
                 </tr>
               </ng-container>
             </tbody>

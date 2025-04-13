@@ -533,8 +533,6 @@ updateTTC(item: any): void {
   item.produit.ttc = ht + (ht * tva / 100);
 }
 
-
-
 navigateTo(route: string): void {
   this.router.navigate([`/${route}`]);
 }

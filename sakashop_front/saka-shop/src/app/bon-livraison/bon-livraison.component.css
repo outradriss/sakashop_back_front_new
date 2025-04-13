@@ -295,6 +295,24 @@ select {
     border: 1px solid #ccc;
     border-radius: 4px;
   }
+  .client-suggestions {
+    list-style: none;
+    padding: 0;
+    border: 1px solid #ccc;
+    max-height: 150px;
+    overflow-y: auto;
+    background: white;
+    position: absolute;
+    width: 100%;
+    z-index: 1000;
+  }
+  .client-suggestions li {
+    padding: 6px;
+    cursor: pointer;
+  }
+  .client-suggestions li:hover {
+    background-color: #eee;
+  }
   
   .navigation-buttons {
     position: fixed;

@@ -714,6 +714,17 @@ addCategory(): void {
     this.router.navigate(['/history'], { queryParams: { id: productId } });
   }
 
+  calculerTTCauto(): void {
+    const ht = Number(this.productForms.buyPrice) || 0;
+    const tva = Number(this.productForms.tva) || 0;
+  
+    if (!this.productForms.salesPrice || this.productForms.salesPrice === 0) {
+      const ttc = ht + (ht * tva / 100);
+      this.productForms.salesPrice = +(ttc.toFixed(2));
+    }
+  }
+  
+
   logout() {
     localStorage.removeItem('token');
     // Redirige l'utilisateur vers la page de login

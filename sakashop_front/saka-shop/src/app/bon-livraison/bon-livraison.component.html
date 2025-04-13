@@ -60,12 +60,20 @@
         <input type="text" [(ngModel)]="blReference" name="reference" readonly />
   
         <label>Client existant :</label>
-        <select [(ngModel)]="selectedClientId" name="clientSelect" (change)="onClientSelected()">
-          <option value="">-- Sélectionner un client --</option>
-          <option *ngFor="let client of clients" [value]="client.id">
-            {{ client.name }} - {{ client.ice }}
-          </option>
-        </select>
+        <input
+        type="text"
+        placeholder="🔍 Rechercher un client par nom ou ICE..."
+        [(ngModel)]="clientSearch"
+        (input)="filtrerClients()"
+      />
+      
+      <ul *ngIf="filteredClients.length > 0" class="client-suggestions">
+        <li *ngFor="let client of filteredClients" (click)="choisirClient(client)">
+          {{ client.clientName }} - {{ client.clientICE }}
+        </li>
+      </ul>
+
+        
   
         <label>Nouveau client :</label>
         <input type="text" placeholder="Nom du nouveau client" [(ngModel)]="nouveauClientNom" name="nouveauClientNom" />

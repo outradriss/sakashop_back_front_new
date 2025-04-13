@@ -19,11 +19,14 @@ export class BonLivraisonComponent implements OnInit {
   nouveauClientNom: string = '';
   searchQuery: string = '';
 filteredBonsLivraison: any[] = [];
-
+clientSearch: string = '';
+filteredClients: any[] = [];
   dateLivraison: Date = new Date();
 
   clients: any[] = [];
   selectedClientId: string = '';
+  clientCode: string = '';
+  selectedClient: any = null;
 
   produitsSelectionnes: any[] = [];
 
@@ -54,6 +57,7 @@ filteredBonsLivraison: any[] = [];
     this.isEditMode = false;
     this.blReference = 'BL-' + Date.now();
     this.selectedClientId = '';
+    this.clientCode = '';
     this.clientName = '';
     this.clientICE = '';
     this.adresse = '';
@@ -82,6 +86,7 @@ filteredBonsLivraison: any[] = [];
     this.factureService.getClientsFromFactures().subscribe(
       (data) => {
         this.clients = data;
+        console.log(this.clients)
       },
       (error) => {
         console.error('Erreur lors du chargement des clients', error);
@@ -90,18 +95,29 @@ filteredBonsLivraison: any[] = [];
   }
 
   onClientSelected(): void {
-    const client = this.clients.find(c => c.id == this.selectedClientId);
-    if (client) {
-      this.clientName = client.name;
-      this.clientICE = client.ice;
-      this.adresse = client.adresse;
-    } else {
-      this.clientName = '';
-      this.clientICE = '';
-      this.adresse = '';
+    const selectedClient = this.selectedClient;
+  
+    if (selectedClient) {
+      this.clientName = selectedClient.clientName;
+      this.clientICE = selectedClient.clientICE;
+      this.clientCode = selectedClient.clientCode;
+      this.adresse = selectedClient.adresse;
+  
+      this.produitsSelectionnes = selectedClient.produits.map((produit: any) => ({
+        produit: {
+          id: produit.id,
+          name: produit.name,
+          buyPrice: produit.prixHT,
+          tva: produit.tva,
+          quantity: produit.quantity
+        },
+        quantite: produit.quantity
+      }));
     }
   }
   
+  
+
 
   filterDiscountProducts(): void {
     const query = this.discountSearchQuery.trim().toLowerCase();
@@ -433,6 +449,40 @@ filteredBonsLivraison: any[] = [];
       item.quantite = item.produit.quantity;
     }
   }
+
+
+  filtrerClients(): void {
+    const query = this.clientSearch.trim().toLowerCase();
+    this.filteredClients = this.clients.filter(client =>
+      client.clientName.toLowerCase().includes(query) ||
+      client.clientICE.toLowerCase().includes(query)
+    );
+  }
+  
+  choisirClient(client: any): void {
+    this.selectedClient = client;
+    this.clientSearch = `${client.clientName} - ${client.clientICE}`;
+    this.filteredClients = [];
+  
+    // Remplir les champs
+    this.clientName = client.clientName;
+    this.clientICE = client.clientICE;
+    this.clientCode = client.clientCode;
+    this.adresse = client.adresse;
+  
+    this.produitsSelectionnes = client.produits.map((produit: any) => ({
+      produit: {
+        id: produit.id,
+        name: produit.name,
+        buyPrice: produit.prixHT,
+        tva: produit.tva,
+        quantity: produit.quantity
+      },
+      quantite: produit.quantity
+    }));
+  }
+
+  
   logout() {
     localStorage.removeItem('token');
     // Redirige l'utilisateur vers la page de login

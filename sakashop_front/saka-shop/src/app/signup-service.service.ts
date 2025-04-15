@@ -1,12 +1,13 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
+import { environment } from '../environnement.prod';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SignupServiceService {
-  private apiUrl = 'http://localhost:8090/api/users/register';
+  private apiUrl =   `${environment.apiUrl}/api/users/register`;
 
   constructor(private http: HttpClient) {}
 

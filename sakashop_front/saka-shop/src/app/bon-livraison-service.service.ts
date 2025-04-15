@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../environnement.prod';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +9,7 @@ import { Observable } from 'rxjs';
 export class BonLivraisonServiceService {
 
 
-  private baseUrl = 'http://localhost:8090/api/bl';
+  private baseUrl = `${environment.apiUrl}api/bl`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,12 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../../environnement.prod';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AddCaisseService {
-  private apiUrl = 'http://localhost:8090/api'; 
+  private apiUrl = `${environment.apiUrl}/api`;; 
+
   constructor(private http: HttpClient) {}
 
   addCaisse(caisse: any): Observable<any> {

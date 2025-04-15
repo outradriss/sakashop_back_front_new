@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { environment } from '../../environnement.prod';
 
 @Component({
   selector: 'app-open-caisse',
@@ -58,7 +59,8 @@ export class OpenCaisseComponent {
 
     // ✅ Envoie le ticket au backend et attend la réponse avant de naviguer
     return new Promise((resolve, reject) => {
-      this.http.post('http://localhost:8090/api/print/ticket', ticketContent, { responseType: 'text' })
+      
+      this.http.post(`${environment.apiUrl}/api/print/ticket`, ticketContent, { responseType: 'text' })
         .subscribe({
           next: (response) => {
             console.log('✅ Réponse du backend :', response);

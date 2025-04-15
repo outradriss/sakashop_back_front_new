@@ -11,6 +11,7 @@ import { switchMap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { SaleItem } from '../models/ItemSales.model';
 import { OrderItem } from '../models/OrderItem.model';
+import { environment } from '../../environnement.prod';
 @Component({
   selector: 'app-caisse',
   standalone: false,
@@ -880,7 +881,7 @@ ${this.cart
     this.isPrinting = true;
 
     // ✅ Envoi au backend pour impression
-    this.http.post('http://localhost:8090/api/print/ticket', receiptContent, { responseType: 'text' })
+    this.http.post(`${environment.apiUrl}/api/print/ticket`, receiptContent, { responseType: 'text' })
       .subscribe({
         next: (response) => {
           console.log("✅ Reçu imprimé avec succès :", response);
@@ -958,7 +959,7 @@ Merci de votre achat !
     this.isPrinting = true;
 
     // ✅ Envoie le reçu au backend et attend la réponse avant de rediriger
-    this.http.post('http://localhost:8090/api/print/ticket', receiptContent, { responseType: 'text' })
+    this.http.post(`${environment.apiUrl}/api/print/ticket`, receiptContent, { responseType: 'text' })
       .subscribe({
         next: (response) => {
           console.log("✅ Reçu imprimé avec succès :", response);
@@ -1049,7 +1050,7 @@ Merci et à bientôt !
 
     // ✅ Envoi du ticket au backend
     this.http
-      .post('http://localhost:8090/api/print/ticket', ticketContent, { responseType: 'text' })
+      .post(`${environment.apiUrl}/api/print/ticket`, ticketContent, { responseType: 'text' })
       .subscribe({
         next: (response) => {
           console.log('✅ Ticket envoyé au serveur :', response);

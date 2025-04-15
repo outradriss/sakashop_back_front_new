@@ -3,12 +3,14 @@ import { Product } from '../models/product.model';
 import { catchError, Observable, throwError } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Credit } from '../models/Credit.model';
+import { environment } from '../../environnement.prod';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CreditService {
-  private apiUrl = 'http://localhost:8090/api/credit-client'; 
+  private apiUrl = `${environment.apiUrl}/api/credit-client`;
+  
 
   constructor(private http : HttpClient) { }
 

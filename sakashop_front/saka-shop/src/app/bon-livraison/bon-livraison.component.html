@@ -45,6 +45,7 @@
       <button (click)="navigateTo('turnover')">Chiffre d'Affaire</button>
       <button (click)="navigateTo('gestion-vente')">Géstion de vente </button>
       <button (click)="navigateTo('gestion-facture')">🧾 Gestion Facturese</button>
+      <button (click)="navigateTo('flush-caisse')"> flush caisse</button>
       <button (click)="navigateTo('gestion-caisse')"> Gestion des caisses </button>
       <button class="btn-logout" (click)="logout()">Quitter</button>
     </div>
@@ -115,9 +116,6 @@
               <tr>
                 <th>Produit</th>
                 <th>Quantité</th>
-                <th>Prix H.T.</th>
-                <th>TVA (%)</th>
-                <th>Prix T.T.C.</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -137,33 +135,6 @@
                       Stock max disponible : {{ item.produit.quantity }}
                     </div>
                   </td>
-                  
-                <td>
-                  <input
-                    type="number"
-                    [(ngModel)]="item.produit.buyPrice"
-                    name="prixht-{{i}}"
-                    min="0"
-                    step="0.01"
-                    (input)="updateTTC(item)"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    [(ngModel)]="item.produit.tva"
-                    name="tva-{{i}}"
-                    min="0"
-                    step="1"
-                    (input)="updateTTC(item)"
-                  />
-                </td>
-                <td>
-                  {{
-                    ((+item.produit.buyPrice + (+item.produit.buyPrice * +item.produit.tva / 100)) * item.quantite)
-                      | number: '1.2-2'
-                  }} MAD
-                </td>
                 <td>
                   <button class="btn-delete" (click)="removeProduct(i)">🗑️</button>
                 </td>

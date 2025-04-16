@@ -206,136 +206,88 @@ filteredClients: any[] = [];
 
 
   generateBLAndPrint(enregistrer: boolean = true): void {
-     // 1. Appel d'abord à l'enregistrement backend
-     if (enregistrer) {
-      this.envoyerBL(); // ➕ Enregistre seulement si demandé
+    if (enregistrer) {
+      this.envoyerBL();
     }
-
-  // 2. Ensuite impression
-  const dateLivraisonFormatted = new Date(this.dateLivraison).toLocaleDateString();
-
-  let totalHT = this.produitsSelectionnes.reduce((total, item) => {
-    const ht = Number(item.produit.buyPrice) || 0;
-    return total + item.quantite * ht;
-  }, 0);
-
-  let totalTVA = this.produitsSelectionnes.reduce((total, item) => {
-    const ht = Number(item.produit.buyPrice) || 0;
-    const tva = Number(item.produit.tva) || 0;
-    return total + item.quantite * ht * tva / 100;
-  }, 0);
-
-  let totalTTC = totalHT + totalTVA;
-
-  const totalRows = 30;
-  const filledRows = this.produitsSelectionnes.length;
-  const emptyRows = Math.max(0, totalRows - filledRows);
+  
+    const dateLivraisonFormatted = new Date(this.dateLivraison).toLocaleDateString();
+  
+    const totalRows = 30;
+    const filledRows = this.produitsSelectionnes.length;
+    const emptyRows = Math.max(0, totalRows - filledRows);
   
     const blHTML = `
       <html>
         <head>
           <title>Bon de Livraison</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #fff; color: #000; width: 210mm; height: 297mm; }
-            .invoice-container { width: 190mm; height: 277mm; margin: auto; padding: 15mm; background: #fff; display: flex; flex-direction: column; box-sizing: border-box; }
-            .invoice-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
-            .invoice-header img { max-height: 200px; }
-            .invoice-header div { text-align: right; }
-            .invoice-header h2 { margin: 0; font-size: 14px; color: #000; }
-            .invoice-info { display: flex; justify-content: space-between; gap: 10mm; margin-bottom: 10px; }
-            .invoice-info div { padding: 5px; border: 1px solid #000; width: 48%; background: #f2f2f2; font-size: 10px; }
-            .invoice-info strong { display: block; font-size: 11px; }
-            .invoice-content { flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-            .invoice-table-container { flex-grow: 1; display: flex; flex-direction: column; padding: 5px; }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; width: 210mm; height: 297mm; }
+            .bl-container { width: 190mm; height: 277mm; margin: auto; padding: 15mm; background: #fff; display: flex; flex-direction: column; box-sizing: border-box; }
+            .bl-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
+            .bl-header img { max-height: 100px; }
+            .bl-header div { text-align: right; }
+            .bl-info { display: flex; justify-content: space-between; gap: 10mm; margin-bottom: 10px; }
+            .bl-info div { padding: 5px; border: 1px solid #000; width: 48%; background: #f9f9f9; font-size: 10px; }
+            .bl-info strong { display: block; font-size: 11px; }
+            .bl-table-container { flex-grow: 1; padding: 5px; }
   
-            .invoice-table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; border: 1px solid #000; }
-  
-            .invoice-table th, .invoice-table td { padding: 5px; text-align: center; font-size: 10px; vertical-align: middle; border-left: 1px solid #000; border-right: 1px solid #000; }
-  
-            .invoice-table th { background: #000; color: #fff; text-transform: uppercase; border-top: 1px solid #000; border-bottom: 1px solid #000; }
-  
-            .invoice-table td { border-bottom: none; }
-  
-            .invoice-table th:nth-child(1), .invoice-table td:nth-child(1) { width: 50%; }
-            .invoice-table th:nth-child(2), .invoice-table td:nth-child(2) { width: 10%; }
-            .invoice-table th:nth-child(3), .invoice-table td:nth-child(3) { width: 15%; }
-            .invoice-table th:nth-child(4), .invoice-table td:nth-child(4) { width: 10%; }
-            .invoice-table th:nth-child(5), .invoice-table td:nth-child(5) { width: 15%; }
-  
-            .invoice-total { text-align: right; padding-top: 5px; font-size: 10px; font-weight: bold; border-top: 1px solid #000; margin-top: auto; }
-            .invoice-total p { margin: 2px 0; }
-            .invoice-total .total { font-size: 12px; font-weight: bold; background: #000; color: #fff; padding: 3px; display: inline-block; }
+            .bl-table { width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #000; }
+            .bl-table th, .bl-table td { padding: 5px; text-align: center; font-size: 10px; border: 1px solid #000; }
+            .bl-table th { background: #000; color: #fff; text-transform: uppercase; }
   
             @media print {
-              .invoice-container { width: 210mm; height: 297mm; }
-              .invoice-table th { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-              .invoice-total .total { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              .bl-container { width: 210mm; height: 297mm; }
+              .bl-table th { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             }
           </style>
         </head>
         <body>
-          <div class='invoice-container'>
-            <div class='invoice-header'>
+          <div class='bl-container'>
+            <div class='bl-header'>
               <img src='/logos/BAGGAGIO.png' alt='BAGGAGIO'>
               <div>
                 <h2>Bon de Livraison - ${this.blReference}</h2>
                 <p>Date de livraison : ${dateLivraisonFormatted}</p>
-                <p>Code client : ${this.clientName}</p>
+                <p>Client : ${this.clientName}</p>
               </div>
             </div>
-            <div class='invoice-info'>
+  
+            <div class='bl-info'>
               <div>
-              <strong>Émetteur</strong>
-              <p>BAGGAGIO</p>
-              <p>18, Rue ibn habib RDC Résidence ANAOURASS Casablanca</p>
-              <p>Tél.: 05222-66800 | +2126-79899480</p>
-              <p>Email: contact@monbagage.ma</p>
-            </div>
+                <strong>Émetteur</strong>
+                <p>BAGGAGIO</p>
+                <p>18, Rue ibn habib RDC Résidence ANAOURASS Casablanca</p>
+                <p>Tél.: 05222-66800 | +2126-79899480</p>
+                <p>Email: contact@monbagage.ma</p>
+              </div>
               <div>
-                <strong>Adressé à</strong>
+                <strong>Destinataire</strong>
                 <p>${this.clientName}</p>
                 <p>ICE: ${this.clientICE}</p>
                 <p>Adresse: ${this.adresse}</p>
               </div>
             </div>
-            <div class='invoice-content'>
-              <div class='invoice-table-container'>
-                <table class='invoice-table'>
-                  <thead>
-                    <tr>
-                      <th>DÉSIGNATION</th>
-                      <th>TVA</th>
-                      <th>P.U. HT</th>
-                      <th>QTÉ</th>
-                      <th>TOTAL HT</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${
-                      this.produitsSelectionnes.map((item) => {
-                        const ht = Number(item.produit.buyPrice) || 0;
-                        const tva = Number(item.produit.tva) || 0;
-                        const totalHTProduit = item.quantite * ht;
-                        return `
-                          <tr>
-                            <td>${item.produit.name}</td>
-                            <td>${tva}%</td>
-                            <td>${ht.toFixed(2)} MAD</td>
-                            <td>${item.quantite}</td>
-                            <td>${totalHTProduit.toFixed(2)} MAD</td>
-                          </tr>
-                        `;
-                      }).join('')
-                    }
-                    ${Array(emptyRows).fill(`<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>`).join('')}
-                  </tbody>
-                </table>
-              </div>
-              <div class='invoice-total'>
-                <p>Total HT: ${totalHT.toFixed(2)} MAD</p>
-                <p>Total TVA: ${totalTVA.toFixed(2)} MAD</p>
-                <p class='total'>TOTAL TTC: ${totalTTC.toFixed(2)} MAD</p>
-              </div>
+  
+            <div class='bl-table-container'>
+              <table class='bl-table'>
+                <thead>
+                  <tr>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${
+                    this.produitsSelectionnes.map((item) => `
+                      <tr>
+                        <td>${item.produit.name}</td>
+                        <td>${item.quantite}</td>
+                      </tr>
+                    `).join('')
+                  }
+             
+                </tbody>
+              </table>
             </div>
           </div>
         </body>
@@ -343,14 +295,17 @@ filteredClients: any[] = [];
     `;
   
     const printWindow = window.open('', '', 'width=800,height=900');
-  if (printWindow) {
-    printWindow.document.write(blHTML);
-    printWindow.document.close();
-    printWindow.print();
+    if (printWindow) {
+      printWindow.document.write(blHTML);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  
+    this.closeForm();
   }
+  
 
-  this.closeForm();
-  }
+
   updateTTC(item: any): void {
     const prixHT = Number(item.produit.buyPrice) || 0;
     const tva = Number(item.produit.tva) || 0;

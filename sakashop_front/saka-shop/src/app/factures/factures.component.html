@@ -12,6 +12,7 @@
         />
       </div>
     <div class="invoice-content">
+        
         <!-- Tableau des factures -->
         <table class="invoice-table">
             
@@ -59,9 +60,44 @@
         <span class="close" (click)="closeForm()">&times;</span>
         <h3>{{ isEditMode ? 'Modifier Facture' : 'Nouvelle Facture' }}</h3>
         <form>
+            <!-- ✅ Recherche des BL associés à un client -->
+            <label>🔍 Rechercher un client pour afficher ses BL :</label>
+            <input
+              type="text"
+              placeholder="Nom ou ICE client"
+              [(ngModel)]="clientSearchBL"
+              (input)="filtrerClientsBL()"
+              class="search-input"
+              [ngModelOptions]="{standalone: true}"
+            />
+            
+            <ul *ngIf="filteredClientsBL.length > 0" class="client-suggestions">
+              <li *ngFor="let client of filteredClientsBL" (click)="choisirClientBL(client)">
+                {{ client.clientName }} - {{ client.clientICE }}
+              </li>
+            </ul>
+       
+        <!-- ✅ Liste des BL filtrés -->
+        <ul *ngIf="bonsLivraisonFiltres.length > 0" class="bl-suggestion-list">
+            <li *ngFor="let bl of bonsLivraisonFiltres" class="bl-item">
+            <div class="bl-info">
+                📦 <strong>{{ bl.reference }}</strong> – {{ bl.dateLivraison | date:'dd/MM/yyyy' }} – Total: {{ bl.totalTTC }} MAD
+            </div>
+            <div class="bl-actions">
+                <input type="checkbox" (change)="toggleBLSelection(bl)" [checked]="isBLSelected(bl)" title="Choisir ce BL" />
+                <button type="button" (click)="afficherDetailsBL(bl)" title="Afficher les détails">👁️</button>
+                <button type="button" (click)="deselectionnerBL(bl)" title="Retirer ce BL">🗑️</button>
+            </div>
+            </li>
+        </ul>
+  
+  
+              
+              
+
             <label>Référence :</label>
             <input type="text" [(ngModel)]="factureReference" name="reference" readonly>            
-        
+            
             
             <label>Client :</label>
             <input type="text" placeholder="Nom du client" required name="client" [(ngModel)]="clientName">
@@ -85,7 +121,40 @@
             <label>Date d'Échéance :</label>
             <input type="date" required name="dateEcheance" [(ngModel)]="dateEcheance">
 
-        
+        <!-- ✅ Popup Détails BL -->
+<div *ngIf="showBLDetailsPopup" class="modal">
+    <div class="modal-content">
+      <span class="close" (click)="fermerDetailsBL()">&times;</span>
+      <h4>Détails du Bon de Livraison : {{ selectedBLDetails.reference }}</h4>
+  
+      <p><strong>Date :</strong> {{ selectedBLDetails.dateLivraison | date: 'dd/MM/yyyy' }}</p>
+      <p><strong>Client :</strong> {{ selectedBLDetails.clientName }}</p>
+      <p><strong>ICE :</strong> {{ selectedBLDetails.clientICE }}</p>
+      <p><strong>Adresse :</strong> {{ selectedBLDetails.adresse }}</p>
+  
+      <table class="selected-products">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Prix H.T.</th>
+            <th>TVA</th>
+            <th>Total T.T.C.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of selectedBLDetails.itemQuantities">
+            <td>{{ item.productName }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.prixHT }} MAD</td>
+            <td>{{ item.tva }}%</td>
+            <td>{{ item.totalTTC }} MAD</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
             <!-- ✅ Champ de recherche produit -->
     <div class="change-search-section">
         <label>Ajouter un produit</label>
@@ -133,9 +202,6 @@
                         name="quantite-{{i}}"
                         (input)="checkStock(item)"
                     />
-                    <div *ngIf="item.quantite >= item.produit.quantity" class="error-message">
-                        La quantité de stock est {{ item.produit.quantity }}
-                    </div>
                 </td>
 
                 <td>

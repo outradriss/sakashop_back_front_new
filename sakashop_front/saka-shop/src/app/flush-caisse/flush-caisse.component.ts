@@ -3,6 +3,7 @@ import { HistoryService } from '../service/product-service/history-service/histo
 import { Vente } from '../models/vente.model';
 import { AddCaisseService } from '../service/add-caisse.service';
 import { Product } from '../models/product.model';
+import { VenteProduit } from '../venteProduit.interface';
 
 @Component({
   selector: 'app-flush-caisse',
@@ -14,7 +15,8 @@ import { Product } from '../models/product.model';
 export class FlushCaisseComponent {
   caisses: any[] = []; // Liste des caisses
   sales: any[] = []; // Toutes les ventes
-  filteredSales: Product[] = []; // Ventes filtrées pour la caisse sélectionnée
+  filteredSales: VenteProduit[] = [];
+; // Ventes filtrées pour la caisse sélectionnée
   selectedCaisseName: string = ''; // Nom de la caisse sélectionnée
   showPopup: boolean = false; // État du popup
 
@@ -41,9 +43,9 @@ export class FlushCaisseComponent {
     this.salesService.getSalesData().subscribe(
       (data) => {
         this.sales = data;
-
+  
         const today = new Date();
-        this.filteredSales = this.sales.filter((sale) => {
+        const ventesAujourdHui = this.sales.filter((sale) => {
           const lastUpdated = new Date(sale.dateOrder);
           return (
             sale.caisseId === caisseId &&
@@ -52,16 +54,26 @@ export class FlushCaisseComponent {
             lastUpdated.getFullYear() === today.getFullYear()
           );
         });
-
-        // Récupérer le nom de la caisse
+  
+        // ✅ Extraire les produits avec les infos de paiement + nom d'affichage
+        this.filteredSales = ventesAujourdHui.flatMap((vente) =>
+          (vente.items || []).map((item: any) => ({
+            ...item,
+            typePaiement: vente.typePaiement,
+            productName: item.nameProduct || item.name
+          }))
+        ) as VenteProduit[];
+  
+        // ✅ Nom de la caisse affichée
         this.selectedCaisseName = this.caisses.find((caisse) => caisse.id === caisseId)?.nom || '';
-        this.showPopup = true; // Ouvrir le popup
+        this.showPopup = true;
       },
       (error) => {
         console.error('Erreur lors du chargement des ventes :', error);
       }
     );
   }
+  
 
   // Fermer le popup
   closePopup(): void {

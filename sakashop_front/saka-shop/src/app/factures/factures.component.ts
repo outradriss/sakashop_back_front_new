@@ -4,6 +4,7 @@ import { Product } from '../models/product.model';
 import { ChangeDetectorRef } from '@angular/core';
 import { FactureService } from '../service/facture.service';
 import { Router } from '@angular/router';
+import { BonLivraisonServiceService } from '../bon-livraison-service.service';
 
 
 @Component({
@@ -43,15 +44,28 @@ export class FacturesComponent {
   factureSelectionnee: any = null;
   isEditMode: boolean = false;
 facturesOriginal: any[] = []; 
-  constructor(private productService: ProductService , private cdRef: ChangeDetectorRef , private factureService : FactureService , private router:Router)  { }
+clients: any[] = [];
+bonsLivraison: any[] = [];
+bonsLivraisonFiltres: any[] = [];
+clientSearchBL: string = '';
+filteredClientsBL: any[] = [];
+selectedClientBL: any = null;
+selectedBLs: any[] = [];
+selectedBLDetails: any = null;
+showBLDetailsPopup: boolean = false;
+selectedBL: any = null;
+
+
+  constructor(private bonLivraisonService: BonLivraisonServiceService, private productService: ProductService , private cdRef: ChangeDetectorRef , private factureService : FactureService , private router:Router)  { }
 
   ngOnInit() {
     this.loadProducts();
     console.log('Produits chargés:', this.products);
     this.chargerFactures();
-
-
+  this.loadAllBL(); 
   }
+
+  
   openForm(): void {
     this.isEditMode = false; // Mode création
     this.factureReference = this.generateFactureReference();
@@ -74,6 +88,61 @@ facturesOriginal: any[] = [];
     facture.clientName?.toLowerCase().includes(query)
   );
 }
+
+deselectionnerBL(bl: any): void {
+  // Supprimer ce BL de la sélection
+  this.selectedBLs = this.selectedBLs.filter(b => b.reference !== bl.reference);
+
+  // Supprimer visuellement ce BL de la liste affichée
+  this.bonsLivraisonFiltres = this.bonsLivraisonFiltres.filter(b => b.reference !== bl.reference);
+
+  // Réinitialiser les champs si plus de BL sélectionné
+  if (this.selectedBLs.length === 0) {
+    this.clientName = '';
+    this.clientICE = '';
+    this.adresse = '';
+    this.clientCode = '';
+    this.entreprise = '';
+    this.produitsSelectionnes = [];
+  } else {
+    this.remplirFactureDepuisBLs(this.selectedBLs);
+  }
+
+  // Permettre à nouveau de chercher (relancer le filtrage si besoin)
+  this.filtrerClientsBL();
+}
+
+
+
+
+reappliquerFiltreBL(): void {
+  const query = this.clientSearchBL.trim().toLowerCase();
+  if (!query) {
+    this.bonsLivraisonFiltres = [];
+    return;
+  }
+
+  this.filteredClientsBL = this.clients.filter(client =>
+    client.clientName.toLowerCase().includes(query) ||
+    client.clientICE.toLowerCase().includes(query)
+  );
+
+  const client = this.filteredClientsBL.find(c =>
+    `${c.clientName} - ${c.clientICE}`.toLowerCase() === query
+  );
+
+  if (client) {
+    this.bonsLivraisonFiltres = this.bonsLivraison.filter(bl =>
+      bl.clientName.toLowerCase() === client.clientName.toLowerCase() &&
+      bl.clientICE.toLowerCase() === client.clientICE.toLowerCase()
+    );
+  } else {
+    this.bonsLivraisonFiltres = [];
+  }
+}
+
+
+
   
   generateFactureReference(): string {
     const currentYear = new Date().getFullYear();
@@ -81,6 +150,7 @@ facturesOriginal: any[] = [];
     return `FAC-${currentYear}-${lastNumber.toString().padStart(3, '0')}`;
   }
   
+
   getLastInvoiceNumber(): number {
     if (this.factures.length === 0) {
       return 0; // Première facture de l'année
@@ -90,6 +160,97 @@ facturesOriginal: any[] = [];
     return match ? parseInt(match[1], 10) : 0;
   }
 
+  
+  loadAllBL(): void {
+    this.bonLivraisonService.getAllBL().subscribe((data) => {
+      this.bonsLivraison = data;
+  
+      // ✅ Construire la liste des clients à partir des BL
+      this.clients = Array.from(
+        new Map(
+          data.map(bl => [`${bl.clientName}-${bl.clientICE}`, {
+            clientName: bl.clientName,
+            clientICE: bl.clientICE
+          }])
+        ).values()
+      );
+    });
+  }
+  
+
+  toggleBLSelection(bl: any): void {
+    // Si déjà sélectionné → on retire
+    if (this.selectedBLs.find(b => b.reference === bl.reference)) {
+      this.selectedBLs = this.selectedBLs.filter(b => b.reference !== bl.reference);
+    } else {
+      this.selectedBLs.push(bl);
+    }
+  
+    // ✅ Si plus aucun BL sélectionné, vider les champs
+    if (this.selectedBLs.length === 0) {
+      this.clientName = '';
+      this.clientICE = '';
+      this.adresse = '';
+      this.clientCode = '';
+      this.entreprise = '';
+      this.produitsSelectionnes = [];
+    } else {
+      // ✅ Sinon, remplir depuis les BL sélectionnés
+      this.remplirFactureDepuisBLs(this.selectedBLs);
+    }
+  }
+  
+  
+  remplirFactureDepuisBLs(bls: any[]): void {
+    const produitsMap = new Map<number, any>();
+  
+    bls.forEach(bl => {
+      // Remplir les infos client depuis le 1er BL
+      if (!this.clientName) {
+        this.clientName = bl.clientName;
+        this.clientICE = bl.clientICE;
+        this.adresse = bl.adresse;
+      }
+  
+      bl.itemQuantities.forEach((item: { productId: number; productName: string; prixHT: number; tva: number; quantity: number }) => {
+        const prodId = item.productId;
+        if (produitsMap.has(prodId)) {
+          produitsMap.get(prodId).quantite += item.quantity;
+        } else {
+          produitsMap.set(prodId, {
+            produit: {
+              id: item.productId,
+              name: item.productName,
+              buyPrice: item.prixHT,
+              tva: item.tva,
+              quantity: item.quantity // stock si dispo
+            },
+            quantite: item.quantity
+          });
+        }
+      });
+    });
+  
+    this.produitsSelectionnes = Array.from(produitsMap.values());
+  }
+  
+
+  
+  
+  isBLSelected(bl: any): boolean {
+    return this.selectedBLs.some(b => b.reference === bl.reference);
+  }
+  
+  afficherDetailsBL(bl: any): void {
+    this.selectedBLDetails = bl;
+    this.showBLDetailsPopup = true;
+  }
+  
+  fermerDetailsBL(): void {
+    this.showBLDetailsPopup = false;
+    this.selectedBLDetails = null;
+  }
+  
   // ✅ Fermer la popup
   closeForm() {
     this.formPopup = false;
@@ -164,14 +325,16 @@ checkStock(item: any): void {
     this.loadProducts();
 }
 
-
 generateInvoiceAndPrint(): void {
   if (this.isEditMode) {
     this.updateFacture();
   } else {
-    this.envoyerFacture();
+    this.envoyerFacture(); // appelle tout depuis ici, avec validations
   }
+}
 
+
+imprimerFactureHTML(factureData: any): void {
   const dateProposition = new Date();
   const dateFinValidite = new Date(dateProposition);
   dateFinValidite.setMonth(dateFinValidite.getMonth() + 1);
@@ -317,17 +480,13 @@ generateInvoiceAndPrint(): void {
   this.closeForm();
 }
 
-
-
-
-
 envoyerFacture(): void {
   if (this.produitsSelectionnes.length === 0) {
     alert("Ajoutez au moins un produit avant d'envoyer la facture !");
     return;
   }
 
-  if (!this.clientName || !this.clientICE || !this.clientCode || !this.adresse || !this.entreprise) {
+  if (!this.clientName || !this.clientICE || !this.clientCode || !this.adresse || !this.entreprise || !this.dateFacture || !this.dateEcheance) {
     alert("Veuillez remplir toutes les informations du client !");
     return;
   }
@@ -374,21 +533,26 @@ envoyerFacture(): void {
     totalTTC
   };
 
-  console.log("Données envoyées :", factureData);
-
+  // ✅ Appel backend
   this.factureService.envoyerFacture(factureData).subscribe(
     response => {
-      console.log("Facture envoyée avec succès:", response);
+      console.log("✅ Facture envoyée :", response);
       alert("Facture enregistrée avec succès !");
+
+      // ✅ Ouvre la facture SEULEMENT après succès
+      this.imprimerFactureHTML(factureData);
+
+      // ✅ Ferme le formulaire et recharge
       this.closeForm();
       this.chargerFactures();
     },
     error => {
-      console.error("Erreur lors de l'envoi de la facture:", error);
+      console.error("❌ Erreur :", error);
       alert("Une erreur est survenue lors de l'envoi de la facture.");
     }
   );
 }
+
 
 
 /**
@@ -446,21 +610,44 @@ modifierFacture(facture: any): void {
   this.modePaiement = facture.modePaiement;
   this.statusPaiement = facture.statusPaiement;
 
+  // ✅ Préparer les produits sélectionnés
   if (facture.itemQuantities && Array.isArray(facture.itemQuantities)) {
     this.produitsSelectionnes = facture.itemQuantities.map((item: any) => ({
       produit: {
         id: item.id || null,
         name: item.name || 'Produit inconnu',
-        buyPrice: item.prixHT || 0,       // ✅ utilisé comme prix H.T.
+        buyPrice: item.prixHT || 0,
         tva: item.tva || 0,
         quantity: item.quantity || 1
       },
       quantite: item.quantity || 1
     }));
   } else {
-    console.warn("⚠️ Aucun produit trouvé dans la facture sélectionnée !");
     this.produitsSelectionnes = [];
   }
+
+  // ✅ Mettre à jour la recherche BL
+  this.clientSearchBL = `${this.clientName} - ${this.clientICE}`;
+  this.selectedBLs = [];
+
+  // ✅ Récupérer les BL du client
+  const blsClient = this.bonsLivraison.filter(bl =>
+    bl.clientName.toLowerCase() === this.clientName.toLowerCase() &&
+    bl.clientICE.toLowerCase() === this.clientICE.toLowerCase()
+  );
+
+  this.bonsLivraisonFiltres = blsClient;
+
+  // ✅ Cocher les BL correspondant aux produits
+  // (approche naïve par comparaison de produits)
+  blsClient.forEach(bl => {
+    const matchProduit = bl.itemQuantities.some((item: any) =>
+      this.produitsSelectionnes.find(p => p.produit.id === item.productId)
+    );
+    if (matchProduit) {
+      this.selectedBLs.push(bl);
+    }
+  });
 
   this.formPopup = true;
 }
@@ -547,8 +734,34 @@ logout() {
 
 
 
+filtrerClientsBL(): void {
+  const query = this.clientSearchBL.trim().toLowerCase();
+
+  if (!query) {
+    this.filteredClientsBL = [];
+    this.bonsLivraisonFiltres = [];
+    return;
+  }
+
+  this.filteredClientsBL = this.clients.filter(client =>
+    client.clientName.toLowerCase().includes(query) ||
+    client.clientICE.toLowerCase().includes(query)
+  );
+}
 
 
+
+choisirClientBL(client: any): void {
+  this.selectedClientBL = client;
+  this.clientSearchBL = `${client.clientName} - ${client.clientICE}`;
+  this.filteredClientsBL = [];
+
+  this.bonsLivraisonFiltres = this.bonsLivraison.filter(bl =>
+    bl.clientName.toLowerCase() === client.clientName.toLowerCase() &&
+    bl.clientICE.toLowerCase() === client.clientICE.toLowerCase()
+  );
+
+}
 
 
 

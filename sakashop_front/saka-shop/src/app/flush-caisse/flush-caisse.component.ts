@@ -4,6 +4,7 @@ import { Vente } from '../models/vente.model';
 import { AddCaisseService } from '../service/add-caisse.service';
 import { Product } from '../models/product.model';
 import { VenteProduit } from '../venteProduit.interface';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-flush-caisse',
@@ -20,7 +21,7 @@ export class FlushCaisseComponent {
   selectedCaisseName: string = ''; // Nom de la caisse sélectionnée
   showPopup: boolean = false; // État du popup
 
-  constructor(private addCaisseService: AddCaisseService, private salesService: HistoryService) {}
+  constructor(private router:Router, private addCaisseService: AddCaisseService, private salesService: HistoryService) {}
 
   ngOnInit(): void {
     this.loadCaisses(); // Charger les caisses à l'initialisation
@@ -73,8 +74,16 @@ export class FlushCaisseComponent {
       }
     );
   }
-  
+  navigateTo(route: string): void {
+    this.router.navigate([`/${route}`]);
+  }
 
+  
+  logout() {
+    localStorage.removeItem('token');
+    // Redirige l'utilisateur vers la page de login
+    this.router.navigate(['/login']);
+  }
   // Fermer le popup
   closePopup(): void {
     this.showPopup = false;
